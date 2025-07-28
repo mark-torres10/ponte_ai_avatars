@@ -90,3 +90,6 @@ Thumbs.db
 
 # Admin files
 admin/
+
+# discovery files + notes
+discovery/
