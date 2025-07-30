@@ -18,7 +18,11 @@ export default function BackendStatus() {
       setHealthStatus(response);
       
       if (!response.success) {
-        setError(response.error as string || 'Health check failed');
+        // Handle error that can be either string or object
+        const errorMessage = typeof response.error === 'string' 
+          ? response.error 
+          : response.error?.message || 'Health check failed';
+        setError(errorMessage);
       }
     } catch (err) {
       setError('Failed to connect to backend');

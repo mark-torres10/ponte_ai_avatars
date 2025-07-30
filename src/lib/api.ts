@@ -39,14 +39,19 @@ class ApiClient {
 
     try {
       const response = await fetch(url, defaultOptions);
-      const data = await response.json();
       
+      // Check if the response is successful before parsing JSON
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
       return data;
     } catch (error) {
       console.error('API request failed:', error);
       return {
         success: false,
-        error: 'Network error occurred',
+        error: error instanceof Error ? error.message : 'Network error occurred',
         timestamp: new Date().toISOString(),
       };
     }
