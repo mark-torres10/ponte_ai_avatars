@@ -4,11 +4,10 @@ import { LoggedRequest } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 
 export const requestLogger = (req: Request, res: Response, next: NextFunction): void => {
-  const requestId = uuidv4();
   const startTime = Date.now();
+  const requestId = (req as unknown as LoggedRequest).requestId || 'unknown';
 
-  // Add request ID and start time to request object
-  (req as unknown as LoggedRequest).requestId = requestId;
+  // Add start time to request object
   (req as unknown as LoggedRequest).startTime = startTime;
 
   // Log request start

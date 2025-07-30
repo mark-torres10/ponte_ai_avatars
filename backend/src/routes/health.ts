@@ -66,24 +66,26 @@ router.get('/detailed', asyncHandler(async (_req: Request, res: Response) => {
   try {
     const healthInfo = getSystemInfo();
     
-    // Add additional system information
+    // Add additional system information (only in non-production environments)
     const detailedInfo = {
       ...healthInfo,
-      system: {
-        nodeVersion: process.version,
-        platform: process.platform,
-        arch: process.arch,
-        memoryUsage: process.memoryUsage(),
-        cpuUsage: process.cpuUsage(),
-      },
-      config: {
-        environment: config.NODE_ENV,
-        port: config.PORT,
-        corsOrigin: config.CORS_ORIGIN,
-        hasOpenAIKey: !!config.OPENAI_API_KEY,
-        hasElevenLabsKey: !!config.ELEVENLABS_API_KEY,
-        hasDIDKey: !!config.DID_API_KEY,
-      },
+      ...(config.NODE_ENV !== 'production' && {
+        system: {
+          nodeVersion: process.version,
+          platform: process.platform,
+          arch: process.arch,
+          memoryUsage: process.memoryUsage(),
+          cpuUsage: process.cpuUsage(),
+        },
+        config: {
+          environment: config.NODE_ENV,
+          port: config.PORT,
+          corsOrigin: config.CORS_ORIGIN,
+          hasOpenAIKey: !!config.OPENAI_API_KEY,
+          hasElevenLabsKey: !!config.ELEVENLABS_API_KEY,
+          hasDIDKey: !!config.DID_API_KEY,
+        },
+      }),
     };
 
     const response: ApiResponse = {

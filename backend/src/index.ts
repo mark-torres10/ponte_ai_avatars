@@ -11,10 +11,11 @@ const server = app.listen(config.PORT, () => {
   });
 
   // Log available endpoints
+  const host = process.env['HOST'] || 'localhost';
   logger.info('📋 Available endpoints:', {
-    health: `http://localhost:${config.PORT}/health`,
-    healthDetailed: `http://localhost:${config.PORT}/health/detailed`,
-    apiV1: `http://localhost:${config.PORT}/api/v1`,
+    health: `http://${host}:${config.PORT}/health`,
+    healthDetailed: `http://${host}:${config.PORT}/health/detailed`,
+    apiV1: `http://${host}:${config.PORT}/api/v1`,
   });
 });
 

@@ -8,8 +8,8 @@ router.use('/health', healthRoutes);
 
 // API versioning - v1 routes
 router.use('/api/v1', (req, _res, next) => {
-  // Add API version to request for logging
-  req.url = req.url.replace('/api/v1', '');
+  // Add API version to request for logging without modifying URL
+  (req as any).apiVersion = 'v1';
   next();
 });
 
