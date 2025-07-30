@@ -25,13 +25,22 @@ app.use(helmet({
   },
 }));
 
-// CORS configuration
-app.use(cors({
-  origin: config.CORS_ORIGIN,
+// CORS configuration - strict environment separation
+const corsOptions: cors.CorsOptions = {
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID'],
-}));
+};
+
+if (isDevelopment) {
+  // In development, only allow localhost frontend
+  corsOptions.origin = 'http://localhost:3000';
+} else {
+  // In production, only allow Vercel frontend
+  corsOptions.origin = config.CORS_ORIGIN;
+}
+
+app.use(cors(corsOptions));
 
 // Compression middleware
 app.use(compression());

@@ -26,11 +26,13 @@ A professional Next.js application for Ponte AI's AI avatar marketplace, designe
 - **Animations**: Smooth transitions and hover effects
 
 ### 🔧 Technical Stack
-- **Framework**: Next.js 15.4.5 with App Router
+- **Frontend**: Next.js 15.4.5 with App Router
+- **Backend**: Express.js with TypeScript, deployed on Railway
 - **Styling**: Tailwind CSS v3 with custom brand configuration
 - **Language**: TypeScript for type safety
 - **Linting**: ESLint with Next.js configuration
 - **Build**: Optimized production build with static generation
+- **Deployment**: Vercel (frontend) + Railway (backend)
 
 ## 📦 Installation & Setup
 
@@ -65,7 +67,7 @@ npm run lint     # Run ESLint for code quality
 
 ```
 ponte_ai/
-├── src/
+├── src/                         # Frontend Next.js application
 │   ├── app/
 │   │   ├── globals.css          # Global styles with Ponte AI branding
 │   │   ├── layout.tsx           # Root layout with dark theme
@@ -77,14 +79,31 @@ ponte_ai/
 │   │   └── navigation.tsx       # Navigation component
 │   └── lib/
 │       └── utils.ts             # Utility functions
+├── backend/                     # Backend Express.js API service
+│   ├── src/
+│   │   ├── app.ts              # Express app configuration
+│   │   ├── index.ts            # Server entry point
+│   │   ├── routes/             # API routes
+│   │   ├── middleware/         # Express middleware
+│   │   ├── services/           # Business logic services
+│   │   ├── types/              # TypeScript type definitions
+│   │   ├── utils/              # Utility functions
+│   │   └── __tests__/          # Test files
+│   ├── package.json            # Backend dependencies
+│   ├── tsconfig.json           # TypeScript configuration
+│   └── README.md               # Backend documentation
 ├── public/                      # Static assets
 ├── tailwind.config.js           # Tailwind config with brand colors
-├── package.json                 # Dependencies and scripts
+├── package.json                 # Frontend dependencies and scripts
 ├── projects/                    # Project management files
-│   └── ponte-ai-production-app-mvp/
-│       ├── README.md            # Project documentation
-│       ├── spec.md              # Project specification
-│       └── tickets/             # Linear tickets
+│   ├── ponte-ai-production-app-mvp/
+│   │   ├── README.md            # Project documentation
+│   │   ├── spec.md              # Project specification
+│   │   └── tickets/             # Linear tickets
+│   └── avatar-generation-demo/
+│       ├── README.md            # Avatar demo documentation
+│       ├── spec.md              # Avatar demo specification
+│       └── tickets/             # Avatar demo tickets
 └── README.md                    # This file
 ```
 
@@ -140,14 +159,29 @@ The application has been validated using Playwright MCP to ensure brand consiste
 - **Form Functionality**: ✅ Complete form submission flow
 - **Navigation**: ✅ All routes accessible and functional
 
-## 🚀 Deployment Ready
+## 🚀 Deployment Architecture
 
-The application is ready for deployment to Vercel or any other hosting platform:
+The application uses a modern full-stack deployment architecture:
 
-1. **Build Optimization**: Static generation for all pages
-2. **Performance**: Optimized bundle sizes
-3. **SEO**: Proper metadata and title tags
-4. **Accessibility**: Semantic HTML and proper ARIA labels
+### Frontend (Vercel)
+- **Platform**: Vercel for Next.js hosting
+- **Build Optimization**: Static generation for all pages
+- **Performance**: Optimized bundle sizes and CDN delivery
+- **SEO**: Proper metadata and title tags
+- **Accessibility**: Semantic HTML and proper ARIA labels
+
+### Backend (Railway)
+- **Platform**: Railway for Express.js API hosting
+- **Always-On**: No cold starts or execution time limits
+- **Demo-Stable**: Perfect for client presentations and demos
+- **Scalable**: Container-based deployment with automatic scaling
+- **Security**: HTTPS, CORS, rate limiting, and security headers
+
+### API Integration
+- **Health Endpoints**: `/health` and `/health/detailed` for monitoring
+- **CORS Configuration**: Frontend-backend communication enabled
+- **Environment Variables**: Secure API key management
+- **Error Handling**: Comprehensive error responses and logging
 
 ## 📋 Success Criteria Met
 
@@ -165,19 +199,40 @@ The application is ready for deployment to Vercel or any other hosting platform:
 ✅ **Build Success**: `npm run build` passes without errors  
 ✅ **Playwright Validation**: Brand styling verified against website  
 
-## 🔮 Future Enhancements
+## 🔮 Current Development Status
 
-The application is structured to support future backend integration:
+### ✅ Completed
+- **Frontend MVP**: Complete Next.js application with Ponte AI branding
+- **Backend Foundation**: Express.js API service with TypeScript
+- **Deployment Setup**: Vercel (frontend) + Railway (backend) architecture
+- **API Structure**: Health endpoints, error handling, and security middleware
 
-- **API Integration**: Form submission handlers ready for backend
-- **Database**: Component structure supports data fetching
-- **Authentication**: User management ready for implementation
-- **Payment Processing**: Stripe integration points identified
-- **Email Notifications**: Email service integration ready
-- **Analytics**: Tracking and metrics ready for implementation
+### 🚧 In Progress
+- **Avatar Generation Demo**: PON-18 backend setup (in review)
+- **API Integrations**: OpenAI, ElevenLabs, and D-ID integrations planned
 
-## 📞 Support
+### 🔮 Future Enhancements
+- **Avatar Generation Pipeline**: Complete text, voice, and video generation
+- **Database Integration**: Supabase for data persistence
+- **Authentication**: User management and session handling
+- **Payment Processing**: Stripe integration for avatar bookings
+- **Email Notifications**: Automated email workflows
+- **Analytics**: User behavior tracking and metrics
 
+## 📞 Support & Documentation
+
+### Project Documentation
+- **Frontend**: See `src/` directory for Next.js application code
+- **Backend**: See `backend/` directory for Express.js API service
+- **Project Management**: See `projects/` directory for specifications and tickets
+
+### Development Resources
+- **Linear Project**: [Ponte AI Production App MVP](https://linear.app/metresearch/project/production-app-mvp-for-client-demos-and-fundraising-8ade99e55da3)
+- **Avatar Demo Project**: [Avatar Generation Demo Implementation](https://linear.app/metresearch/project/avatar-generation-demo-implementation-62ab6967b5e8)
+- **Backend API**: Railway deployment with health endpoints
+- **Frontend**: Vercel deployment with Ponte AI branding
+
+### Contact
 For questions or issues with the Ponte AI Production App MVP, please refer to the project documentation or contact the development team.
 
 ---
