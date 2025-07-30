@@ -1,5 +1,6 @@
 import Navigation from "@/components/navigation"
 import Link from "next/link"
+import BackendStatus from "@/components/BackendStatus"
 
 export default function GenerateAvatarPage() {
   return (
@@ -27,6 +28,11 @@ export default function GenerateAvatarPage() {
               <p className="text-foreground/70 mb-6">
                 Experience our cutting-edge AI avatar generation technology. Soon you&apos;ll be able to:
               </p>
+              
+              {/* Backend Connection Test */}
+              <div className="mb-8">
+                <BackendStatus />
+              </div>
               
               <div className="grid md:grid-cols-3 gap-6 mb-8">
                 <div className="text-center">
