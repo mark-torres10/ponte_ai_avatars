@@ -28,6 +28,13 @@ export default function PersonaSelection({ onPersonaSelect }: PersonaSelectionPr
     }
   };
 
+  const handleKeyDown = (event: React.KeyboardEvent, personaId: string) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handlePersonaSelect(personaId);
+    }
+  };
+
   const handleReset = () => {
     const resetPersonas = resetPersonaSelection();
     setPersonas(resetPersonas);
@@ -55,12 +62,17 @@ export default function PersonaSelection({ onPersonaSelect }: PersonaSelectionPr
         {personas.map((persona) => (
           <div
             key={persona.id}
-            className={`avatar-card cursor-pointer transition-all duration-300 ${
+            className={`avatar-card cursor-pointer transition-all duration-300 relative ${
               persona.selected 
                 ? 'ring-2 ring-primary shadow-lg scale-105' 
                 : 'hover:scale-105 hover:shadow-lg'
             }`}
             onClick={() => handlePersonaSelect(persona.id)}
+            onKeyDown={(e) => handleKeyDown(e, persona.id)}
+            tabIndex={0}
+            role="button"
+            aria-label={`Select ${persona.name} persona`}
+            aria-pressed={persona.selected}
           >
             {/* Persona Header */}
             <div className="text-center mb-4">
