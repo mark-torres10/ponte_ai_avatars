@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Ponte AI Dark Theme */
+    --background: 240 10% 3.9%; /* #09090B */
+    --foreground: 0 0% 98%; /* #FAFAFA */
+    --card: 240 10% 3.9%; /* #09090B */
+    --card-foreground: 0 0% 98%; /* #FAFAFA */
+    --popover: 240 10% 3.9%; /* #09090B */
+    --popover-foreground: 0 0% 98%; /* #FAFAFA */
+    --primary: 340 100% 55%; /* #DD3C61 - Ponte AI Pink */
+    --primary-foreground: 0 0% 98%; /* #FAFAFA */
+    --secondary: 240 3.7% 15.9%; /* #27272A */
+    --secondary-foreground: 0 0% 98%; /* #FAFAFA */
+    --muted: 240 3.7% 15.9%; /* #27272A */
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%; /* #27272A */
+    --accent-foreground: 0 0% 98%; /* #FAFAFA */
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%; /* #FAFAFA */
+    --border: 240 3.7% 15.9%; /* #27272A */
+    --input: 240 3.7% 15.9%; /* #27272A */
+    --ring: 340 100% 55%; /* #DD3C61 - Ponte AI Pink */
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  /* Ponte AI Brand Gradients */
+  .text-gradient {
+    @apply bg-gradient-to-r from-ponte-gradient-from to-ponte-gradient-to bg-clip-text text-transparent;
+  }
+  
+  .bg-gradient-ponte {
+    @apply bg-gradient-to-r from-ponte-gradient-from to-ponte-gradient-to;
+  }
+  
+  .bg-gradient-ponte-radial {
+    background: radial-gradient(at center top, rgba(194, 96, 125, 0.3) 0%, rgba(0, 0, 0, 0) 50%),
+                radial-gradient(at center bottom, rgba(237, 124, 163, 0.3) 0%, rgba(0, 0, 0, 0) 50%);
+  }
+  
+  /* Card Styles */
+  .card-ponte {
+    @apply bg-card/60 backdrop-blur-sm border border-white/20 hover:border-white/40 transition-all duration-300;
+  }
+  
+  /* Button Styles */
+  .btn-primary-ponte {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 transition-colors duration-200;
+  }
+  
+  .btn-secondary-ponte {
+    @apply bg-background border border-white/20 text-foreground hover:bg-accent hover:text-accent-foreground hover:border-white/40 transition-all duration-200;
+  }
+  
+  /* Avatar Card Styles */
+  .avatar-card {
+    @apply relative overflow-hidden rounded-lg card-ponte p-4 transition-all duration-300 hover:scale-105;
+  }
+  
+  .avatar-card-portrait {
+    @apply aspect-[3/4] w-full max-w-xs;
+  }
+  
+  /* Navigation Styles */
+  .nav-link {
+    @apply text-foreground/80 hover:text-foreground transition-colors duration-200;
+  }
+  
+  .nav-link-active {
+    @apply text-primary;
+  }
+}
