@@ -49,6 +49,15 @@ export interface TextGenerationResponse {
 // Re-export voice types from the dedicated voice types file
 export { GenerateVoiceRequest, GenerateVoiceResponse } from './voice';
 
+// Re-export video types from the dedicated video types file
+export { 
+  GenerateVideoRequest, 
+  GenerateVideoResponse, 
+  VideoStatusResponse,
+  DIDCreateVideoRequest,
+  DIDCreateVideoResponse 
+} from './video';
+
 export interface VoiceGenerationRequest {
   text: string;
   voiceId: string;
