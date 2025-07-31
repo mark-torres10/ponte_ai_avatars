@@ -22,9 +22,10 @@ interface GenerateVoiceResponse {
 }
 
 // ElevenLabs voice IDs for each persona
+// TODO: These will eventually be fetched from Supabase database instead of environment variables
 const PERSONA_VOICE_IDS = {
-  'terry-crews': 'pNInz6obpgDQGcFmaJgB', // Terry Crews voice ID
-  'will-howard': 'VR6AewLTigWG4xSOukaG', // Will Howard voice ID
+  'terry-crews': config.ELEVENLABS_TERRY_CREWS_VOICE_ID,
+  'will-howard': config.ELEVENLABS_WILL_HOWARD_VOICE_ID,
 };
 
 // ElevenLabs API configuration
@@ -80,6 +81,16 @@ router.post('/generate', async (req: Request, res: Response) => {
     // Check if ElevenLabs API key is configured
     if (!config.ELEVENLABS_API_KEY) {
       logger.error('ElevenLabs API key not configured', { requestId });
+      return res.status(500).json({
+        success: false,
+        error: 'Voice generation service not configured',
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    // Check if voice IDs are configured
+    if (!config.ELEVENLABS_TERRY_CREWS_VOICE_ID || !config.ELEVENLABS_WILL_HOWARD_VOICE_ID) {
+      logger.error('ElevenLabs voice IDs not configured', { requestId });
       return res.status(500).json({
         success: false,
         error: 'Voice generation service not configured',
