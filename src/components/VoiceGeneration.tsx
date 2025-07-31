@@ -8,12 +8,20 @@ interface VoiceGenerationProps {
   selectedPersona: Persona | null;
   currentText: string;
   onVoiceGenerated: (audioUrl: string) => void;
+  originalText?: string;
+  personalizedText?: string;
+  isUsingPersonalized?: boolean;
+  onScriptChange?: (text: string, isPersonalized: boolean) => void;
 }
 
 export default function VoiceGeneration({ 
   selectedPersona, 
   currentText, 
-  onVoiceGenerated 
+  onVoiceGenerated,
+  originalText,
+  personalizedText,
+  isUsingPersonalized = false,
+  onScriptChange
 }: VoiceGenerationProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
@@ -97,6 +105,40 @@ export default function VoiceGeneration({
         {error && (
           <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
             <p className="text-red-500 text-sm">{error}</p>
+          </div>
+        )}
+
+        {/* Script Selection */}
+        {originalText && personalizedText && (
+          <div className="space-y-3 p-4 bg-muted/30 rounded-lg border border-muted/50">
+            <h3 className="font-medium text-center mb-3">Choose Script for Voice Generation:</h3>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={() => onScriptChange?.(originalText, false)}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                  !isUsingPersonalized 
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'bg-muted hover:bg-muted/80 text-foreground'
+                }`}
+              >
+                Use Original Script
+              </button>
+              <button
+                onClick={() => onScriptChange?.(personalizedText, true)}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                  isUsingPersonalized 
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'bg-muted hover:bg-muted/80 text-foreground'
+                }`}
+              >
+                Use AI Personalized Script
+              </button>
+            </div>
+            <div className="text-center">
+              <p className="text-xs text-foreground/60">
+                Currently using: <span className="font-medium">{isUsingPersonalized ? 'AI Personalized' : 'Original'} Script</span>
+              </p>
+            </div>
           </div>
         )}
 

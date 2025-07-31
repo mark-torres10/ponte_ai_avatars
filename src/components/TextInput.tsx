@@ -6,7 +6,7 @@ import { Persona } from '@/lib/personas';
 
 interface TextInputProps {
   selectedPersona: Persona | null;
-  onTextChange: (text: string) => void;
+  onTextChange: (text: string, isPersonalized?: boolean, original?: string, personalized?: string) => void;
 }
 
 export default function TextInput({ selectedPersona, onTextChange }: TextInputProps) {
@@ -18,13 +18,13 @@ export default function TextInput({ selectedPersona, onTextChange }: TextInputPr
 
   // Initialize with placeholder text
   useEffect(() => {
-    onTextChange(originalText);
+    onTextChange(originalText, false, originalText, '');
   }, []);
 
   const handleTextChange = (text: string) => {
     setOriginalText(text);
     setError(null);
-    onTextChange(text);
+    onTextChange(text, showPersonalized, text, personalizedText);
   };
 
   const handlePersonalize = async () => {
@@ -47,6 +47,8 @@ export default function TextInput({ selectedPersona, onTextChange }: TextInputPr
       if (response.success && response.data) {
         setPersonalizedText(response.data.personalizedText);
         setShowPersonalized(true);
+        // Update parent with personalized text
+        onTextChange(response.data.personalizedText, true, originalText, response.data.personalizedText);
       } else {
         setError(response.error as string || 'Failed to personalize text');
       }
@@ -59,9 +61,10 @@ export default function TextInput({ selectedPersona, onTextChange }: TextInputPr
   };
 
   const handleToggle = () => {
-    setShowPersonalized(!showPersonalized);
-    // Update the parent component with the current text
-    onTextChange(showPersonalized ? originalText : personalizedText);
+    const newShowPersonalized = !showPersonalized;
+    setShowPersonalized(newShowPersonalized);
+    // Update the parent component with the correct text
+    onTextChange(newShowPersonalized ? personalizedText : originalText, newShowPersonalized, originalText, personalizedText);
   };
 
   const currentText = showPersonalized ? personalizedText : originalText;
