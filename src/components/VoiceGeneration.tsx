@@ -41,6 +41,12 @@ export default function VoiceGeneration({
       return;
     }
 
+    // Validate character limit (ElevenLabs has a 5000 character limit)
+    if (currentText.length > 5000) {
+      setError(`Text is too long (${currentText.length} characters). Please keep it under 5000 characters for voice generation.`);
+      return;
+    }
+
     setIsGenerating(true);
     setError(null);
     setHasPlayedAudio(false);
@@ -56,7 +62,12 @@ export default function VoiceGeneration({
       }
     } catch (err) {
       console.error('Voice generation error:', err);
-      setError('Failed to connect to voice generation service. Please try again.');
+      // Improved error handling with proper error type checking
+      if (err instanceof Error) {
+        setError(`Voice generation failed: ${err.message}`);
+      } else {
+        setError('Failed to connect to voice generation service. Please try again.');
+      }
     } finally {
       setIsGenerating(false);
     }
@@ -91,7 +102,9 @@ export default function VoiceGeneration({
       // Create a temporary link element to trigger download
       const link = document.createElement('a');
       link.href = audioUrl;
-      link.download = `voice-${selectedPersona?.id}-${Date.now()}.mp3`;
+      // Provide fallback for persona ID to avoid 'undefined' in filename
+      const personaId = selectedPersona?.id || 'unknown';
+      link.download = `voice-${personaId}-${Date.now()}.mp3`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
