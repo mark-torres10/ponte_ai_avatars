@@ -118,6 +118,33 @@ The current request intake form (`src/app/request-talent/page.tsx`) is basic and
 - **Value Prop**: "Monthly content creation and optimization"
 - **Upsell**: $2000-5000/month retainer
 
+## Pricing Strategy Integration
+
+### Real-Time Proposal Generation
+- **AI-Powered Analysis**: Real-time processing of form inputs
+- **Industry-Specific Templates**: Dynamic script generation
+- **Pricing Presentation**: Tiered options after proposal generation
+- **Customization Options**: Add-on services and premium features
+
+### Pricing Tiers
+1. **Starter Package**: $997 (one-time) - Basic avatar with standard delivery
+2. **Professional Package**: $1,997 (one-time) - AI optimization, rush delivery option
+3. **Premium Package**: $3,997 (one-time) - Creative direction, brand customization
+4. **Campaign Manager**: $2,997/month - Ongoing management, multi-avatar campaigns
+5. **Enterprise Suite**: $9,997/year - Unlimited access, enterprise support
+
+### Premium Add-ons
+- **Rush Delivery**: +$500 (24-48 hours)
+- **Creative Direction**: +$1,000 (brand customization)
+- **Multi-Avatar Campaign**: +$2,000 (multiple avatars)
+- **A/B Testing Suite**: +$300 (performance optimization)
+
+### Pricing Psychology
+- **Anchoring**: Show premium first, then standard
+- **Risk Reversal**: 30-day money-back guarantee
+- **Urgency**: Limited-time offers and rush options
+- **Social Proof**: Customer testimonials and case studies
+
 ## Technical Architecture
 
 ### Frontend Components
