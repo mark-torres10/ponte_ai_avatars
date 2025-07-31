@@ -19,6 +19,7 @@ export default function VoiceGeneration({
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [hasPlayedAudio, setHasPlayedAudio] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const handleGenerateVoice = async () => {
@@ -34,6 +35,7 @@ export default function VoiceGeneration({
 
     setIsGenerating(true);
     setError(null);
+    setHasPlayedAudio(false);
 
     try {
       const response = await apiClient.generateVoice(currentText, selectedPersona.id);
@@ -66,6 +68,7 @@ export default function VoiceGeneration({
 
   const handleAudioEnded = () => {
     setIsPlaying(false);
+    setHasPlayedAudio(true);
   };
 
   const handleAudioError = () => {
@@ -161,6 +164,51 @@ export default function VoiceGeneration({
               <span className="text-sm font-medium">
                 Voice generated successfully
               </span>
+            </div>
+          </div>
+        )}
+
+        {/* Feedback Section - Only show after audio has been played */}
+        {hasAudio && hasPlayedAudio && (
+          <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-muted/50">
+            <h3 className="font-medium text-center mb-3">How was the voice?</h3>
+            
+            {/* Tone Adjustment */}
+            <div className="space-y-2">
+              <p className="text-sm text-foreground/70 text-center">Adjust the tone:</p>
+              <div className="flex flex-wrap justify-center gap-2">
+                <button className="px-3 py-2 text-xs bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-md transition-colors">
+                  More Professional
+                </button>
+                <button className="px-3 py-2 text-xs bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-md transition-colors">
+                  More Casual
+                </button>
+                <button className="px-3 py-2 text-xs bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-md transition-colors">
+                  More Friendly
+                </button>
+                <button className="px-3 py-2 text-xs bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-md transition-colors">
+                  More Formal
+                </button>
+              </div>
+            </div>
+
+            {/* Excitement Level */}
+            <div className="space-y-2">
+              <p className="text-sm text-foreground/70 text-center">Adjust excitement:</p>
+              <div className="flex flex-wrap justify-center gap-2">
+                <button className="px-3 py-2 text-xs bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 rounded-md transition-colors">
+                  More Excited
+                </button>
+                <button className="px-3 py-2 text-xs bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 rounded-md transition-colors">
+                  Less Excited
+                </button>
+                <button className="px-3 py-2 text-xs bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 rounded-md transition-colors">
+                  More Calm
+                </button>
+                <button className="px-3 py-2 text-xs bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 rounded-md transition-colors">
+                  More Energetic
+                </button>
+              </div>
             </div>
           </div>
         )}
