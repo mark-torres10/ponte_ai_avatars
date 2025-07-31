@@ -52,7 +52,7 @@
 ### UI/UX Requirements
 - **Responsive**: Works on all devices
 - **Progress Tracking**: Clear step indicators
-- **Form Persistence**: localStorage for abandoned form recovery
+- **Form Persistence**: Secure session-based recovery with privacy compliance
 - **Premium Teasers**: Strategic placement of upsell opportunities
 - **Accessibility**: WCAG 2.1 AA compliance
 
@@ -67,6 +67,22 @@
 - **Clients Table**: User/client information
 - **Avatars Table**: Available avatars and metadata
 - **Premium Features**: Structured data for upsell tracking
+
+### Privacy and Compliance Requirements
+- **Data Minimization**: Only collect necessary PII for form completion
+- **User Consent**: Explicit consent for data collection and processing
+- **Data Retention**: 
+  - PII: Maximum 24 hours for abandoned forms, immediate deletion upon completion
+  - Non-PII: 30 days maximum retention
+  - Session data: 24-hour expiration
+- **Right to Deletion**: Immediate data deletion upon user request
+- **Data Portability**: Export user data in standard format
+- **Security Measures**: 
+  - Encrypted data transmission (HTTPS)
+  - Secure session management
+  - No PII stored in client-side storage
+- **Compliance Frameworks**: GDPR, CCPA, and similar privacy regulations
+- **Audit Trail**: Log data access and modifications for compliance
 
 ## Implementation Details
 
@@ -85,9 +101,16 @@
 - **Step 8**: Rush delivery and ongoing management (final upsells)
 
 ### Form Persistence
-- **localStorage**: Save progress across browser sessions
-- **Recovery**: Resume from last completed step
-- **Data Security**: Sensitive data handling considerations
+- **Secure Storage Strategy**: Avoid storing PII in localStorage
+- **Non-Sensitive Data**: Store only form progress, step completion, and non-PII preferences
+- **Session Storage**: Use sessionStorage for temporary form state during active session
+- **Server-Side Persistence**: Store sensitive data (contact info, business details) server-side with secure session tokens
+- **Data Retention Policy**: 
+  - Non-PII data: 30 days maximum retention
+  - PII data: Immediate deletion upon form completion or 24 hours after abandonment
+  - Session tokens: 24-hour expiration with automatic cleanup
+- **Privacy Compliance**: GDPR/CCPA compliant with explicit user consent and data minimization
+- **Recovery**: Resume from last completed step using secure session-based approach
 
 ### Success Metrics
 - **Completion Rate**: 70% target for full flow
