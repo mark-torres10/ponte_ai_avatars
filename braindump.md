@@ -1,145 +1,112 @@
-# Avatar Generation Demo - Brain Dump
+# Enhanced Request Form UI + Demo Avatar Selection - Brain Dump
 
 ## Project Context
-- **Existing Frontend**: Next.js production MVP already exists with `/generate-avatar` stub page
-- **Goal**: Replace stub with functional avatar generation demo
+- **Existing Frontend**: Next.js production MVP with basic request intake form (`src/app/request-talent/page.tsx`)
+- **Goal**: Enhance request form with multi-step wizard, avatar selection, and premium upsell features
 - **Team**: PonteAI Linear team
 - **Tech Stack**: Next.js, TypeScript, Tailwind CSS, ShadCN UI
 
 ## Core Functionality Requirements
 
-### 1. Persona Selection
-- **Voice Actor A**: Terry Crews (actor and ex-athlete)
-- **Voice Actor B**: Will Howard (NFL quarterback/athlete)
-- **UI**: Clickable persona cards with updated descriptions
-- **Images**: Use existing images in `app/public/voice_actor_a/` and `app/public/voice_actor_b/`
-- **Future**: Design for easy Supabase integration (Persona objects)
+### 1. Multi-Step Wizard Flow
+- **Step 1**: Template Categories & Campaign Type (with multi-avatar premium teaser)
+- **Step 2**: Avatar Selection (Terry Crews, Will Howard)
+- **Step 3**: Basic Project Details (use case, tone, script)
+- **Step 4**: Contact Information
+- **Step 5**: AI-Powered Proposal Generation
+- **Step 6**: Campaign Optimization (Optional - with A/B testing teaser)
+- **Step 7**: Creative Direction (Premium - teased)
+- **Step 8**: Review & Confirmation (with rush delivery and ongoing management upsells)
 
-### 2. Text Input & Personalization
-- **Flow**: 
-  1. User selects persona
-  2. Freeform text box appears
-  3. Optional personalization button (bottom right)
-  4. AI rewrites text in persona's voice/style using OpenAI
-  5. Easy toggle between original and AI versions
-- **UI**: Clear indication that personalization is optional
-- **Functionality**: Undo/switch between versions easily
+### 2. Premium Features Integration
+- **Multi-Avatar Campaigns**: Teased in Step 1 as "Coming Soon"
+- **Premium Creative Direction**: Step 7 with brand customization upsell
+- **A/B Testing Suite**: Step 6 with beta signup teaser
+- **Rush Delivery**: Step 8 with 24-48 hour turnaround option
+- **Ongoing Campaign Management**: Step 8 with monthly retainer options
 
-### 3. Voice Generation (ElevenLabs)
-- **API**: ElevenLabs for voice generation
-- **Custom Voices**: Already have voice IDs for both personas
-- **Success Criteria**: 
-  - Select profile
-  - Write text
-  - Personalize text (optional)
-  - Generate audio
-  - Play audio sample
-- **UI**: Clickable audio player
+### 3. Avatar Selection
+- **Available Avatars**: Terry Crews, Will Howard
+- **Preview**: Voice sample placeholder
+- **Industry Recommendations**: Context-aware suggestions
+- **UI**: Gallery-style selection with preview
 
-### 4. Video Generation (D-ID)
-- **API**: D-ID for avatar video generation
-- **Flow**: 
-  1. "Generate AI Avatar" button
-  2. Loading component (ShadCN pre-made)
-  3. Video generation (takes time)
-  4. Display generated video
-- **Integration**: Use existing implementation patterns from reference repos
+### 4. AI-Powered Proposal Generation
+- **Button**: "Get Your Custom AI-Powered Quote"
+- **Output**: Campaign overview, multiple script variations
+- **Editing**: Add/remove/modify scripts
+- **Premium**: Advanced AI recommendations (teased)
 
-### 5. Final Page Layout (Top to Bottom)
-1. Avatar selection
-2. Text box
-3. Voice sample with play button
-4. Generated video
-5. Feedback form at bottom
+### 5. Script Templates & Examples
+- **Categories**: Product Demos, Training Videos, Marketing Campaigns, Social Media, Educational Content
+- **Industry Templates**: Finance, Education, Sports, Gaming, Healthcare, E-commerce, B2B
+- **Examples**: Pre-built scripts for each category with customization options
 
 ## Technical Considerations
 
 ### APIs to Integrate
-- **OpenAI**: For text personalization
-- **ElevenLabs**: For voice generation (custom voice IDs provided later)
-- **D-ID**: For video generation
+- **OpenAI**: For AI proposal generation and script customization
+- **Existing Backend**: Integration with current API endpoints
+- **Future**: Supabase integration for database storage
 
 ### UI/UX Requirements
 - **Responsive**: Works on all devices
-- **Loading States**: Proper loading indicators
-- **Error Handling**: Graceful error states
-- **Accessibility**: Screen reader friendly
-- **Brand Consistency**: Matches existing Ponte AI styling
+- **Progress Tracking**: Clear step indicators
+- **Form Persistence**: localStorage for abandoned form recovery
+- **Premium Teasers**: Strategic placement of upsell opportunities
+- **Accessibility**: WCAG 2.1 AA compliance
 
 ### Code Organization
-- **Components**: Modular, reusable components
-- **State Management**: Handle complex state (persona, text versions, audio, video)
-- **API Integration**: Clean separation of concerns
-- **Error Boundaries**: Proper error handling
+- **Components**: Modular wizard steps, premium feature modals
+- **State Management**: Complex form state across multiple steps
+- **Premium Features**: Clear separation of premium vs. standard features
+- **Upsell Tracking**: Analytics for premium feature engagement
 
-### Future Considerations
-- **Supabase Integration**: Design for easy database integration
-- **Scalability**: Easy to add more personas
-- **Performance**: Optimize for video generation delays
-- **Caching**: Cache generated content appropriately
+### Database Schema (Supabase-Ready)
+- **Requests Table**: Core request data with premium features JSONB
+- **Clients Table**: User/client information
+- **Avatars Table**: Available avatars and metadata
+- **Premium Features**: Structured data for upsell tracking
 
-## Implementation Details (Clarified)
+## Implementation Details
 
-### Persona Selection
-- **Images**: Show all images from each persona folder in carousel/gallery
-- **Descriptions**: 
-  - Voice Actor A: "Actor & Ex-Athlete Terry Crews"
-  - Voice Actor B: "NFL Quarterback Will Howard"
-- **Selection**: One-time choice with manual reset button to prevent losing progress
-- **Reset**: Clear reset button to start over
+### Premium Features Strategy
+- **Progressive Disclosure**: Start simple, reveal premium options gradually
+- **Value Demonstration**: Show ROI and benefits clearly
+- **Social Proof**: "Other companies see 40% better results"
+- **Risk Reversal**: "Try premium features risk-free for 30 days"
 
-### Text Personalization
-- **Button**: Manual "Personalize with AI" button
-- **Loading**: Simple loading state for OpenAI call
-- **Toggle**: Simple button to switch between original and AI versions
-- **Timing**: User can tweak text as much as needed before voice generation
+### Upsell Placement
+- **Step 1**: Multi-avatar campaigns (coming soon)
+- **Step 3**: Advanced script customization (teased)
+- **Step 5**: Advanced AI recommendations (teased)
+- **Step 6**: A/B testing suite (coming soon)
+- **Step 7**: Premium creative direction (full upsell)
+- **Step 8**: Rush delivery and ongoing management (final upsells)
 
-### Voice Generation
-- **Trigger**: Separate "Generate Voice" button (manual)
-- **Loading**: Clear loading state/popup showing voice creation in progress
-- **Player**: Simple audio player with play button
-- **Error**: Popup showing "Voice generation failed at ElevenLabs"
+### Form Persistence
+- **localStorage**: Save progress across browser sessions
+- **Recovery**: Resume from last completed step
+- **Data Security**: Sensitive data handling considerations
 
-### Video Generation
-- **Trigger**: "Generate AI Avatar" button appears after voice generation
-- **Loading**: Loading state during video generation
-- **Error**: Popup showing "Video generation failed at D-ID"
+### Success Metrics
+- **Completion Rate**: 70% target for full flow
+- **Premium Adoption**: 25% target for premium features
+- **Revenue Impact**: 40% increase in average order value
+- **User Satisfaction**: 4.5/5 rating target
 
-### Downloads
-- **Separate Downloads**: Text, Audio, and Video can be downloaded individually
-- **Format**: Appropriate formats for each asset type
+## Future Considerations
+- **Supabase Integration**: Full database implementation
+- **Advanced Analytics**: Premium feature performance tracking
+- **A/B Testing**: Platform for testing different upsell strategies
+- **Multi-Avatar Support**: Full implementation of teased features
+- **Internationalization**: Multi-language support (currently English only)
 
-### Technical Architecture
-- **Frontend**: Next.js frontend making API calls
-- **Backend**: Separate backend API managing all integrations
-- **Implementation Order**: 
-  1. OpenAI personalization first
-  2. ElevenLabs voice generation second
-  3. D-ID video generation third
-- **Error Handling**: Simple popups indicating which service failed
-- **No Analytics**: Demo only, no tracking
-- **No Caching**: Simple implementation for now
-
-### Feedback Form
-- **Timing**: Only appears after video creation
-- **Fields**: Rating, comments, use case, overall experience
-- **Purpose**: Collect demo feedback for improvement
-
-## Questions to Resolve
-1. **Voice IDs**: Need ElevenLabs voice IDs for both personas
-2. **API Keys**: Need API keys for OpenAI, ElevenLabs, D-ID
-3. **Backend Setup**: Need to determine backend framework (Express, FastAPI, etc.)
-4. **API Endpoints**: Define REST API structure for frontend-backend communication
-
-## Success Metrics
-- User can complete full flow: persona → text → voice → video
-- Smooth transitions between states
-- Professional appearance for demos
-- Fast enough for real-time interaction
-- Error-free operation
-
-## Reference Materials
-- Existing voice implementation: https://github.com/mark-torres10/ai_voice_visual_avatar_agent/blob/main/planning/SCRIPT_VOICE_IMPLEMENTATION_SUMMARY.md
-- Existing video implementation: https://github.com/mark-torres10/ai_voice_visual_avatar_agent/blob/main/planning/VIDEO_IMPLEMENTATION_SUMMARY.md
-- D-ID API docs: https://docs.d-id.com/reference/get-started
-- Existing Next.js MVP structure and styling
+## Code Notes for Premium Features
+```typescript
+// TODO: Premium feature - multi-avatar campaigns
+// TODO: Premium feature - brand customization upsell
+// TODO: Rush delivery upsell - 24-48 hour service
+// TODO: Premium feature - A/B testing suite
+// TODO: Premium feature - ongoing campaign management
+```
