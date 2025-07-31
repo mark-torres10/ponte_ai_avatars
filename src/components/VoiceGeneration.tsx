@@ -84,6 +84,23 @@ export default function VoiceGeneration({
     setIsPlaying(false);
   };
 
+  const handleDownloadAudio = () => {
+    if (!audioUrl) return;
+    
+    try {
+      // Create a temporary link element to trigger download
+      const link = document.createElement('a');
+      link.href = audioUrl;
+      link.download = `voice-${selectedPersona?.id}-${Date.now()}.mp3`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Download failed:', error);
+      setError('Failed to download audio. Please try again.');
+    }
+  };
+
   const hasText = currentText.trim().length > 0;
   const hasAudio = audioUrl !== null;
 
@@ -161,29 +178,47 @@ export default function VoiceGeneration({
 
           {/* Audio Player */}
           {hasAudio && (
-            <button
-              onClick={handlePlayPause}
-              disabled={isGenerating}
-              className="btn-secondary-ponte px-6 py-3 rounded-lg font-medium transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <div className="flex items-center gap-2">
-                {isPlaying ? (
-                  <>
-                    <div className="w-4 h-4 flex items-center justify-center">
-                      <div className="w-2 h-2 bg-current rounded-sm"></div>
-                    </div>
-                    Pause Audio
-                  </>
-                ) : (
-                  <>
-                    <div className="w-4 h-4 flex items-center justify-center">
-                      <div className="w-0 h-0 border-l-4 border-l-current border-t-2 border-t-transparent border-b-2 border-b-transparent ml-0.5"></div>
-                    </div>
-                    Play Audio
-                  </>
-                )}
-              </div>
-            </button>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={handlePlayPause}
+                disabled={isGenerating}
+                className="btn-secondary-ponte px-6 py-3 rounded-lg font-medium transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <div className="flex items-center gap-2">
+                  {isPlaying ? (
+                    <>
+                      <div className="w-4 h-4 flex items-center justify-center">
+                        <div className="w-2 h-2 bg-current rounded-sm"></div>
+                      </div>
+                      Pause Audio
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-4 h-4 flex items-center justify-center">
+                        <div className="w-0 h-0 border-l-4 border-l-current border-t-2 border-t-transparent border-b-2 border-b-transparent ml-0.5"></div>
+                      </div>
+                      Play Audio
+                    </>
+                  )}
+                </div>
+              </button>
+
+              {/* Download Button */}
+              <button
+                onClick={handleDownloadAudio}
+                disabled={isGenerating}
+                className="btn-secondary-ponte px-6 py-3 rounded-lg font-medium transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 flex items-center justify-center">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  Download Audio
+                </div>
+              </button>
+            </div>
           )}
         </div>
 
