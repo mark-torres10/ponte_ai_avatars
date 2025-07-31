@@ -46,6 +46,9 @@ export interface TextGenerationResponse {
   generationTime: number;
 }
 
+// Re-export voice types from the dedicated voice types file
+export { GenerateVoiceRequest, GenerateVoiceResponse } from './voice';
+
 export interface VoiceGenerationRequest {
   text: string;
   voiceId: string;

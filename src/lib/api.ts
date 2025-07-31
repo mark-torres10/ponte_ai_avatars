@@ -1,4 +1,6 @@
 // API Configuration for Railway Backend
+import { GenerateVoiceResponse } from './types';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ponteaiavatars-production.up.railway.app';
 
 export interface ApiResponse<T = unknown> {
@@ -87,13 +89,8 @@ class ApiClient {
   }
 
   // Voice generation endpoints
-  async generateVoice(text: string, personaId: string): Promise<ApiResponse<{
-    audioUrl: string;
-    audioData?: string;
-    personaId: string;
-    text: string;
-  }>> {
-    return this.request('/api/voice/generate', {
+  async generateVoice(text: string, personaId: string): Promise<ApiResponse<GenerateVoiceResponse['data']>> {
+    return this.request<GenerateVoiceResponse['data']>('/api/voice/generate', {
       method: 'POST',
       body: JSON.stringify({ text, personaId }),
     });

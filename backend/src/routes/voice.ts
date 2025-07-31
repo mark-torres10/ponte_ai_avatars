@@ -1,25 +1,9 @@
 import { Router, Request, Response } from 'express';
 import { config } from '../utils/config';
 import { logger } from '../utils/logger';
+import { GenerateVoiceRequest, GenerateVoiceResponse } from '../types/voice';
 
 const router = Router();
-
-interface GenerateVoiceRequest {
-  text: string;
-  personaId: string;
-}
-
-interface GenerateVoiceResponse {
-  success: boolean;
-  data?: {
-    audioUrl: string;
-    audioData?: string; // Base64 encoded audio for immediate playback
-    personaId: string;
-    text: string;
-  };
-  error?: string;
-  timestamp: string;
-}
 
 // ElevenLabs voice IDs for each persona
 // TODO: These will eventually be fetched from Supabase database instead of environment variables
