@@ -31,59 +31,78 @@ The current request intake form (`src/app/request-talent/page.tsx`) is basic and
 
 ## UX Considerations
 
-### Multi-Step Wizard Flow
+### Emotionally-Driven Multi-Step Wizard Flow
 
-#### Step 1: Template Categories & Campaign Type
-- **Industry Selection**: Finance, Education, Sports, Gaming, Healthcare, E-commerce, B2B
-- **Campaign Type**: Single avatar vs. Multi-avatar campaign
-  - **Premium Feature**: Multi-avatar campaigns (teased with "Coming Soon" badge)
-  - **Upsell Message**: "Want to create campaigns with multiple avatars? Our premium multi-avatar campaigns are coming soon!"
+#### Step 1: "What's Your Vision?" 🌟
+**Emotional Goal**: Create aspiration and desire
+- **Visual Elements**: Video background showing successful campaigns, floating success metrics
+- **Copy Strategy**: "Transform Your Brand with Celebrity AI Avatars"
+- **Examples**: "See how FanDuel increased signups by 400% with Will Howard"
+- **Interactive Elements**: Hover effects showing campaign results, "Try it now" buttons
+- **Premium Feature**: Multi-avatar campaigns (teased with "Coming Soon" badge)
+- **Upsell Message**: "Want to dominate multiple audience segments? Our premium multi-avatar campaigns are coming soon!"
 
-#### Step 2: Avatar Selection
-- Browse existing demo avatars (Terry Crews, Will Howard)
-- Avatar preview with voice sample placeholder
-- Industry-specific avatar recommendations
+#### Step 2: "Meet Your Perfect Match" 💫
+**Emotional Goal**: Create personal connection and attachment
+- **Visual Elements**: Video previews of avatars speaking, "Hear Terry Crews say your brand name" demo
+- **Copy Strategy**: "Choose Your Brand's Perfect Voice"
+- **Terry Crews**: "The voice of authority and trust. When Terry speaks, people listen."
+- **Will Howard**: "The authentic sports connection. Will Howard connects with fans like no one else."
+- **Interactive Elements**: Voice preview, personality quiz, video examples in action
 
-#### Step 3: Basic Project Details
-- Use case selection with script templates
-- Tone presets (casual, friendly, confident, professional, energetic)
-- Script input with AI-powered suggestions
+#### Step 3: "Your Story, Their Voice" 📖
+**Emotional Goal**: Make it personal and meaningful
+- **Visual Elements**: Story-focused form design, brand story timeline
+- **Copy Strategy**: "What Story Do You Want to Tell?"
+- **Form Fields** (Emotionally Framed):
+  - "Your Brand's Mission" (instead of "Company Name")
+  - "The Story You Want to Tell" (instead of "Script")
+  - "How You Want to Make People Feel" (instead of "Tone")
+  - "The Action You Want Them to Take" (instead of "Call to Action")
 - **Premium Feature**: Advanced script customization (teased)
 
-#### Step 4: Contact Information
-- Name, email, company
-- Project timeline preferences
-
-#### Step 5: AI-Powered Proposal Generation
-- **"Get Your Custom AI-Powered Quote"** button
-- AI-generated campaign overview
-- Multiple script variations
-- Edit/add/remove capabilities
+#### Step 4: "See Your Future" 🔮
+**Emotional Goal**: Create excitement and anticipation
+- **Visual Elements**: AI-generated mockup of their specific campaign
+- **Copy Strategy**: "Here's Your Campaign in Action"
+- **Interactive Elements**: Real-time campaign preview, "See it on different platforms" toggle
 - **Premium Feature**: Advanced AI recommendations (teased)
 
-#### Step 6: Campaign Optimization (Optional)
-- Campaign type, target audience, timing, scope
-- Channel selection (in-app, social, email, etc.)
-- Personalization level
-- Call-to-action options
+#### Step 5: "Your Success Story" 📈
+**Emotional Goal**: Demonstrate value and create urgency
+- **Visual Elements**: ROI calculator, success case studies, projected results dashboard
+- **Copy Strategy**: "Here's What Success Looks Like for You"
+- **Interactive Elements**: Dynamic ROI calculator, industry-specific success stories
 - **Premium Feature**: A/B Testing Suite
-  - **Upsell Message**: "Coming soon: A/B test different avatars and scripts to optimize performance. Join our beta program for early access!"
+  - **Upsell Message**: "Want even bigger results? A/B test different avatars and scripts to optimize performance."
 
-#### Step 7: Creative Direction (Premium - Teased)
+#### Step 6: "Amplify Your Impact" 🚀
+**Emotional Goal**: Create desire for premium features
+- **Visual Elements**: "Want even bigger results?" section, premium feature previews
+- **Copy Strategy**: "Want Even Bigger Results?"
+- **Premium Features** (Framed as Success Amplifiers):
+  - "Multi-Avatar Campaigns: Dominate multiple audience segments"
+  - "A/B Testing Suite: Optimize for maximum impact"
+  - "Creative Direction: Perfect brand alignment"
+  - "Rush Delivery: Launch before your competitors"
+
+#### Step 7: "Make It Perfect" ✨
+**Emotional Goal**: Create desire for premium customization
+- **Visual Elements**: Brand customization previews, "Perfect for your brand" mockups
+- **Copy Strategy**: "Let's Make It Perfect for Your Brand"
 - **Premium Feature**: Brand voice customization
 - **Upsell Message**: "Want your avatar to perfectly match your brand? Our premium creative direction service includes brand voice customization, visual style matching, and competitive differentiation."
-- Visual style preferences
-- Competitive differentiation
-- Tone consistency requirements
 - **Code Note**: `// TODO: Premium feature - brand customization upsell`
 
-#### Step 8: Review & Confirmation
-- Final campaign overview
+#### Step 8: "Ready to Launch?" 🎯
+**Emotional Goal**: Create urgency and excitement for final commitment
+- **Visual Elements**: "Your campaign is ready" summary, launch countdown timer
+- **Copy Strategy**: "Your Campaign is Ready to Launch"
 - **Premium Feature**: Rush Delivery
-  - **Upsell Message**: "Need it faster? Our rush delivery service provides 24-48 hour turnaround for urgent projects."
+  - **Upsell Message**: "Don't let your competitors get there first! Our rush delivery service provides 24-48 hour turnaround for urgent projects."
   - **Code Note**: `// TODO: Rush delivery upsell - 24-48 hour service`
 - **Premium Feature**: Ongoing Campaign Management
-  - **Upsell Message**: "Love your avatar? Our ongoing campaign management includes monthly content creation, performance tracking, and optimization. Starting at $2,000/month."
+  - **Upsell Message**: "Ready to dominate your market? Our ongoing campaign management includes monthly content creation, performance tracking, and optimization. Starting at $2,000/month."
 - Submission with upsell tracking
 
 ### Premium Features Integration Strategy
@@ -127,11 +146,11 @@ The current request intake form (`src/app/request-talent/page.tsx`) is basic and
 - **Customization Options**: Add-on services and premium features
 
 ### Pricing Tiers
-1. **Starter Package**: $997 (one-time) - Basic avatar with standard delivery
-2. **Professional Package**: $1,997 (one-time) - AI optimization, rush delivery option
-3. **Premium Package**: $3,997 (one-time) - Creative direction, brand customization
-4. **Campaign Manager**: $2,997/month - Ongoing management, multi-avatar campaigns
-5. **Enterprise Suite**: $9,997/year - Unlimited access, enterprise support
+1. **Starter Success**: $997 (one-time) - Basic avatar with standard delivery
+2. **Professional Power**: $1,997 (one-time) - AI optimization, rush delivery option
+3. **Premium Domination**: $3,997 (one-time) - Creative direction, brand customization
+4. **Campaign Commander**: $2,997/month - Ongoing management, multi-avatar campaigns
+5. **Enterprise Empire**: $9,997/year - Unlimited access, enterprise support
 
 ### Premium Add-ons
 - **Rush Delivery**: +$500 (24-48 hours)
