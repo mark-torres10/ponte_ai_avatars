@@ -266,7 +266,9 @@ interface ProposalGeneration {
 - **Monthly Fixed Costs**: $15,000
 - **Variable Costs**: 30% of revenue
 - **Break-Even Point**: $21,429/month
-- **Profit Margin**: 70%
+- **Gross Profit Margin**: 70% (before fixed costs)
+- **Net Profit Margin**: 40% (after fixed costs at break-even)
+- **Net Profit Margin at Target Revenue ($50K)**: 55%
 
 ## Success Metrics & KPIs
 
