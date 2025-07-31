@@ -1,5 +1,5 @@
 // API Configuration for Railway Backend
-import { GenerateVoiceResponse } from './types';
+import { GenerateVoiceResponse, GenerateVideoResponse, VideoStatusResponse } from './types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ponteaiavatars-production.up.railway.app';
 
@@ -95,6 +95,22 @@ class ApiClient {
       body: JSON.stringify({ text, personaId }),
     });
   }
+
+  // Video generation endpoints
+  async generateVideo(
+    audioUrl: string, 
+    personaId: string, 
+    imageIndex: number = 0,
+    videoFormat: 'mp4' | 'webm' = 'mp4',
+    quality: 'low' | 'medium' | 'high' = 'medium'
+  ): Promise<ApiResponse<GenerateVideoResponse['data']>> {
+    return this.request<GenerateVideoResponse['data']>('/api/video/generate', {
+      method: 'POST',
+      body: JSON.stringify({ audioUrl, personaId, imageIndex, videoFormat, quality }),
+    });
+  }
+
+
 }
 
 // Create and export the API client instance

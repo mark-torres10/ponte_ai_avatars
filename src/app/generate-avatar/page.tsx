@@ -6,6 +6,7 @@ import Link from "next/link"
 import PersonaSelection from "@/components/PersonaSelection"
 import TextInput from "@/components/TextInput"
 import VoiceGeneration from "@/components/VoiceGeneration"
+import VideoGeneration from "@/components/VideoGeneration"
 import CollapsibleBackendStatus from "@/components/CollapsibleBackendStatus"
 import { Persona } from "@/lib/personas"
 
@@ -13,6 +14,7 @@ export default function GenerateAvatarPage() {
   const [selectedPersona, setSelectedPersona] = useState<Persona | null>(null);
   const [currentText, setCurrentText] = useState('');
   const [currentAudioUrl, setCurrentAudioUrl] = useState<string | null>(null);
+  const [currentVideoUrl, setCurrentVideoUrl] = useState<string | null>(null);
   const [originalText, setOriginalText] = useState('');
   const [personalizedText, setPersonalizedText] = useState('');
   const [isUsingPersonalized, setIsUsingPersonalized] = useState(false);
@@ -33,6 +35,11 @@ export default function GenerateAvatarPage() {
   const handleVoiceGenerated = (audioUrl: string) => {
     setCurrentAudioUrl(audioUrl);
     console.log('Voice generated:', audioUrl);
+  };
+
+  const handleVideoGenerated = (videoUrl: string) => {
+    setCurrentVideoUrl(videoUrl);
+    console.log('Video generated:', videoUrl);
   };
 
   const handleScriptChange = (text: string, isPersonalized: boolean) => {
@@ -87,6 +94,17 @@ export default function GenerateAvatarPage() {
                   personalizedText={personalizedText}
                   isUsingPersonalized={isUsingPersonalized}
                   onScriptChange={handleScriptChange}
+                />
+              </div>
+            )}
+
+            {/* Video Generation */}
+            {selectedPersona && currentAudioUrl && (
+              <div className="card-ponte p-8 rounded-lg mb-8">
+                <VideoGeneration 
+                  selectedPersona={selectedPersona} 
+                  currentAudioUrl={currentAudioUrl}
+                  onVideoGenerated={handleVideoGenerated}
                 />
               </div>
             )}

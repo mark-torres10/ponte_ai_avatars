@@ -58,6 +58,12 @@ export {
   DIDCreateVideoResponse 
 } from './video';
 
+// Re-export Supabase types from the dedicated Supabase service file
+export { 
+  FileUploadResult, 
+  SessionMetadata 
+} from '../services/supabaseService';
+
 export interface VoiceGenerationRequest {
   text: string;
   voiceId: string;

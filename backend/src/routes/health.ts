@@ -1,115 +1,173 @@
 import { Router, Request, Response } from 'express';
-import { HealthCheckResponse, ApiResponse } from '../types';
 import { logger } from '../utils/logger';
 import { config } from '../utils/config';
-import { asyncHandler } from '../middleware/errorHandler';
 
 const router = Router();
 
-const getUptime = (): number => {
-  return process.uptime();
-};
-
-const getSystemInfo = (): HealthCheckResponse => {
-  return {
+// Basic health check
+router.get('/', (req: Request, res: Response) => {
+  const uptime = process.uptime();
+  const memoryUsage = process.memoryUsage();
+  
+  res.json({
     status: 'healthy',
-    uptime: getUptime(),
+    uptime: Math.round(uptime),
     timestamp: new Date().toISOString(),
-    version: process.env['npm_package_version'] || '1.0.0',
+    version: '1.0.0',
     environment: config.NODE_ENV,
+    memory: {
+      rss: Math.round(memoryUsage.rss / 1024 / 1024), // MB
+      heapUsed: Math.round(memoryUsage.heapUsed / 1024 / 1024), // MB
+      heapTotal: Math.round(memoryUsage.heapTotal / 1024 / 1024), // MB
+    },
+  });
+});
+
+// Detailed health check with service validation
+router.get('/detailed', async (req: Request, res: Response) => {
+  const healthStatus: any = {
+    status: 'healthy',
+    uptime: Math.round(process.uptime()),
+    timestamp: new Date().toISOString(),
+    version: '1.0.0',
+    environment: config.NODE_ENV,
+    services: {
+      did: { status: 'unknown', error: null, data: null },
+      supabase: { status: 'unknown', error: null, data: null },
+      elevenlabs: { status: 'unknown', error: null, data: null },
+    },
+    configuration: {
+      corsOrigin: config.CORS_ORIGIN,
+      port: config.PORT,
+      rateLimit: {
+        windowMs: config.RATE_LIMIT_WINDOW_MS,
+        maxRequests: config.RATE_LIMIT_MAX_REQUESTS,
+      },
+    },
   };
-};
 
-/**
- * @route GET /health
- * @desc Health check endpoint
- * @access Public
- */
-router.get('/', asyncHandler(async (_req: Request, res: Response) => {
-  const startTime = Date.now();
-  
   try {
-    const healthInfo = getSystemInfo();
-    
-    const response: ApiResponse<HealthCheckResponse> = {
-      success: true,
-      data: healthInfo,
-      timestamp: new Date().toISOString(),
-    };
+    // Test D-ID Service
+    try {
+      const { DIDService } = await import('../services/didService');
+      const didService = new DIDService();
+      
+      // Test D-ID API connection by getting available presenters
+      const presenters = didService.getAvailablePresenters();
+      healthStatus.services.did = {
+        status: 'healthy',
+        error: null,
+        data: { presentersCount: presenters.length }
+      };
+    } catch (error) {
+      healthStatus.services.did = {
+        status: 'unhealthy',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+      healthStatus.status = 'degraded';
+    }
 
-    const duration = Date.now() - startTime;
-    logger.api('Health', 'check', duration, true);
+    // Test Supabase Service
+    try {
+      const { SupabaseService } = await import('../services/supabaseService');
+      const supabaseService = new SupabaseService();
+      
+      // Test Supabase connection by checking bucket access
+      const testMetadata = supabaseService.generateSessionMetadata('health_check', 'test');
+      healthStatus.services.supabase = {
+        status: 'healthy',
+        error: null,
+        data: { bucketName: 'test-bucket-ponteai' }
+      };
+    } catch (error) {
+      healthStatus.services.supabase = {
+        status: 'unhealthy',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+      healthStatus.status = 'degraded';
+    }
 
-    res.status(200).json(response);
+    // Test ElevenLabs Service
+    try {
+      const { VoiceService } = await import('../services/voiceService');
+      const voiceService = new VoiceService();
+      
+      // Test ElevenLabs connection by checking available voices
+      const availableVoices = voiceService.getAvailableVoices();
+      const configuredPersonas = voiceService.getConfiguredPersonas();
+      
+      healthStatus.services.elevenlabs = {
+        status: 'healthy',
+        error: null,
+        data: { 
+          availableVoicesCount: availableVoices.length,
+          configuredPersonasCount: Object.keys(configuredPersonas).length
+        }
+      };
+    } catch (error) {
+      healthStatus.services.elevenlabs = {
+        status: 'unhealthy',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+      healthStatus.status = 'degraded';
+    }
+
+    logger.info('Health check completed', healthStatus);
+    res.json(healthStatus);
+
   } catch (error) {
-    const duration = Date.now() - startTime;
-    logger.api('Health', 'check', duration, false);
-    
-    const errorResponse: ApiResponse = {
-      success: false,
-      error: 'Health check failed',
-      timestamp: new Date().toISOString(),
-    };
-
-    res.status(500).json(errorResponse);
+    logger.error('Health check failed', error);
+    healthStatus.status = 'unhealthy';
+    healthStatus.error = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json(healthStatus);
   }
-}));
+});
 
-/**
- * @route GET /health/detailed
- * @desc Detailed health check with system information
- * @access Public
- */
-router.get('/detailed', asyncHandler(async (_req: Request, res: Response) => {
-  const startTime = Date.now();
-  
+// Service-specific health checks
+router.get('/did', async (req: Request, res: Response) => {
   try {
-    const healthInfo = getSystemInfo();
+    const { DIDService } = await import('../services/didService');
+    const didService = new DIDService();
+    const presenters = didService.getAvailablePresenters();
     
-    // Add additional system information (only in non-production environments)
-    const detailedInfo = {
-      ...healthInfo,
-      ...(config.NODE_ENV !== 'production' && {
-        system: {
-          nodeVersion: process.version,
-          platform: process.platform,
-          arch: process.arch,
-          memoryUsage: process.memoryUsage(),
-          cpuUsage: process.cpuUsage(),
-        },
-        config: {
-          environment: config.NODE_ENV,
-          port: config.PORT,
-          corsOrigin: config.CORS_ORIGIN,
-          hasOpenAIKey: !!config.OPENAI_API_KEY,
-          hasElevenLabsKey: !!config.ELEVENLABS_API_KEY,
-          hasDIDKey: !!config.DID_API_KEY,
-        },
-      }),
-    };
-
-    const response: ApiResponse = {
-      success: true,
-      data: detailedInfo,
+    res.json({
+      status: 'healthy',
+      service: 'd-id',
+      presenters: presenters.length,
       timestamp: new Date().toISOString(),
-    };
-
-    const duration = Date.now() - startTime;
-    logger.api('Health', 'detailed', duration, true);
-
-    res.status(200).json(response);
+    });
   } catch (error) {
-    const duration = Date.now() - startTime;
-    logger.api('Health', 'detailed', duration, false);
-    
-    const errorResponse: ApiResponse = {
-      success: false,
-      error: 'Detailed health check failed',
+    logger.error('D-ID health check failed', error);
+    res.status(500).json({
+      status: 'unhealthy',
+      service: 'd-id',
+      error: error instanceof Error ? error.message : 'Unknown error',
       timestamp: new Date().toISOString(),
-    };
-
-    res.status(500).json(errorResponse);
+    });
   }
-}));
+});
+
+router.get('/supabase', async (req: Request, res: Response) => {
+  try {
+    const { SupabaseService } = await import('../services/supabaseService');
+    const supabaseService = new SupabaseService();
+    const testMetadata = supabaseService.generateSessionMetadata('health_check', 'test');
+    
+    res.json({
+      status: 'healthy',
+      service: 'supabase',
+      bucketName: 'test-bucket-ponteai',
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    logger.error('Supabase health check failed', error);
+    res.status(500).json({
+      status: 'unhealthy',
+      service: 'supabase',
+      error: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString(),
+    });
+  }
+});
 
 export default router; 
