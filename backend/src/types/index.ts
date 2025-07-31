@@ -46,6 +46,9 @@ export interface TextGenerationResponse {
   generationTime: number;
 }
 
+// Re-export voice types from the dedicated voice types file
+export { GenerateVoiceRequest, GenerateVoiceResponse } from './voice';
+
 export interface VoiceGenerationRequest {
   text: string;
   voiceId: string;
@@ -81,6 +84,9 @@ export interface EnvironmentConfig {
   OPENAI_API_KEY: string | undefined;
   ELEVENLABS_API_KEY: string | undefined;
   DID_API_KEY: string | undefined;
+  // ElevenLabs voice IDs - TODO: These will eventually be fetched from Supabase database
+  ELEVENLABS_TERRY_CREWS_VOICE_ID: string | undefined;
+  ELEVENLABS_WILL_HOWARD_VOICE_ID: string | undefined;
   RATE_LIMIT_WINDOW_MS: number;
   RATE_LIMIT_MAX_REQUESTS: number;
   LOG_LEVEL: string;

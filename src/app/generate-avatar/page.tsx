@@ -5,22 +5,40 @@ import Navigation from "@/components/navigation"
 import Link from "next/link"
 import PersonaSelection from "@/components/PersonaSelection"
 import TextInput from "@/components/TextInput"
+import VoiceGeneration from "@/components/VoiceGeneration"
 import CollapsibleBackendStatus from "@/components/CollapsibleBackendStatus"
 import { Persona } from "@/lib/personas"
 
 export default function GenerateAvatarPage() {
   const [selectedPersona, setSelectedPersona] = useState<Persona | null>(null);
   const [currentText, setCurrentText] = useState('');
+  const [currentAudioUrl, setCurrentAudioUrl] = useState<string | null>(null);
+  const [originalText, setOriginalText] = useState('');
+  const [personalizedText, setPersonalizedText] = useState('');
+  const [isUsingPersonalized, setIsUsingPersonalized] = useState(false);
 
   const handlePersonaSelect = (persona: Persona | null) => {
     setSelectedPersona(persona);
     console.log('Selected persona:', persona);
   };
 
-  const handleTextChange = (text: string) => {
+  const handleTextChange = (text: string, isPersonalized: boolean = false, original?: string, personalized?: string) => {
     setCurrentText(text);
-    // TODO: Use currentText for next phase of demo (voice generation)
-    console.log('Current text:', text);
+    setIsUsingPersonalized(isPersonalized);
+    if (original) setOriginalText(original);
+    if (personalized) setPersonalizedText(personalized);
+    console.log('Current text:', text, 'Using personalized:', isPersonalized);
+  };
+
+  const handleVoiceGenerated = (audioUrl: string) => {
+    setCurrentAudioUrl(audioUrl);
+    console.log('Voice generated:', audioUrl);
+  };
+
+  const handleScriptChange = (text: string, isPersonalized: boolean) => {
+    setCurrentText(text);
+    setIsUsingPersonalized(isPersonalized);
+    console.log('Script changed to:', isPersonalized ? 'AI Personalized' : 'Original');
   };
 
   return (
@@ -54,6 +72,21 @@ export default function GenerateAvatarPage() {
                 <TextInput 
                   selectedPersona={selectedPersona} 
                   onTextChange={handleTextChange} 
+                />
+              </div>
+            )}
+
+            {/* Voice Generation */}
+            {selectedPersona && currentText.trim() && (
+              <div className="card-ponte p-8 rounded-lg mb-8">
+                <VoiceGeneration 
+                  selectedPersona={selectedPersona} 
+                  currentText={currentText} 
+                  onVoiceGenerated={handleVoiceGenerated}
+                  originalText={originalText}
+                  personalizedText={personalizedText}
+                  isUsingPersonalized={isUsingPersonalized}
+                  onScriptChange={handleScriptChange}
                 />
               </div>
             )}

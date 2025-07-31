@@ -36,6 +36,9 @@ const validateConfig = (): EnvironmentConfig => {
     OPENAI_API_KEY: process.env['OPENAI_API_KEY'],
     ELEVENLABS_API_KEY: process.env['ELEVENLABS_API_KEY'],
     DID_API_KEY: process.env['DID_API_KEY'],
+    // ElevenLabs voice IDs - TODO: These will eventually be fetched from Supabase database
+    ELEVENLABS_TERRY_CREWS_VOICE_ID: process.env['ELEVENLABS_TERRY_CREWS_VOICE_ID'],
+    ELEVENLABS_WILL_HOWARD_VOICE_ID: process.env['ELEVENLABS_WILL_HOWARD_VOICE_ID'],
     RATE_LIMIT_WINDOW_MS: rateLimitWindowMs,
     RATE_LIMIT_MAX_REQUESTS: rateLimitMaxRequests,
     LOG_LEVEL: process.env['LOG_LEVEL'] || 'info',

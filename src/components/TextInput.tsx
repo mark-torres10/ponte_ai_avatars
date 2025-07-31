@@ -1,25 +1,30 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { apiClient } from '@/lib/api';
 import { Persona } from '@/lib/personas';
 
 interface TextInputProps {
   selectedPersona: Persona | null;
-  onTextChange: (text: string) => void;
+  onTextChange: (text: string, isPersonalized?: boolean, original?: string, personalized?: string) => void;
 }
 
 export default function TextInput({ selectedPersona, onTextChange }: TextInputProps) {
-  const [originalText, setOriginalText] = useState('');
+  const [originalText, setOriginalText] = useState('Hey there! I want to tell you about this amazing new product that will revolutionize your daily routine. It\'s packed with incredible features that will make your life so much easier.');
   const [personalizedText, setPersonalizedText] = useState('');
   const [isPersonalizing, setIsPersonalizing] = useState(false);
   const [showPersonalized, setShowPersonalized] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Initialize with placeholder text
+  useEffect(() => {
+    onTextChange(originalText, false, originalText, '');
+  }, []);
+
   const handleTextChange = (text: string) => {
     setOriginalText(text);
     setError(null);
-    onTextChange(text);
+    onTextChange(text, showPersonalized, text, personalizedText);
   };
 
   const handlePersonalize = async () => {
@@ -42,6 +47,8 @@ export default function TextInput({ selectedPersona, onTextChange }: TextInputPr
       if (response.success && response.data) {
         setPersonalizedText(response.data.personalizedText);
         setShowPersonalized(true);
+        // Update parent with personalized text
+        onTextChange(response.data.personalizedText, true, originalText, response.data.personalizedText);
       } else {
         setError(response.error as string || 'Failed to personalize text');
       }
@@ -54,9 +61,10 @@ export default function TextInput({ selectedPersona, onTextChange }: TextInputPr
   };
 
   const handleToggle = () => {
-    setShowPersonalized(!showPersonalized);
-    // Update the parent component with the current text
-    onTextChange(showPersonalized ? originalText : personalizedText);
+    const newShowPersonalized = !showPersonalized;
+    setShowPersonalized(newShowPersonalized);
+    // Update the parent component with the correct text
+    onTextChange(newShowPersonalized ? personalizedText : originalText, newShowPersonalized, originalText, personalizedText);
   };
 
   const currentText = showPersonalized ? personalizedText : originalText;
