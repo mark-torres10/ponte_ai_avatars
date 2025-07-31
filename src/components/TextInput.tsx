@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { apiClient } from '@/lib/api';
 import { Persona } from '@/lib/personas';
 
@@ -10,11 +10,16 @@ interface TextInputProps {
 }
 
 export default function TextInput({ selectedPersona, onTextChange }: TextInputProps) {
-  const [originalText, setOriginalText] = useState('');
+  const [originalText, setOriginalText] = useState('Hey there! I want to tell you about this amazing new product that will revolutionize your daily routine. It\'s packed with incredible features that will make your life so much easier.');
   const [personalizedText, setPersonalizedText] = useState('');
   const [isPersonalizing, setIsPersonalizing] = useState(false);
   const [showPersonalized, setShowPersonalized] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Initialize with placeholder text
+  useEffect(() => {
+    onTextChange(originalText);
+  }, []);
 
   const handleTextChange = (text: string) => {
     setOriginalText(text);
