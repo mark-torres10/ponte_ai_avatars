@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import healthRoutes from './health';
+import textRoutes from './text';
 
 const router = Router();
 
@@ -12,6 +13,9 @@ router.use('/api/v1', (req, _res, next) => {
   (req as any).apiVersion = 'v1';
   next();
 });
+
+// Text personalization routes
+router.use('/api/text', textRoutes);
 
 // Placeholder for future avatar generation routes
 router.use('/api/v1/avatar', (_req, res) => {

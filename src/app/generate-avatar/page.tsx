@@ -1,15 +1,26 @@
 'use client';
 
+import { useState } from 'react';
 import Navigation from "@/components/navigation"
 import Link from "next/link"
 import PersonaSelection from "@/components/PersonaSelection"
+import TextInput from "@/components/TextInput"
 import CollapsibleBackendStatus from "@/components/CollapsibleBackendStatus"
 import { Persona } from "@/lib/personas"
 
 export default function GenerateAvatarPage() {
+  const [selectedPersona, setSelectedPersona] = useState<Persona | null>(null);
+  const [currentText, setCurrentText] = useState('');
+
   const handlePersonaSelect = (persona: Persona | null) => {
-    // TODO: Handle persona selection for next phase of demo
+    setSelectedPersona(persona);
     console.log('Selected persona:', persona);
+  };
+
+  const handleTextChange = (text: string) => {
+    setCurrentText(text);
+    // TODO: Use currentText for next phase of demo (voice generation)
+    console.log('Current text:', text);
   };
 
   return (
@@ -32,9 +43,20 @@ export default function GenerateAvatarPage() {
               </p>
             </div>
 
+            {/* Persona Selection */}
             <div className="card-ponte p-8 rounded-lg mb-8">
               <PersonaSelection onPersonaSelect={handlePersonaSelect} />
             </div>
+
+            {/* Text Input and AI Personalization */}
+            {selectedPersona && (
+              <div className="card-ponte p-8 rounded-lg mb-8">
+                <TextInput 
+                  selectedPersona={selectedPersona} 
+                  onTextChange={handleTextChange} 
+                />
+              </div>
+            )}
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link

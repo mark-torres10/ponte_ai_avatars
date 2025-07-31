@@ -73,6 +73,18 @@ class ApiClient {
       body: JSON.stringify(payload),
     });
   }
+
+  // Text personalization endpoints
+  async personalizeText(text: string, personaId: string): Promise<ApiResponse<{
+    originalText: string;
+    personalizedText: string;
+    personaId: string;
+  }>> {
+    return this.request('/api/text/personalize', {
+      method: 'POST',
+      body: JSON.stringify({ text, personaId }),
+    });
+  }
 }
 
 // Create and export the API client instance
