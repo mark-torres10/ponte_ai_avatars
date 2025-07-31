@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import healthRoutes from './health';
 import textRoutes from './text';
+import voiceRoutes from './voice';
 
 const router = Router();
 
@@ -16,6 +17,9 @@ router.use('/api/v1', (req, _res, next) => {
 
 // Text personalization routes
 router.use('/api/text', textRoutes);
+
+// Voice generation routes
+router.use('/api/voice', voiceRoutes);
 
 // Placeholder for future avatar generation routes
 router.use('/api/v1/avatar', (_req, res) => {

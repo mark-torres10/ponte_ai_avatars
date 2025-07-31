@@ -85,6 +85,19 @@ class ApiClient {
       body: JSON.stringify({ text, personaId }),
     });
   }
+
+  // Voice generation endpoints
+  async generateVoice(text: string, personaId: string): Promise<ApiResponse<{
+    audioUrl: string;
+    audioData?: string;
+    personaId: string;
+    text: string;
+  }>> {
+    return this.request('/api/voice/generate', {
+      method: 'POST',
+      body: JSON.stringify({ text, personaId }),
+    });
+  }
 }
 
 // Create and export the API client instance
