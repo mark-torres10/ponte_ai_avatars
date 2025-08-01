@@ -89,7 +89,7 @@ export default function PersonaSelection({ onPersonaSelect }: PersonaSelectionPr
     };
 
     loadImages();
-  }, [personas, loadAvatarImages]);
+  }, [personas]);
 
   return (
     <div className="space-y-8">

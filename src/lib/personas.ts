@@ -1,4 +1,4 @@
-import { AvatarImage } from './supabase-images';
+import { AvatarImage } from '@/types/avatar-images';
 
 export interface Persona {
   id: string;

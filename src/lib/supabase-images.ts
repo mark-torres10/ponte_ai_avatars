@@ -1,4 +1,4 @@
-import { AvatarImage, PersonaImages } from '@/types/avatar-images';
+import { PersonaImages } from '@/types/avatar-images';
 
 /**
  * Load avatar images by calling the backend API route
