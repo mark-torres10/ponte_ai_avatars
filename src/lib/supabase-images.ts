@@ -26,6 +26,10 @@ export const loadAvatarImages = async (): Promise<PersonaImages> => {
   try {
     const personaImages: PersonaImages = {};
     
+    console.log('Starting to load avatar images from Supabase...');
+    console.log('Supabase URL:', supabaseUrl);
+    console.log('Production bucket:', prodStorageBucket);
+    
     // Check if Supabase is configured
     if (!supabase) {
       console.warn('Supabase not configured, using fallback images');
@@ -54,14 +58,14 @@ export const loadAvatarImages = async (): Promise<PersonaImages> => {
           if (error) {
             console.error(`Error loading image ${imagePath}:`, error);
             // Fallback to a placeholder image
-            const fallbackColor = persona.id === 'terry-crews' ? '3b82f6' : '10b981';
-            const fallbackName = persona.id === 'terry-crews' ? 'Terry+Crews' : 'Will+Howard';
+            const randomSeed = persona.id === 'terry-crews' ? i : i + 5;
             images.push({
-              url: `https://via.placeholder.com/300x300/${fallbackColor}/ffffff?text=${fallbackName}+${i}`,
+              url: `https://picsum.photos/300/300?random=${randomSeed}&blur=2`,
               alt: `${persona.id} - Image ${i}`,
               index: i
             });
           } else if (data?.signedUrl) {
+            console.log(`Successfully loaded image for ${persona.id} - Image ${i}:`, data.signedUrl.substring(0, 50) + '...');
             images.push({
               url: data.signedUrl,
               alt: `${persona.id} - Image ${i}`,
@@ -71,10 +75,9 @@ export const loadAvatarImages = async (): Promise<PersonaImages> => {
         } catch (error) {
           console.error(`Failed to load image ${imagePath}:`, error);
           // Fallback to a placeholder image
-          const fallbackColor = persona.id === 'terry-crews' ? '3b82f6' : '10b981';
-          const fallbackName = persona.id === 'terry-crews' ? 'Terry+Crews' : 'Will+Howard';
+          const randomSeed = persona.id === 'terry-crews' ? i : i + 5;
           images.push({
-            url: `https://via.placeholder.com/300x300/${fallbackColor}/ffffff?text=${fallbackName}+${i}`,
+            url: `https://picsum.photos/300/300?random=${randomSeed}&blur=2`,
             alt: `${persona.id} - Image ${i}`,
             index: i
           });
@@ -110,12 +113,12 @@ export const getPublicImageUrl = (personaId: string, imageIndex: number): string
 const getFallbackImages = (): PersonaImages => {
   return {
     'terry-crews': Array.from({ length: 5 }, (_, i) => ({
-      url: `https://via.placeholder.com/300x300/3b82f6/ffffff?text=Terry+Crews+${i + 1}`,
+      url: `https://picsum.photos/300/300?random=${i + 1}&blur=2`,
       alt: `Terry Crews - Image ${i + 1}`,
       index: i + 1
     })),
     'will-howard': Array.from({ length: 5 }, (_, i) => ({
-      url: `https://via.placeholder.com/300x300/10b981/ffffff?text=Will+Howard+${i + 1}`,
+      url: `https://picsum.photos/300/300?random=${i + 6}&blur=2`,
       alt: `Will Howard - Image ${i + 1}`,
       index: i + 1
     }))
