@@ -1,16 +1,47 @@
 import { config } from '../utils/config';
 import { logger } from '../utils/logger';
 import FormData from 'form-data';
+import axios from 'axios';
 
-// D-ID API configuration
-const DID_API_BASE = 'https://api.d-id.com';
+// D-ID Configuration
+const DID_CONFIG = {
+  baseUrl: 'https://api.d-id.com',
+  timeout: 120000, // 2 minutes for video generation
+  retryAttempts: 3,
+  retryDelay: 5000
+};
+
+// Voice Actor Configuration - matching your existing system
+const VOICE_ACTOR_CONFIG = {
+  voiceActorA: {
+    id: 'voice_actor_a',
+    name: 'Voice Actor A',
+    imageUrl: 'https://d-id-public-bucket.s3.amazonaws.com/alice.jpg',
+    // Alternative images for variety
+    images: [
+      '/voice_actor_a/pic1.jpeg',
+      '/voice_actor_a/pic2.jpeg',
+      '/voice_actor_a/pic3.jpeg',
+      '/voice_actor_a/pic4.jpeg',
+      '/voice_actor_a/pic5.jpeg'
+    ]
+  },
+  voiceActorB: {
+    id: 'voice_actor_b',
+    name: 'Voice Actor B',
+    imageUrl: 'https://d-id-public-bucket.s3.amazonaws.com/amy.jpg',
+    // Alternative images for variety
+    images: [
+      '/voice_actor_b/pic1.jpeg',
+      '/voice_actor_b/pic2.jpeg',
+      '/voice_actor_b/pic3.jpeg',
+      '/voice_actor_b/pic4.jpeg',
+      '/voice_actor_b/pic5.jpeg'
+    ]
+  }
+};
 
 // D-ID API response interfaces
-export interface DIDUploadImageRequest {
-  image: Buffer;
-  filename?: string;
-}
-
 export interface DIDUploadImageResponse {
   id: string;
   created_at: string;
@@ -19,37 +50,6 @@ export interface DIDUploadImageResponse {
   size: number;
   mime_type: string;
   url: string;
-}
-
-export interface DIDCreateTalkRequest {
-  source_url?: string;
-  source_image_id?: string;
-  script: {
-    type: 'text';
-    input: string;
-    provider?: {
-      type: 'microsoft' | 'amazon' | 'elevenlabs';
-      voice_id?: string;
-    };
-  };
-  presenter_id?: string;
-  driver_id?: string;
-  config?: {
-    fluent?: boolean;
-    pad_audio?: number;
-    stitch?: boolean;
-    align_driver?: boolean;
-    align_expand_factor?: number;
-    auto_match?: boolean;
-    normalization_factor?: number;
-    motion_factor?: number;
-    result_format?: 'mp4' | 'webm';
-    quality?: 'draft' | 'preview' | 'production';
-    background?: {
-      color?: string;
-      blur?: number;
-    };
-  };
 }
 
 export interface DIDCreateTalkResponse {
@@ -84,321 +84,463 @@ export interface DIDGetTalkResponse {
   };
 }
 
-export interface DIDError {
-  code: string;
-  message: string;
-  details?: any;
+export interface VideoGenerationResult {
+  success: boolean;
+  data?: {
+    taskId: string;
+    status: string;
+    videoUrl?: string;
+    duration?: number;
+    createdAt: string;
+  };
+  error?: {
+    code: string;
+    message: string;
+  };
 }
 
-/**
- * Create D-ID API authentication header
- */
-const getAuthHeader = (): string => {
-  if (!config.DID_API_KEY) {
-    throw new Error('D-ID API key not configured');
-  }
-  
-  // D-ID uses Basic Auth with API key format: API_USERNAME:API_PASSWORD
-  // The API key should already be in the correct format, just encode it as base64
-  const credentials = Buffer.from(config.DID_API_KEY).toString('base64');
-  return `Basic ${credentials}`;
-};
+class DidService {
+  private client: any;
+  private apiKey: string;
+  private baseUrl: string;
 
-/**
- * Test D-ID API key validity and account status
- */
-export const testDIDConnection = async (): Promise<{
-  valid: boolean;
-  accountStatus?: any;
-  error?: string;
-}> => {
-  const requestId = `did-test-${Date.now()}`;
-  
-  try {
-    logger.info('Testing D-ID API connection', { requestId });
-
-    // Test with a simple endpoint - get voices
-    const response = await fetch(`${DID_API_BASE}/voices`, {
-      method: 'GET',
+  constructor() {
+    this.apiKey = config.DID_API_KEY || '';
+    this.baseUrl = DID_CONFIG.baseUrl;
+    
+    if (!this.apiKey) {
+      throw new Error('DID_API_KEY is required in environment variables');
+    }
+    
+    this.client = axios.create({
+      baseURL: `${this.baseUrl}`,
+      timeout: DID_CONFIG.timeout,
       headers: {
-        'Authorization': getAuthHeader(),
-        'Accept': 'application/json',
-      },
+        'Authorization': `Basic ${this.apiKey}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
     });
+  }
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      logger.error('D-ID API test failed', { 
+  /**
+   * Test D-ID API key validity and account status
+   */
+  async testConnection(): Promise<{
+    valid: boolean;
+    accountStatus?: any;
+    error?: string;
+  }> {
+    const requestId = `did-test-${Date.now()}`;
+    
+    try {
+      logger.info('Testing D-ID API connection', { requestId });
+
+      // Test with a simple endpoint - get voices
+      const response = await this.client.get('/voices');
+      const data = response.data as any;
+      const voicesCount = Array.isArray(data) ? data.length : 0;
+      
+      logger.info('D-ID API test successful', { requestId, voicesCount });
+      
+      return {
+        valid: true,
+        accountStatus: {
+          voicesAvailable: voicesCount,
+          apiKeyValid: true
+        }
+      };
+    } catch (error: any) {
+      logger.error('D-ID API test error', { 
         requestId, 
-        status: response.status, 
-        statusText: response.statusText,
-        error: errorText 
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        error: error.message 
       });
       
       return {
         valid: false,
-        error: `D-ID API test failed: ${response.status} ${response.statusText} - ${errorText}`
+        error: `D-ID API test failed: ${error.response?.status} ${error.response?.statusText} - ${error.message}`
       };
     }
-
-    const data = await response.json() as any;
-    const voicesCount = Array.isArray(data) ? data.length : 0;
-    logger.info('D-ID API test successful', { requestId, voicesCount });
-    
-    return {
-      valid: true,
-      accountStatus: {
-        voicesAvailable: voicesCount,
-        apiKeyValid: true
-      }
-    };
-  } catch (error) {
-    logger.error('D-ID API test error', { 
-      requestId, 
-      error: error instanceof Error ? error.message : error 
-    });
-    
-    return {
-      valid: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
-    };
   }
-};
 
-/**
- * Upload an image to D-ID for use in video generation
- */
-export const uploadImage = async (
-  imageBuffer: Buffer,
-  filename?: string
-): Promise<DIDUploadImageResponse> => {
-  const requestId = `did-upload-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-  
-  try {
-    logger.info('Uploading image to D-ID', { requestId, filename, size: imageBuffer.length });
-
-    const authHeader = getAuthHeader();
+  /**
+   * Upload an image to D-ID for use in video generation
+   */
+  async uploadImage(
+    imageBuffer: Buffer,
+    filename?: string
+  ): Promise<DIDUploadImageResponse> {
+    const requestId = `did-upload-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
-    // Create form data for multipart upload
-    const form = new FormData();
-    form.append('image', imageBuffer, {
-      filename: filename || 'avatar.jpg',
-      contentType: 'image/jpeg'
-    });
-    
-    if (filename) {
-      form.append('filename', filename);
-    }
+    try {
+      logger.info('Uploading image to D-ID', { requestId, filename, size: imageBuffer.length });
 
-    // Debug: Log form data details
-    logger.info('D-ID upload form data details', { 
-      requestId, 
-      filename: filename || 'avatar.jpg',
-      contentType: 'image/jpeg',
-      imageBufferSize: imageBuffer.length,
-      formHeaders: form.getHeaders()
-    });
-
-    const response = await fetch(`${DID_API_BASE}/images`, {
-      method: 'POST',
-      headers: {
-        'Authorization': authHeader,
-        ...form.getHeaders(),
-      },
-      body: form,
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      logger.error('D-ID image upload error', { 
-        requestId, 
-        status: response.status, 
-        statusText: response.statusText,
-        error: errorText 
+      // Create form data for multipart upload
+      const form = new FormData();
+      form.append('image', imageBuffer, {
+        filename: filename || 'avatar.jpg',
+        contentType: 'image/jpeg'
       });
       
-      throw new Error(`D-ID image upload error: ${response.status} ${response.statusText} - ${errorText}`);
+      if (filename) {
+        form.append('filename', filename);
+      }
+
+      const response = await this.client.post('/images', form, {
+        headers: {
+          ...form.getHeaders(),
+        },
+      });
+
+      const data = response.data as DIDUploadImageResponse;
+      logger.info('D-ID image uploaded successfully', { 
+        requestId, 
+        imageId: data.id, 
+        name: data.name,
+        size: data.size 
+      });
+      
+      return data;
+    } catch (error: any) {
+      logger.error('Failed to upload image to D-ID', { 
+        requestId, 
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        error: error.message 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Create a talk request with D-ID API
+   */
+  async createTalkRequest(params: {
+    scriptText: string;
+    sourceUrl?: string;
+    sourceImageId?: string;
+    presenterId?: string;
+  }): Promise<DIDCreateTalkResponse> {
+    const requestId = `did-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
+    try {
+      logger.info('Creating D-ID talk', { 
+        requestId, 
+        sourceUrl: params.sourceUrl, 
+        sourceImageId: params.sourceImageId, 
+        scriptLength: params.scriptText.length 
+      });
+
+      const presenterUrl = params.presenterId || VOICE_ACTOR_CONFIG.voiceActorA.imageUrl;
+      
+      const requestData: any = {
+        script: {
+          type: 'text',
+          input: params.scriptText,
+          provider: { type: 'microsoft' },
+          ssml: false,
+          subtitles: 'false'
+        },
+        config: {
+          result_format: 'mp4',
+          fluent: false,
+          pad_audio: 0.0,
+          stitch: true,
+          align_driver: true,
+          align_expand_factor: 1.0
+        }
+      };
+
+      // Add source (either URL or image ID)
+      if (params.sourceImageId) {
+        requestData.source_image_id = params.sourceImageId;
+      } else {
+        requestData.source_url = params.sourceUrl || presenterUrl;
+      }
+
+      logger.info('Creating D-ID talk request:', {
+        requestId,
+        presenterUrl: params.sourceImageId ? `image_id: ${params.sourceImageId}` : (params.sourceUrl || presenterUrl),
+        scriptLength: params.scriptText.length
+      });
+
+      const response = await this.client.post('/talks', requestData);
+      const data = response.data as DIDCreateTalkResponse;
+      
+      logger.info('D-ID talk request created:', {
+        requestId,
+        id: data.id,
+        status: data.status
+      });
+
+      return data;
+      
+    } catch (error: any) {
+      logger.error('Error creating D-ID talk request:', {
+        requestId,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: error.message
+      });
+      
+      throw this.handleDidApiError(error, 'createTalkRequest');
+    }
+  }
+
+  /**
+   * Poll for video generation status
+   */
+  async pollVideoStatus(talkId: string): Promise<DIDGetTalkResponse> {
+    const maxAttempts = 60; // 5 minutes max (5 second intervals)
+    let attempts = 0;
+    const requestId = `did-poll-${talkId}`;
+
+    logger.info(`Starting to poll video status for talk ID: ${talkId}`, { requestId });
+
+    while (attempts < maxAttempts) {
+      try {
+        const response = await this.client.get(`/talks/${talkId}`);
+        const data = response.data as DIDGetTalkResponse;
+        const status = data.status;
+        
+        logger.info(`Poll attempt ${attempts + 1}: Status = ${status}`, { requestId });
+
+        switch (status) {
+          case 'done':
+            logger.info('Video generation completed successfully', { requestId, talkId });
+            return data;
+
+          case 'error':
+            logger.error('Video generation failed:', { requestId, talkId, data });
+            throw new Error(`Video generation failed: ${data.error?.message || 'Unknown error'}`);
+
+          case 'created':
+          case 'started':
+            // Continue polling
+            break;
+
+          default:
+            logger.warn(`Unknown status: ${status}`, { requestId });
+        }
+
+        attempts++;
+        await this.sleep(DID_CONFIG.retryDelay);
+        
+      } catch (error: any) {
+        logger.error(`Error polling video status (attempt ${attempts + 1}):`, { 
+          requestId, 
+          talkId,
+          error: error.message 
+        });
+        
+        if (attempts >= DID_CONFIG.retryAttempts) {
+          throw this.handleDidApiError(error, 'pollVideoStatus');
+        }
+        
+        attempts++;
+        await this.sleep(DID_CONFIG.retryDelay);
+      }
     }
 
-    const data = await response.json() as DIDUploadImageResponse;
-    logger.info('D-ID image uploaded successfully', { 
-      requestId, 
-      imageId: data.id, 
-      name: data.name,
-      size: data.size 
+    throw new Error(`Video generation timeout: exceeded ${maxAttempts} polling attempts`);
+  }
+
+  /**
+   * Generate complete video from text script with voice actor integration
+   */
+  async generateVideo(params: {
+    scriptText: string;
+    voiceActorId?: 'voice_actor_a' | 'voice_actor_b';
+    sourceUrl?: string;
+    sourceImageId?: string;
+  }): Promise<VideoGenerationResult> {
+    try {
+      logger.info('Starting video generation process', { voiceActorId: params.voiceActorId });
+      
+      // Determine the presenter based on voice actor selection
+      let presenterUrl = params.sourceUrl;
+      if (!presenterUrl && !params.sourceImageId) {
+        if (params.voiceActorId === 'voice_actor_b') {
+          presenterUrl = VOICE_ACTOR_CONFIG.voiceActorB.imageUrl;
+        } else {
+          presenterUrl = VOICE_ACTOR_CONFIG.voiceActorA.imageUrl;
+        }
+      }
+      
+      // Step 1: Create talk request
+      const talkRequestParams: any = {
+        scriptText: params.scriptText
+      };
+      
+      if (presenterUrl) {
+        talkRequestParams.sourceUrl = presenterUrl;
+      }
+      if (params.sourceImageId) {
+        talkRequestParams.sourceImageId = params.sourceImageId;
+      }
+      
+      const talkRequest = await this.createTalkRequest(talkRequestParams);
+
+      // Step 2: Poll for completion
+      const completedVideo = await this.pollVideoStatus(talkRequest.id);
+
+      logger.info('Video generation completed:', {
+        id: completedVideo.id,
+        videoUrl: completedVideo.result?.video_url?.substring(0, 50) + '...',
+        duration: completedVideo.result?.duration
+      });
+
+      const resultData: any = {
+        taskId: completedVideo.id,
+        status: 'completed',
+        createdAt: completedVideo.created_at
+      };
+      
+      if (completedVideo.result?.video_url) {
+        resultData.videoUrl = completedVideo.result.video_url;
+      }
+      if (completedVideo.result?.duration) {
+        resultData.duration = completedVideo.result.duration;
+      }
+      
+      return {
+        success: true,
+        data: resultData
+      };
+
+    } catch (error: any) {
+      logger.error('Video generation failed:', { error: error.message });
+      
+      return {
+        success: false,
+        error: {
+          code: error.code || 'VIDEO_GENERATION_ERROR',
+          message: error.message
+        }
+      };
+    }
+  }
+
+  /**
+   * Handle D-ID API errors with proper mapping
+   */
+  private handleDidApiError(error: any, context: string): Error {
+    const status = error.response?.status;
+    
+    const errorMap: { [key: number]: () => Error } = {
+      400: () => new Error('Invalid video generation parameters'),
+      401: () => new Error('Invalid D-ID API credentials'),
+      402: () => new Error('D-ID quota exceeded or payment required'),
+      403: () => new Error('D-ID API access forbidden - check API key and permissions'),
+      429: () => new Error('D-ID rate limit exceeded'),
+      500: () => new Error('D-ID service temporarily unavailable'),
+      503: () => new Error('D-ID service overloaded')
+    };
+    
+    const mappedError = errorMap[status];
+    if (mappedError) {
+      const err = mappedError();
+      (err as any).code = `DID_API_${status}`;
+      return err;
+    }
+    
+    // Log unexpected errors for investigation
+    logger.error('Unexpected D-ID API error:', {
+      status,
+      message: error.message,
+      context,
+      timestamp: new Date().toISOString()
     });
     
-    return data;
-  } catch (error) {
-    logger.error('Failed to upload image to D-ID', { 
-      requestId, 
-      error: error instanceof Error ? error.message : error 
-    });
-    throw error;
+    const unexpectedError = new Error('Unexpected video generation error');
+    (unexpectedError as any).code = 'DID_API_UNEXPECTED';
+    return unexpectedError;
   }
+
+  /**
+   * Utility function for delays
+   */
+  private sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  /**
+   * Get available voice actors
+   */
+  getAvailableVoiceActors() {
+    return [
+      { 
+        id: VOICE_ACTOR_CONFIG.voiceActorA.id, 
+        name: VOICE_ACTOR_CONFIG.voiceActorA.name, 
+        imageUrl: VOICE_ACTOR_CONFIG.voiceActorA.imageUrl,
+        images: VOICE_ACTOR_CONFIG.voiceActorA.images
+      },
+      { 
+        id: VOICE_ACTOR_CONFIG.voiceActorB.id, 
+        name: VOICE_ACTOR_CONFIG.voiceActorB.name, 
+        imageUrl: VOICE_ACTOR_CONFIG.voiceActorB.imageUrl,
+        images: VOICE_ACTOR_CONFIG.voiceActorB.images
+      }
+    ];
+  }
+}
+
+// Create singleton instance
+let didServiceInstance: DidService | null = null;
+
+export const getDidService = (): DidService => {
+  if (!didServiceInstance) {
+    didServiceInstance = new DidService();
+  }
+  return didServiceInstance;
 };
 
-/**
- * Create a new talk video using D-ID API
- */
+// Export individual functions for backward compatibility
+export const testDIDConnection = async () => {
+  const service = getDidService();
+  return service.testConnection();
+};
+
+export const uploadImage = async (imageBuffer: Buffer, filename?: string) => {
+  const service = getDidService();
+  return service.uploadImage(imageBuffer, filename);
+};
+
 export const createTalk = async (
   scriptText: string,
   sourceUrl?: string,
   sourceImageId?: string,
   presenterId?: string
-): Promise<DIDCreateTalkResponse> => {
-  const requestId = `did-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+) => {
+  const service = getDidService();
+  const params: any = { scriptText };
   
-  try {
-    logger.info('Creating D-ID talk', { requestId, sourceUrl, sourceImageId, scriptLength: scriptText.length });
-
-    // Build payload based on available source
-    const payload: DIDCreateTalkRequest = {
-      script: {
-        type: 'text',
-        input: scriptText,
-      },
-    };
-
-    // Add source (either URL or image ID)
-    if (sourceImageId) {
-      payload.source_image_id = sourceImageId;
-    } else if (sourceUrl) {
-      payload.source_url = sourceUrl;
-    } else {
-      throw new Error('Either sourceUrl or sourceImageId must be provided');
-    }
-
-    // Add presenter ID if provided
-    if (presenterId) {
-      payload.presenter_id = presenterId;
-    }
-
-    // Debug: Log the payload to check for circular references
-    logger.info('D-ID request payload', { 
-      requestId, 
-      payload: JSON.stringify(payload, null, 2),
-      sourceUrl,
-      scriptLength: scriptText.length
-    });
-
-    const authHeader = getAuthHeader();
-    
-    // Debug: Log auth header format (without revealing the actual credentials)
-    logger.info('D-ID auth header format', { 
-      requestId, 
-      authHeaderLength: authHeader.length,
-      authHeaderPrefix: authHeader.substring(0, 10) + '...'
-    });
-
-    const response = await fetch(`${DID_API_BASE}/talks`, {
-      method: 'POST',
-      headers: {
-        'Authorization': authHeader,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      logger.error('D-ID API error', { 
-        requestId, 
-        status: response.status, 
-        statusText: response.statusText,
-        error: errorText 
-      });
-      
-      throw new Error(`D-ID API error: ${response.status} ${response.statusText} - ${errorText}`);
-    }
-
-    const data = await response.json() as DIDCreateTalkResponse;
-    logger.info('D-ID talk created successfully', { requestId, talkId: data.id, status: data.status });
-    
-    return data;
-  } catch (error) {
-    logger.error('Failed to create D-ID talk', { requestId, error: error instanceof Error ? error.message : error });
-    throw error;
+  if (sourceUrl) {
+    params.sourceUrl = sourceUrl;
   }
-};
-
-/**
- * Get talk status and result from D-ID API
- */
-export const getTalk = async (talkId: string): Promise<DIDGetTalkResponse> => {
-  const requestId = `did-get-${talkId}`;
-  
-  try {
-    logger.info('Getting D-ID talk status', { requestId, talkId });
-
-    const response = await fetch(`${DID_API_BASE}/talks/${talkId}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': getAuthHeader(),
-        'Accept': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      logger.error('D-ID API error getting talk', { 
-        requestId, 
-        talkId,
-        status: response.status, 
-        statusText: response.statusText,
-        error: errorText 
-      });
-      
-      throw new Error(`D-ID API error: ${response.status} ${response.statusText} - ${errorText}`);
-    }
-
-    const data = await response.json() as DIDGetTalkResponse;
-    logger.info('D-ID talk status retrieved', { requestId, talkId, status: data.status });
-    
-    return data;
-  } catch (error) {
-    logger.error('Failed to get D-ID talk', { requestId, talkId, error: error instanceof Error ? error.message : error });
-    throw error;
+  if (sourceImageId) {
+    params.sourceImageId = sourceImageId;
   }
-};
-
-/**
- * Wait for talk to complete with polling
- */
-export const waitForTalkCompletion = async (
-  talkId: string,
-  maxWaitTime: number = 300000, // 5 minutes
-  pollInterval: number = 5000 // 5 seconds
-): Promise<DIDGetTalkResponse> => {
-  const startTime = Date.now();
-  const requestId = `did-wait-${talkId}`;
-  
-  logger.info('Starting to wait for D-ID talk completion', { requestId, talkId, maxWaitTime });
-
-  while (Date.now() - startTime < maxWaitTime) {
-    const talk = await getTalk(talkId);
-    
-    if (talk.status === 'done') {
-      logger.info('D-ID talk completed successfully', { requestId, talkId, videoUrl: talk.result?.video_url });
-      return talk;
-    }
-    
-    if (talk.status === 'error') {
-      logger.error('D-ID talk failed', { requestId, talkId, error: talk.error });
-      throw new Error(`D-ID talk failed: ${talk.error?.message || 'Unknown error'}`);
-    }
-    
-    // Wait before next poll
-    await new Promise(resolve => setTimeout(resolve, pollInterval));
+  if (presenterId) {
+    params.presenterId = presenterId;
   }
   
-  throw new Error(`D-ID talk timeout after ${maxWaitTime}ms`);
+  return service.createTalkRequest(params);
 };
 
-/**
- * Download video from D-ID URL
- */
+export const getTalk = async (talkId: string) => {
+  const service = getDidService();
+  return service.pollVideoStatus(talkId);
+};
+
+export const waitForTalkCompletion = async (talkId: string) => {
+  const service = getDidService();
+  return service.pollVideoStatus(talkId);
+};
+
 export const downloadVideo = async (videoUrl: string): Promise<ArrayBuffer> => {
   const requestId = `did-download-${Date.now()}`;
   
@@ -415,22 +557,16 @@ export const downloadVideo = async (videoUrl: string): Promise<ArrayBuffer> => {
     logger.info('Video downloaded successfully', { requestId, size: videoBuffer.byteLength });
     
     return videoBuffer;
-  } catch (error) {
-    logger.error('Failed to download video from D-ID', { requestId, videoUrl, error: error instanceof Error ? error.message : error });
+  } catch (error: any) {
+    logger.error('Failed to download video from D-ID', { requestId, videoUrl, error: error.message });
     throw error;
   }
 };
 
-/**
- * Check if D-ID API is properly configured
- */
 export const isDIDConfigured = (): boolean => {
   return !!config.DID_API_KEY;
 };
 
-/**
- * Get D-ID API configuration status
- */
 export const getDIDConfigStatus = () => {
   return {
     apiKeyConfigured: !!config.DID_API_KEY,

@@ -2,13 +2,11 @@ import { Router, Request, Response } from 'express';
 import { config } from '../utils/config';
 import { logger } from '../utils/logger';
 import { 
-  createTalk, 
-  waitForTalkCompletion, 
-  downloadVideo, 
+  getDidService,
   testDIDConnection,
   isDIDConfigured,
-  DIDCreateTalkResponse,
-  DIDGetTalkResponse
+  downloadVideo,
+  VideoGenerationResult
 } from '../services/did';
 import { 
   uploadVideoFile, 
@@ -210,24 +208,24 @@ router.post('/generate', async (req: Request, res: Response) => {
           publicUrl: publicImageUrl.substring(0, 50) + '...' 
         });
         
-        // Create D-ID talk using the public image URL directly
-        const talkResponse: DIDCreateTalkResponse = await createTalk(
-          text,
-          publicImageUrl, // Use the public signed URL directly
-          undefined, // No image ID since we're using URL
-          undefined // presenter ID
-        );
+        // Use the new D-ID service with voice actor integration
+        const didService = getDidService();
+        
+        // Map persona ID to voice actor ID
+        const voiceActorId = personaId === 'terry-crews' ? 'voice_actor_a' : 'voice_actor_b';
+        
+        // Generate video using the new service
+        const videoResult: VideoGenerationResult = await didService.generateVideo({
+          scriptText: text,
+          voiceActorId: voiceActorId as 'voice_actor_a' | 'voice_actor_b',
+          sourceUrl: publicImageUrl
+        });
 
-        logger.info('D-ID talk created', { requestId, talkId: talkResponse.id });
-
-        // Wait for talk completion
-        const completedTalk: DIDGetTalkResponse = await waitForTalkCompletion(talkResponse.id);
-
-        if (!completedTalk.result?.video_url) {
-          throw new Error('No video URL in completed talk response');
+        if (!videoResult.success || !videoResult.data?.videoUrl) {
+          throw new Error(videoResult.error?.message || 'Video generation failed');
         }
 
-        videoUrl = completedTalk.result.video_url;
+        videoUrl = videoResult.data.videoUrl;
 
         // Download video and store in Supabase
         const videoBuffer = await downloadVideo(videoUrl);
@@ -251,10 +249,9 @@ router.post('/generate', async (req: Request, res: Response) => {
           version,
           apiResponseData: {
             did_response: {
-              talk_id: talkResponse.id,
-              status: completedTalk.status,
-              ...(completedTalk.result?.duration && { duration: completedTalk.result.duration }),
-              ...(completedTalk.result?.size && { size: completedTalk.result.size }),
+              talk_id: videoResult.data?.taskId || 'unknown',
+              status: videoResult.data?.status || 'completed',
+              ...(videoResult.data?.duration && { duration: videoResult.data.duration }),
             }
           }
         });
