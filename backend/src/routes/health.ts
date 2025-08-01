@@ -3,6 +3,7 @@ import { HealthCheckResponse, ApiResponse } from '../types';
 import { logger } from '../utils/logger';
 import { config } from '../utils/config';
 import { asyncHandler } from '../middleware/errorHandler';
+import { testSupabaseConnection, validateBucket } from '../utils/supabase';
 
 const router = Router();
 
@@ -84,6 +85,8 @@ router.get('/detailed', asyncHandler(async (_req: Request, res: Response) => {
           hasOpenAIKey: !!config.OPENAI_API_KEY,
           hasElevenLabsKey: !!config.ELEVENLABS_API_KEY,
           hasDIDKey: !!config.DID_API_KEY,
+          hasSupabaseUrl: !!config.SUPABASE_URL,
+          hasSupabaseKey: !!config.SUPABASE_ANON_KEY,
         },
       }),
     };
@@ -105,6 +108,54 @@ router.get('/detailed', asyncHandler(async (_req: Request, res: Response) => {
     const errorResponse: ApiResponse = {
       success: false,
       error: 'Detailed health check failed',
+      timestamp: new Date().toISOString(),
+    };
+
+    res.status(500).json(errorResponse);
+  }
+}));
+
+/**
+ * @route GET /health/storage
+ * @desc Storage health check with Supabase connectivity test
+ * @access Public
+ */
+router.get('/storage', asyncHandler(async (_req: Request, res: Response) => {
+  const startTime = Date.now();
+  
+  try {
+    const supabaseConnected = await testSupabaseConnection();
+    const bucketValid = await validateBucket('test-bucket-ponteai');
+    
+    const storageHealth = {
+      supabase: {
+        connected: supabaseConnected,
+        configured: !!(config.SUPABASE_URL && config.SUPABASE_ANON_KEY),
+      },
+      bucket: {
+        name: 'test-bucket-ponteai',
+        accessible: bucketValid,
+      },
+      timestamp: new Date().toISOString(),
+    };
+
+    const response: ApiResponse = {
+      success: true,
+      data: storageHealth,
+      timestamp: new Date().toISOString(),
+    };
+
+    const duration = Date.now() - startTime;
+    logger.api('Health', 'storage', duration, true);
+
+    res.status(200).json(response);
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    logger.api('Health', 'storage', duration, false);
+    
+    const errorResponse: ApiResponse = {
+      success: false,
+      error: 'Storage health check failed',
       timestamp: new Date().toISOString(),
     };
 

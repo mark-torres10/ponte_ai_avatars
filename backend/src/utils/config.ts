@@ -39,6 +39,9 @@ const validateConfig = (): EnvironmentConfig => {
     // ElevenLabs voice IDs - TODO: These will eventually be fetched from Supabase database
     ELEVENLABS_TERRY_CREWS_VOICE_ID: process.env['ELEVENLABS_TERRY_CREWS_VOICE_ID'],
     ELEVENLABS_WILL_HOWARD_VOICE_ID: process.env['ELEVENLABS_WILL_HOWARD_VOICE_ID'],
+    // Supabase Configuration
+    SUPABASE_URL: process.env['SUPABASE_URL'],
+    SUPABASE_ANON_KEY: process.env['SUPABASE_ANON_KEY'],
     RATE_LIMIT_WINDOW_MS: rateLimitWindowMs,
     RATE_LIMIT_MAX_REQUESTS: rateLimitMaxRequests,
     LOG_LEVEL: process.env['LOG_LEVEL'] || 'info',
