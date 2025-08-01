@@ -10,7 +10,7 @@ interface VideoGenerationProps {
   selectedPersona: Persona | null;
   audioUrl: string | null;
   currentText: string;
-  onVideoGenerated: (videoUrl: string) => void;
+  onVideoGenerated?: (videoUrl: string) => void;
 }
 
 export default function VideoGeneration({ 
@@ -84,7 +84,9 @@ export default function VideoGeneration({
       
       if (response.success && response.data) {
         setVideoUrl(response.data.videoUrl);
-        onVideoGenerated(response.data.videoUrl);
+        if (onVideoGenerated) {
+          onVideoGenerated(response.data.videoUrl);
+        }
         setGenerationProgress('Video generated successfully!');
         
         // Check for storage errors in the response

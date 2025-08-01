@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Persona, PERSONAS, resetPersonaSelection } from '@/lib/personas';
-import { loadAvatarImages } from '@/lib/supabase-images';
 
 interface PersonaSelectionProps {
   onPersonaSelect?: (persona: Persona | null) => void;
@@ -51,33 +50,47 @@ export default function PersonaSelection({ onPersonaSelect }: PersonaSelectionPr
   // Load avatar images from Supabase on component mount
   useEffect(() => {
     const loadImages = async () => {
+      setIsLoading(true);
+      setLoadError(null);
+      
       try {
-        setIsLoading(true);
-        setLoadError(null);
+        // Load images for each persona
+        const imagePromises = personas.map(async (persona) => {
+          try {
+            const response = await fetch(`/api/avatar-images?personaId=${persona.id}`);
+            if (!response.ok) {
+              throw new Error(`Failed to load images for ${persona.name}`);
+            }
+            const data = await response.json();
+            return { personaId: persona.id, images: data.images || [] };
+          } catch (error) {
+            console.warn(`Failed to load images for ${persona.name}:`, error);
+            return { personaId: persona.id, images: [] };
+          }
+        });
+
+        const results = await Promise.all(imagePromises);
         
-        console.log('PersonaSelection: Starting to load avatar images...');
-        const avatarImages = await loadAvatarImages();
-        console.log('PersonaSelection: Avatar images loaded:', Object.keys(avatarImages));
-        
-        // Always update personas with loaded images, even if they're fallbacks
-        const updatedPersonas = personas.map(persona => ({
-          ...persona,
-          images: avatarImages[persona.id] || persona.images
-        }));
-        
-        setPersonas(updatedPersonas);
-        console.log('PersonaSelection: Personas updated with images');
-        
+        // Update personas with loaded images
+        setPersonas(prevPersonas => 
+          prevPersonas.map(persona => {
+            const result = results.find(r => r.personaId === persona.id);
+            return {
+              ...persona,
+              images: result?.images || persona.images
+            };
+          })
+        );
       } catch (error) {
-        console.error('PersonaSelection: Failed to load avatar images:', error);
-        setLoadError('Failed to load avatar images. Please try again.');
+        console.error('Error loading avatar images:', error);
+        setLoadError('Failed to load some avatar images. You can still proceed with the demo.');
       } finally {
         setIsLoading(false);
       }
     };
 
     loadImages();
-  }, []); // Empty dependency array - only run once on mount
+  }, [personas]); // Added personas dependency
 
   return (
     <div className="space-y-8">
