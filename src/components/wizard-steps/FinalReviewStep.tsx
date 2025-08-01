@@ -1,18 +1,8 @@
 'use client';
 
-interface FormData {
-  [key: string]: unknown;
-}
+import { WizardStepProps } from '@/types/wizard';
 
-interface FinalReviewStepProps {
-  onDataUpdate?: (data: FormData) => void;
-  onComplete?: () => void;
-  formData?: FormData;
-}
-
-export default function FinalReviewStep({ onDataUpdate, onComplete, formData }: FinalReviewStepProps) {
-  // Note: onDataUpdate is available for future use
-  console.log('Final review data:', { onDataUpdate, formData });
+export default function FinalReviewStep({ onDataUpdate, onComplete, formData }: WizardStepProps) {
 
   const handleSubmit = () => {
     if (onComplete) {

@@ -1,17 +1,38 @@
 'use client';
 
-interface FormData {
-  [key: string]: unknown;
-}
+import { useState } from 'react';
+import { cn } from '@/lib/utils';
+import { WizardFormData, WizardStepProps } from '@/types/wizard';
 
-interface BrandCustomizationStepProps {
-  onDataUpdate?: (data: FormData) => void;
-  formData?: FormData;
-}
+export default function BrandCustomizationStep({ onDataUpdate, formData }: WizardStepProps) {
+  const [selectedVoice, setSelectedVoice] = useState<string>('');
+  const [competitiveDifferentiation, setCompetitiveDifferentiation] = useState<string>('');
 
-export default function BrandCustomizationStep({ onDataUpdate, formData }: BrandCustomizationStepProps) {
-  // Note: onDataUpdate and formData are available for future use
-  console.log('Brand customization data:', { onDataUpdate, formData });
+  const voiceOptions = [
+    { id: 'professional', label: 'Professional', description: 'Formal & Authoritative' },
+    { id: 'casual', label: 'Casual', description: 'Friendly & Approachable' },
+    { id: 'energetic', label: 'Energetic', description: 'Dynamic & Motivational' }
+  ];
+
+  const handleVoiceSelect = (voiceId: string) => {
+    setSelectedVoice(voiceId);
+    if (onDataUpdate) {
+      onDataUpdate({ 
+        ...formData,
+        brandVoice: voiceId 
+      });
+    }
+  };
+
+  const handleCompetitiveDifferentiationChange = (value: string) => {
+    setCompetitiveDifferentiation(value);
+    if (onDataUpdate) {
+      onDataUpdate({ 
+        ...formData,
+        competitiveDifferentiation: value 
+      });
+    }
+  };
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
@@ -33,18 +54,21 @@ export default function BrandCustomizationStep({ onDataUpdate, formData }: Brand
             Fine-tune your avatar&apos;s speaking style to match your brand&apos;s unique voice and personality.
           </p>
           <div className="grid md:grid-cols-3 gap-4">
-            <div className="p-3 bg-secondary/30 rounded-lg text-center">
-              <div className="font-medium">Professional</div>
-              <div className="text-xs text-foreground/60">Formal & Authoritative</div>
-            </div>
-            <div className="p-3 bg-secondary/30 rounded-lg text-center">
-              <div className="font-medium">Casual</div>
-              <div className="text-xs text-foreground/60">Friendly & Approachable</div>
-            </div>
-            <div className="p-3 bg-secondary/30 rounded-lg text-center">
-              <div className="font-medium">Energetic</div>
-              <div className="text-xs text-foreground/60">Dynamic & Motivational</div>
-            </div>
+            {voiceOptions.map((option) => (
+              <button
+                key={option.id}
+                onClick={() => handleVoiceSelect(option.id)}
+                className={cn(
+                  "p-3 rounded-lg text-center transition-all duration-200 cursor-pointer",
+                  selectedVoice === option.id
+                    ? "bg-primary/20 border border-primary/40 text-primary"
+                    : "bg-secondary/30 hover:bg-secondary/50"
+                )}
+              >
+                <div className="font-medium">{option.label}</div>
+                <div className="text-xs text-foreground/60">{option.description}</div>
+              </button>
+            ))}
           </div>
         </div>
 
@@ -66,6 +90,8 @@ export default function BrandCustomizationStep({ onDataUpdate, formData }: Brand
           <textarea
             placeholder="Describe how you want to differentiate from competitors..."
             rows={3}
+            value={competitiveDifferentiation}
+            onChange={(e) => handleCompetitiveDifferentiationChange(e.target.value)}
             className="w-full px-4 py-3 bg-background border border-white/20 rounded-md text-foreground placeholder:text-foreground/50 focus:outline-none focus:border-primary resize-none"
           />
         </div>

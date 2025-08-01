@@ -1,17 +1,8 @@
 'use client';
 
-interface FormData {
-  [key: string]: unknown;
-}
+import { WizardStepProps } from '@/types/wizard';
 
-interface CampaignPreviewStepProps {
-  onDataUpdate?: (data: FormData) => void;
-  formData?: FormData;
-}
-
-export default function CampaignPreviewStep({ onDataUpdate, formData }: CampaignPreviewStepProps) {
-  // Note: onDataUpdate and formData are available for future use
-  console.log('Campaign preview data:', { onDataUpdate, formData });
+export default function CampaignPreviewStep({ onDataUpdate, formData }: WizardStepProps) {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">

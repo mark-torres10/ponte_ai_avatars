@@ -1,17 +1,8 @@
 'use client';
 
-interface FormData {
-  [key: string]: unknown;
-}
+import { WizardStepProps } from '@/types/wizard';
 
-interface SuccessStoryStepProps {
-  onDataUpdate?: (data: FormData) => void;
-  formData?: FormData;
-}
-
-export default function SuccessStoryStep({ onDataUpdate, formData }: SuccessStoryStepProps) {
-  // Note: onDataUpdate and formData are available for future use
-  console.log('Success story data:', { onDataUpdate, formData });
+export default function SuccessStoryStep({ onDataUpdate, formData }: WizardStepProps) {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">

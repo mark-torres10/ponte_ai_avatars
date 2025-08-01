@@ -1,15 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-
-interface FormData {
-  [key: string]: unknown;
-}
-
-interface StoryCreationStepProps {
-  onDataUpdate?: (data: FormData) => void;
-  formData?: FormData;
-}
+import { WizardFormData, WizardStepProps } from '@/types/wizard';
 
 interface ValidationErrors {
   brandMission?: string;
@@ -18,12 +10,12 @@ interface ValidationErrors {
   callToAction?: string;
 }
 
-export default function StoryCreationStep({ onDataUpdate, formData }: StoryCreationStepProps) {
+export default function StoryCreationStep({ onDataUpdate, formData }: WizardStepProps) {
   const [storyData, setStoryData] = useState({
-    brandMission: (formData?.brandMission as string) || '',
-    storyToTell: (formData?.storyToTell as string) || '',
-    emotionalTone: (formData?.emotionalTone as string) || '',
-    callToAction: (formData?.callToAction as string) || ''
+    brandMission: typeof formData?.brandMission === 'string' ? formData.brandMission : '',
+    storyToTell: typeof formData?.storyToTell === 'string' ? formData.storyToTell : '',
+    emotionalTone: typeof formData?.emotionalTone === 'string' ? formData.emotionalTone : '',
+    callToAction: typeof formData?.callToAction === 'string' ? formData.callToAction : ''
   });
 
   const [errors, setErrors] = useState<ValidationErrors>({});
