@@ -13,26 +13,14 @@ export const PERSONAS: Persona[] = [
     id: 'terry-crews',
     name: 'Terry Crews',
     description: 'Actor & Ex-Athlete Terry Crews',
-    images: [
-      'https://picsum.photos/300/300?random=1&blur=2',
-      'https://picsum.photos/300/300?random=2&blur=2',
-      'https://picsum.photos/300/300?random=3&blur=2',
-      'https://picsum.photos/300/300?random=4&blur=2',
-      'https://picsum.photos/300/300?random=5&blur=2',
-    ],
+    images: [], // Start with empty images array - will be populated when loaded
     selected: false,
   },
   {
     id: 'will-howard',
     name: 'Will Howard',
     description: 'NFL Quarterback Will Howard',
-    images: [
-      'https://picsum.photos/300/300?random=6&blur=2',
-      'https://picsum.photos/300/300?random=7&blur=2',
-      'https://picsum.photos/300/300?random=8&blur=2',
-      'https://picsum.photos/300/300?random=9&blur=2',
-      'https://picsum.photos/300/300?random=10&blur=2',
-    ],
+    images: [], // Start with empty images array - will be populated when loaded
     selected: false,
   },
 ];

@@ -57,16 +57,26 @@ export default function PersonaSelection({ onPersonaSelect }: PersonaSelectionPr
         
         const avatarImages = await loadAvatarImages();
         
-        // Update personas with loaded images
-        const updatedPersonas = personas.map(persona => ({
-          ...persona,
-          images: avatarImages[persona.id] || persona.images
-        }));
+        // Only update personas if we got real images (not fallbacks)
+        const hasRealImages = Object.values(avatarImages).some(images => 
+          images.some(img => !img.url.includes('picsum.photos'))
+        );
         
-        setPersonas(updatedPersonas);
+        if (hasRealImages) {
+          // Update personas with loaded images
+          const updatedPersonas = personas.map(persona => ({
+            ...persona,
+            images: avatarImages[persona.id] || persona.images
+          }));
+          
+          setPersonas(updatedPersonas);
+        } else {
+          // If we only got fallback images, don't show them
+          setLoadError('Failed to load real avatar images. Please try again.');
+        }
       } catch (error) {
         console.error('Failed to load avatar images:', error);
-        setLoadError('Failed to load avatar images. Using fallback images.');
+        setLoadError('Failed to load avatar images. Please try again.');
       } finally {
         setIsLoading(false);
       }
@@ -104,9 +114,10 @@ export default function PersonaSelection({ onPersonaSelect }: PersonaSelectionPr
         </div>
       )}
 
-      {/* Persona Grid */}
-      <div className="grid md:grid-cols-2 gap-8">
-        {personas.map((persona) => (
+      {/* Persona Grid - Only show when not loading */}
+      {!isLoading && (
+        <div className="grid md:grid-cols-2 gap-8">
+          {personas.map((persona) => (
           <div
             key={persona.id}
             className={`avatar-card cursor-pointer transition-all duration-300 relative ${
@@ -179,10 +190,11 @@ export default function PersonaSelection({ onPersonaSelect }: PersonaSelectionPr
             )}
           </div>
         ))}
-      </div>
+        </div>
+      )}
 
       {/* Reset Button */}
-      {selectedPersona && (
+      {!isLoading && selectedPersona && (
         <div className="text-center">
           <button
             onClick={handleReset}
@@ -194,7 +206,7 @@ export default function PersonaSelection({ onPersonaSelect }: PersonaSelectionPr
       )}
 
       {/* Selection Summary */}
-      {selectedPersona && (
+      {!isLoading && selectedPersona && (
         <div className="card-ponte p-6 rounded-lg">
           <div className="text-center">
             <h3 className="text-lg font-semibold mb-2">
