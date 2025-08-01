@@ -95,6 +95,34 @@ class ApiClient {
       body: JSON.stringify({ text, personaId }),
     });
   }
+
+  // Video generation endpoints
+  async generateVideo(payload: {
+    text: string;
+    personaId: string;
+    audioUrl: string;
+    avatarImageUrl?: string;
+    useCachedAvatar?: boolean;
+  }): Promise<ApiResponse<{
+    videoUrl: string;
+    storageInfo?: {
+      fileKey: string;
+      metadataKey: string;
+      version: number;
+    };
+  }>> {
+    return this.request<{
+      videoUrl: string;
+      storageInfo?: {
+        fileKey: string;
+        metadataKey: string;
+        version: number;
+      };
+    }>('/api/video/generate', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
 }
 
 // Create and export the API client instance

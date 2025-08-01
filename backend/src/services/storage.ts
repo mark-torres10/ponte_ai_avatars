@@ -21,14 +21,24 @@ export interface OpenAIResponse {
   error?: string;
 }
 
+export interface DIDResponse {
+  talk_id: string;
+  status: string;
+  duration?: number | undefined;
+  size?: number | undefined;
+}
+
 export interface StorageMetadata {
   actor: string;
   text: string;
   audio_file_key: string;
+  video_file_key?: string;
+  image_file_key?: string;
   generation_timestamp: string;
   api_response_data: {
     elevenlabs_response?: ElevenLabsResponse;
     openai_response?: OpenAIResponse;
+    did_response?: DIDResponse;
   };
   version: number;
   format: string;
@@ -51,6 +61,20 @@ export interface FileUploadOptions {
   apiResponseData?: {
     elevenlabs_response?: ElevenLabsResponse;
     openai_response?: OpenAIResponse;
+  };
+}
+
+export interface VideoUploadOptions {
+  requesterId?: string;
+  voiceActorId: string;
+  videoBuffer: ArrayBuffer;
+  text: string;
+  format?: string;
+  version?: number;
+  audioFileKey?: string;
+  imageFileKey?: string;
+  apiResponseData?: {
+    did_response?: DIDResponse;
   };
 }
 
@@ -274,6 +298,123 @@ export const uploadAudioFile = async (options: FileUploadOptions): Promise<Stora
 };
 
 /**
+ * Upload video file to Supabase storage
+ * @param options - Video upload options
+ * @returns Promise<StorageResult>
+ */
+export const uploadVideoFile = async (options: VideoUploadOptions): Promise<StorageResult> => {
+  const {
+    requesterId = DEFAULT_REQUESTER_ID,
+    voiceActorId,
+    videoBuffer,
+    text,
+    format = 'mp4',
+    version = 1,
+    audioFileKey = '',
+    imageFileKey = '',
+    apiResponseData = {}
+  } = options;
+
+  try {
+    const client = getSupabaseClient();
+    
+    // Validate bucket before proceeding
+    try {
+      await validateBucket(STORAGE_BUCKET);
+    } catch (bucketError) {
+      logger.error('Bucket validation failed', { 
+        bucket: STORAGE_BUCKET, 
+        error: bucketError instanceof Error ? bucketError.message : 'Unknown error' 
+      });
+      return {
+        success: false,
+        error: `Invalid bucket configuration: ${bucketError instanceof Error ? bucketError.message : 'Unknown error'}`
+      };
+    }
+
+    // Generate file paths
+    const timestamp = generateTimestamp();
+    const fileKey = generateFilePath(requesterId, voiceActorId, timestamp, `video_v${version}.mp4`);
+    const metadataKey = generateFilePath(requesterId, voiceActorId, timestamp, 'video_metadata.json');
+
+    // Upload video file
+    const { error: videoError } = await client.storage
+      .from(STORAGE_BUCKET)
+      .upload(fileKey, videoBuffer, {
+        contentType: 'video/mp4',
+        upsert: false
+      });
+
+    if (videoError) {
+      logger.error('Video file upload failed', { 
+        fileKey, 
+        error: videoError.message 
+      });
+      return {
+        success: false,
+        error: `Failed to upload video file: ${videoError.message}`
+      };
+    }
+
+    // Create metadata
+    const videoMetadata: StorageMetadata = {
+      actor: voiceActorId,
+      text: text,
+      audio_file_key: audioFileKey,
+      video_file_key: fileKey,
+      image_file_key: imageFileKey,
+      generation_timestamp: timestamp,
+      api_response_data: {
+        ...(apiResponseData.did_response && { did_response: apiResponseData.did_response })
+      },
+      version: version,
+      format: format
+    };
+
+    // Upload metadata
+    const metadataBuffer = Buffer.from(JSON.stringify(videoMetadata, null, 2));
+
+    const { error: metadataError } = await client.storage
+      .from(STORAGE_BUCKET)
+      .upload(metadataKey, metadataBuffer, {
+        contentType: 'application/json',
+        upsert: false
+      });
+
+    if (metadataError) {
+      logger.error('Video metadata upload failed', { 
+        metadataKey, 
+        error: metadataError.message 
+      });
+      // Note: We don't fail the entire operation if metadata upload fails
+    }
+
+    logger.info('Video file uploaded successfully', { 
+      fileKey, 
+      version, 
+      format,
+      videoSize: videoBuffer.byteLength 
+    });
+
+    return {
+      success: true,
+      fileKey,
+      metadataKey,
+      version
+    };
+
+  } catch (error) {
+    logger.error('Video file upload failed', { 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    });
+    return {
+      success: false,
+      error: 'Failed to upload video file'
+    };
+  }
+};
+
+/**
  * Get public URL for a file
  * @param fileKey - File key in storage
  * @returns Public URL string
@@ -329,5 +470,58 @@ export const listFiles = async (
       error: error instanceof Error ? error.message : 'Unknown error' 
     });
     return [];
+  }
+}; 
+
+/**
+ * Create a public signed URL for an image from Supabase storage
+ */
+export const createPublicImageUrl = async (
+  imagePath: string,
+  bucketName: string = config.STORAGE_BUCKET,
+  expirySeconds: number = 3600 // 1 hour
+): Promise<string> => {
+  const requestId = `public-url-${Date.now()}`;
+  
+  try {
+    logger.info('Creating public signed URL for image', { 
+      requestId, 
+      imagePath, 
+      bucketName, 
+      expirySeconds 
+    });
+
+    const supabaseClient = getSupabaseClient();
+    const { data, error } = await supabaseClient.storage
+      .from(bucketName)
+      .createSignedUrl(imagePath, expirySeconds);
+
+    if (error) {
+      logger.error('Failed to create signed URL', { 
+        requestId, 
+        imagePath, 
+        error: error.message 
+      });
+      throw new Error(`Failed to create signed URL: ${error.message}`);
+    }
+
+    if (!data?.signedUrl) {
+      throw new Error('No signed URL returned from Supabase');
+    }
+
+    logger.info('Successfully created public signed URL', { 
+      requestId, 
+      imagePath, 
+      url: data.signedUrl.substring(0, 50) + '...' 
+    });
+
+    return data.signedUrl;
+  } catch (error) {
+    logger.error('Error creating public image URL', { 
+      requestId, 
+      imagePath, 
+      error: error instanceof Error ? error.message : error 
+    });
+    throw error;
   }
 }; 
