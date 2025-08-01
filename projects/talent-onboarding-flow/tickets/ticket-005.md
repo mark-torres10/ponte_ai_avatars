@@ -1,66 +1,68 @@
-# PON-39: Core Wizard Framework and Basic Info Step
+# PON-43: Progress Management and Draft Saving
 
 ## Linear Issue
-[View in Linear](https://linear.app/metresearch/issue/PON-39/core-wizard-framework-and-basic-info-step)
+[View in Linear](https://linear.app/metresearch/issue/PON-43/progress-management-and-draft-saving)
 
 ## Context & Motivation
-Create the foundational wizard structure and implement the first step of the talent onboarding flow. This establishes the core architecture for the multi-step onboarding process.
+Implement comprehensive progress management and draft saving functionality to ensure users can complete the onboarding process without losing their progress.
 
 ## Functional Requirements
-- Create main `OnboardingWizard` component with step navigation
-- Implement `BasicInfoStep` component with form validation
-- Set up React Hook Form for state management
-- Add progress indicator and responsive design
-- Create step container architecture
+- Implement automatic draft saving and progress persistence
+- Add resume capability and offline sync
+- Create progress indicators and validation
+- Implement form abandonment recovery
+- Add local storage management
+- Create progress tracking across all steps
 
 ## Non-functional Requirements
-- Mobile-responsive design
-- Accessible form controls (WCAG 2.1 AA)
-- Fast loading and smooth transitions
-- Consistent with Ponte design system
+- Seamless progress saving without user intervention
+- Fast resume capability
+- Reliable data persistence
+- Clear progress indication
 
 ## Success Criteria
-- Users can navigate between steps smoothly
-- Form validation works correctly for all fields
-- Progress indicator accurately reflects current step
-- Mobile experience is seamless
-- Form data persists during navigation
+- Drafts save automatically during user interaction
+- Users can resume from any step
+- Progress indicators accurately reflect completion
+- Form abandonment recovery works reliably
+- Data persists across browser sessions
 
 ## Test Plan
-- Test step navigation (forward/backward)
-- Validate form fields (name, email, phone, location)
-- Test mobile responsiveness
-- Verify accessibility compliance
-- Test form data persistence
+- Test automatic draft saving
+- Verify resume functionality from all steps
+- Test progress indicator accuracy
+- Validate form abandonment recovery
+- Test data persistence across sessions
+- Verify offline capability
 
 ## Dependencies
-- Existing Ponte design system
-- React Hook Form library
-- Next.js 14 setup
+- Local storage management
+- Form state persistence
+- Progress tracking logic
 
 ## Suggested Implementation Plan
-1. Create `OnboardingWizard` container component
-2. Implement step navigation logic
-3. Create `ProgressIndicator` component
-4. Build `BasicInfoStep` with form validation
-5. Add responsive styling and animations
-6. Test across different devices
+1. Implement automatic draft saving logic
+2. Create progress tracking system
+3. Add resume functionality
+4. Implement form abandonment recovery
+5. Add local storage management
+6. Create progress indicators
+7. Test persistence and recovery
 
 ## Effort Estimate
-3-4 days
+2-3 days
 
 ## Priority & Impact
-High Priority - Foundation for entire onboarding flow
+Medium Priority - Improves user experience and completion rates
 
 ## Acceptance Checklist
-- [ ] Wizard navigation works correctly
-- [ ] Basic info form validates properly
-- [ ] Progress indicator displays accurately
-- [ ] Mobile responsive design implemented
-- [ ] Form data persists during navigation
-- [ ] Accessibility requirements met
-- [ ] Consistent with design system
+- [ ] Automatic draft saving works
+- [ ] Resume functionality works from all steps
+- [ ] Progress indicators are accurate
+- [ ] Form abandonment recovery works
+- [ ] Data persists across sessions
+- [ ] Offline capability functions
+- [ ] Progress tracking is reliable
 
 ## Links & References
-- [Project Spec](../spec.md)
-- [Ponte Design System](../../../src/app/globals.css) 
+- [Project Spec](../spec.md) 

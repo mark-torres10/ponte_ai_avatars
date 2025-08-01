@@ -1,66 +1,77 @@
-# PON-39: Core Wizard Framework and Basic Info Step
+# PON-40: Media Upload and File Management
 
 ## Linear Issue
-[View in Linear](https://linear.app/metresearch/issue/PON-39/core-wizard-framework-and-basic-info-step)
+[View in Linear](https://linear.app/metresearch/issue/PON-40/media-upload-and-file-management)
 
 ## Context & Motivation
-Create the foundational wizard structure and implement the first step of the talent onboarding flow. This establishes the core architecture for the multi-step onboarding process.
+Implement comprehensive file upload functionality for headshots and video samples, enabling talent to provide their media assets during onboarding.
 
 ## Functional Requirements
-- Create main `OnboardingWizard` component with step navigation
-- Implement `BasicInfoStep` component with form validation
-- Set up React Hook Form for state management
-- Add progress indicator and responsive design
-- Create step container architecture
+- Create `MediaUploadStep` component with chunked/resumable upload functionality
+- Implement multiple headshot uploads and video sample support
+- Add file validation, preview, and cropping
+- Handle file size limits (10MB images, 50MB videos)
+- Implement client-side compression and error handling
+- Support file formats: JPG, PNG, MP4, MOV, WebM
+- Use chunked/resumable upload libraries (uppy, tus, or Supabase's resumable upload API)
 
 ## Non-functional Requirements
-- Mobile-responsive design
-- Accessible form controls (WCAG 2.1 AA)
-- Fast loading and smooth transitions
-- Consistent with Ponte design system
+- Fast upload performance with progress indicators
+- Responsive design for mobile uploads
+- Robust error handling and retry mechanisms
+- Client-side compression to reduce file sizes
+- Upload progress survives connectivity drops
 
 ## Success Criteria
-- Users can navigate between steps smoothly
-- Form validation works correctly for all fields
-- Progress indicator accurately reflects current step
-- Mobile experience is seamless
-- Form data persists during navigation
+- Users can upload multiple headshots successfully
+- Video uploads work across supported formats
+- File size validation prevents oversized uploads
+- Preview functionality works correctly
+- Error messages are clear and helpful
+- Uploads can resume after network interruptions
 
 ## Test Plan
-- Test step navigation (forward/backward)
-- Validate form fields (name, email, phone, location)
-- Test mobile responsiveness
-- Verify accessibility compliance
-- Test form data persistence
+- Test file upload with various formats and sizes
+- Verify file size validation (10MB/50MB limits)
+- Test multiple file uploads
+- Validate preview and cropping functionality
+- Test error handling for failed uploads
+- Verify mobile upload experience
+- Test upload resume functionality after network drops
 
 ## Dependencies
-- Existing Ponte design system
-- React Hook Form library
-- Next.js 14 setup
+- Chunked/resumable upload library (uppy, tus, or Supabase)
+- Image processing libraries
+- File validation utilities
 
 ## Suggested Implementation Plan
-1. Create `OnboardingWizard` container component
-2. Implement step navigation logic
-3. Create `ProgressIndicator` component
-4. Build `BasicInfoStep` with form validation
-5. Add responsive styling and animations
-6. Test across different devices
+1. Research and select chunked/resumable upload library
+2. Install and configure upload library
+3. Create `MediaUploadStep` component
+4. Implement file validation and size limits
+5. Add preview and cropping functionality
+6. Implement client-side compression
+7. Add error handling and retry logic
+8. Test across different file types and sizes
+9. Test upload resume functionality
 
 ## Effort Estimate
 3-4 days
 
 ## Priority & Impact
-High Priority - Foundation for entire onboarding flow
+High Priority - Core functionality for media collection
 
 ## Acceptance Checklist
-- [ ] Wizard navigation works correctly
-- [ ] Basic info form validates properly
-- [ ] Progress indicator displays accurately
-- [ ] Mobile responsive design implemented
-- [ ] Form data persists during navigation
-- [ ] Accessibility requirements met
-- [ ] Consistent with design system
+- [ ] Chunked/resumable upload works correctly
+- [ ] Multiple headshot uploads supported
+- [ ] Video uploads work for all formats
+- [ ] File size validation implemented
+- [ ] Preview functionality works
+- [ ] Error handling is robust
+- [ ] Mobile upload experience is smooth
+- [ ] Uploads can resume after network interruptions
 
 ## Links & References
 - [Project Spec](../spec.md)
-- [Ponte Design System](../../../src/app/globals.css) 
+- [Chunked Upload Libraries](https://uppy.io/docs/upload/)
+- [Supabase Storage Documentation](https://supabase.com/docs/guides/storage) 

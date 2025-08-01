@@ -1,66 +1,69 @@
-# PON-39: Core Wizard Framework and Basic Info Step
+# PON-44: Admin Talent Review Dashboard - Core Structure
 
 ## Linear Issue
-[View in Linear](https://linear.app/metresearch/issue/PON-39/core-wizard-framework-and-basic-info-step)
+[View in Linear](https://linear.app/metresearch/issue/PON-44/admin-talent-review-dashboard-core-structure)
 
 ## Context & Motivation
-Create the foundational wizard structure and implement the first step of the talent onboarding flow. This establishes the core architecture for the multi-step onboarding process.
+Create the core admin dashboard structure for reviewing and managing onboarded talent, providing comprehensive oversight of the talent pipeline.
 
 ## Functional Requirements
-- Create main `OnboardingWizard` component with step navigation
-- Implement `BasicInfoStep` component with form validation
-- Set up React Hook Form for state management
-- Add progress indicator and responsive design
-- Create step container architecture
+- Create `AdminTalentReview` main dashboard component
+- Implement `TalentTable` with search and filtering
+- Add bulk operations (approve, reject, delete) with confirmation dialogs
+- Create status workflow management (bidirectional: draft ↔ submitted ↔ approved ↔ active)
+- Add responsive table design and pagination
+- Implement hidden admin menu accessible at `/review-talent`
 
 ## Non-functional Requirements
-- Mobile-responsive design
-- Accessible form controls (WCAG 2.1 AA)
-- Fast loading and smooth transitions
-- Consistent with Ponte design system
+- Fast table rendering with large datasets
+- Intuitive search and filtering interface
+- Responsive design for admin use
+- Secure access (hidden route)
 
 ## Success Criteria
-- Users can navigate between steps smoothly
-- Form validation works correctly for all fields
-- Progress indicator accurately reflects current step
-- Mobile experience is seamless
-- Form data persists during navigation
+- Admin dashboard loads quickly with talent data
+- Search and filtering work accurately
+- Bulk operations execute with confirmation
+- Status workflow allows bidirectional changes
+- Table is responsive and paginated
+- Hidden route is not discoverable in navigation
 
 ## Test Plan
-- Test step navigation (forward/backward)
-- Validate form fields (name, email, phone, location)
-- Test mobile responsiveness
-- Verify accessibility compliance
-- Test form data persistence
+- Test dashboard loading with various data sizes
+- Verify search and filtering functionality
+- Test bulk operations with confirmation dialogs
+- Validate status workflow changes
+- Test responsive design
+- Verify hidden route accessibility
 
 ## Dependencies
-- Existing Ponte design system
-- React Hook Form library
-- Next.js 14 setup
+- Talent data from onboarding flow
+- Table component libraries
+- Search and filter utilities
 
 ## Suggested Implementation Plan
-1. Create `OnboardingWizard` container component
-2. Implement step navigation logic
-3. Create `ProgressIndicator` component
-4. Build `BasicInfoStep` with form validation
-5. Add responsive styling and animations
-6. Test across different devices
+1. Create `AdminTalentReview` component
+2. Implement `TalentTable` with search/filter
+3. Add bulk operations with confirmations
+4. Create status workflow management
+5. Add pagination and responsive design
+6. Implement hidden route structure
+7. Test with mock talent data
 
 ## Effort Estimate
-3-4 days
+4-5 days
 
 ## Priority & Impact
-High Priority - Foundation for entire onboarding flow
+High Priority - Essential admin functionality
 
 ## Acceptance Checklist
-- [ ] Wizard navigation works correctly
-- [ ] Basic info form validates properly
-- [ ] Progress indicator displays accurately
-- [ ] Mobile responsive design implemented
-- [ ] Form data persists during navigation
-- [ ] Accessibility requirements met
-- [ ] Consistent with design system
+- [ ] Admin dashboard loads correctly
+- [ ] Search and filtering work properly
+- [ ] Bulk operations have confirmation dialogs
+- [ ] Status workflow allows bidirectional changes
+- [ ] Table is responsive and paginated
+- [ ] Hidden route is accessible but not in nav
+- [ ] Performance is good with large datasets
 
 ## Links & References
-- [Project Spec](../spec.md)
-- [Ponte Design System](../../../src/app/globals.css) 
+- [Project Spec](../spec.md) 

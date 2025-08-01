@@ -1,66 +1,68 @@
-# PON-39: Core Wizard Framework and Basic Info Step
+# PON-41: Tone Selection and Self-Interview System
 
 ## Linear Issue
-[View in Linear](https://linear.app/metresearch/issue/PON-39/core-wizard-framework-and-basic-info-step)
+[View in Linear](https://linear.app/metresearch/issue/PON-41/tone-selection-and-self-interview-system)
 
 ## Context & Motivation
-Create the foundational wizard structure and implement the first step of the talent onboarding flow. This establishes the core architecture for the multi-step onboarding process.
+Implement the tone/personality selection and self-interview components to capture talent's communication style and personal information for avatar generation.
 
 ## Functional Requirements
-- Create main `OnboardingWizard` component with step navigation
-- Implement `BasicInfoStep` component with form validation
-- Set up React Hook Form for state management
-- Add progress indicator and responsive design
-- Create step container architecture
+- Create `TonePersonalityStep` component with predefined categories and sliders
+- Implement `SelfInterviewStep` with predefined questions and free-form
+- Add voice recording capability for free-form responses
+- Create progressive disclosure (defaults → sliders → custom)
+- Implement tone and interview data state management
+- Support personality trait sliders (extroversion, formality, energy, professionalism)
 
 ## Non-functional Requirements
-- Mobile-responsive design
-- Accessible form controls (WCAG 2.1 AA)
-- Fast loading and smooth transitions
-- Consistent with Ponte design system
+- Intuitive user interface for tone selection
+- Smooth voice recording experience
+- Progressive disclosure to guide user choices
+- Responsive design for all screen sizes
 
 ## Success Criteria
-- Users can navigate between steps smoothly
-- Form validation works correctly for all fields
-- Progress indicator accurately reflects current step
-- Mobile experience is seamless
-- Form data persists during navigation
+- Users can select tone categories easily
+- Personality sliders provide accurate trait selection
+- Voice recording works across browsers
+- Interview data is captured completely
+- Progressive disclosure guides user choices effectively
 
 ## Test Plan
-- Test step navigation (forward/backward)
-- Validate form fields (name, email, phone, location)
-- Test mobile responsiveness
-- Verify accessibility compliance
-- Test form data persistence
+- Test tone category selection
+- Validate personality slider functionality
+- Test voice recording across browsers
+- Verify interview question responses
+- Test progressive disclosure flow
+- Validate data persistence
 
 ## Dependencies
-- Existing Ponte design system
-- React Hook Form library
-- Next.js 14 setup
+- Voice recording libraries
+- Slider component libraries
+- Form state management
 
 ## Suggested Implementation Plan
-1. Create `OnboardingWizard` container component
-2. Implement step navigation logic
-3. Create `ProgressIndicator` component
-4. Build `BasicInfoStep` with form validation
-5. Add responsive styling and animations
-6. Test across different devices
+1. Create `TonePersonalityStep` component
+2. Implement predefined tone categories
+3. Add personality trait sliders
+4. Create `SelfInterviewStep` component
+5. Implement voice recording functionality
+6. Add progressive disclosure logic
+7. Test voice recording across browsers
 
 ## Effort Estimate
 3-4 days
 
 ## Priority & Impact
-High Priority - Foundation for entire onboarding flow
+High Priority - Core personality and interview data collection
 
 ## Acceptance Checklist
-- [ ] Wizard navigation works correctly
-- [ ] Basic info form validates properly
-- [ ] Progress indicator displays accurately
-- [ ] Mobile responsive design implemented
-- [ ] Form data persists during navigation
-- [ ] Accessibility requirements met
-- [ ] Consistent with design system
+- [ ] Tone categories work correctly
+- [ ] Personality sliders function properly
+- [ ] Voice recording works in major browsers
+- [ ] Interview questions capture all data
+- [ ] Progressive disclosure guides users
+- [ ] Data persists during navigation
+- [ ] Mobile experience is smooth
 
 ## Links & References
-- [Project Spec](../spec.md)
-- [Ponte Design System](../../../src/app/globals.css) 
+- [Project Spec](../spec.md) 

@@ -1,66 +1,70 @@
-# PON-39: Core Wizard Framework and Basic Info Step
+# PON-45: Admin Talent Review - Detail Views and Analytics
 
 ## Linear Issue
-[View in Linear](https://linear.app/metresearch/issue/PON-39/core-wizard-framework-and-basic-info-step)
+[View in Linear](https://linear.app/metresearch/issue/PON-45/admin-talent-review-detail-views-and-analytics)
 
 ## Context & Motivation
-Create the foundational wizard structure and implement the first step of the talent onboarding flow. This establishes the core architecture for the multi-step onboarding process.
+Implement detailed talent profile views and analytics dashboard to provide comprehensive insights into the talent onboarding pipeline and individual talent profiles.
 
 ## Functional Requirements
-- Create main `OnboardingWizard` component with step navigation
-- Implement `BasicInfoStep` component with form validation
-- Set up React Hook Form for state management
-- Add progress indicator and responsive design
-- Create step container architecture
+- Create `TalentDetailView` for comprehensive talent profiles
+- Implement `TalentPreview` modal for quick overview
+- Build `AnalyticsDashboard` with onboarding metrics and time-based filtering
+- Add completion rate tracking and statistics
+- Create admin notes and approval workflow
+- Implement export capabilities for analytics data
+- Add saved filter presets for advanced filtering
 
 ## Non-functional Requirements
-- Mobile-responsive design
-- Accessible form controls (WCAG 2.1 AA)
-- Fast loading and smooth transitions
-- Consistent with Ponte design system
+- Fast loading of detailed views
+- Comprehensive analytics with visualizations
+- Export functionality for data analysis
+- Responsive design for all admin views
 
 ## Success Criteria
-- Users can navigate between steps smoothly
-- Form validation works correctly for all fields
-- Progress indicator accurately reflects current step
-- Mobile experience is seamless
-- Form data persists during navigation
+- Detailed talent profiles display all information clearly
+- Analytics dashboard shows relevant metrics
+- Export functionality works for all data types
+- Admin notes and approval workflow function properly
+- Time-based filtering provides accurate insights
+- Saved filter presets work correctly
 
 ## Test Plan
-- Test step navigation (forward/backward)
-- Validate form fields (name, email, phone, location)
-- Test mobile responsiveness
-- Verify accessibility compliance
-- Test form data persistence
+- Test detailed view loading with various data
+- Verify analytics calculations and displays
+- Test export functionality for different formats
+- Validate admin notes and approval workflow
+- Test time-based filtering accuracy
+- Verify saved filter preset functionality
 
 ## Dependencies
-- Existing Ponte design system
-- React Hook Form library
-- Next.js 14 setup
+- Analytics calculation libraries
+- Export functionality utilities
+- Chart/visualization components
 
 ## Suggested Implementation Plan
-1. Create `OnboardingWizard` container component
-2. Implement step navigation logic
-3. Create `ProgressIndicator` component
-4. Build `BasicInfoStep` with form validation
-5. Add responsive styling and animations
-6. Test across different devices
+1. Create `TalentDetailView` component
+2. Implement `TalentPreview` modal
+3. Build `AnalyticsDashboard` with metrics
+4. Add time-based filtering and export
+5. Create admin notes system
+6. Implement saved filter presets
+7. Test analytics and export functionality
 
 ## Effort Estimate
-3-4 days
+4-5 days
 
 ## Priority & Impact
-High Priority - Foundation for entire onboarding flow
+High Priority - Provides essential admin insights
 
 ## Acceptance Checklist
-- [ ] Wizard navigation works correctly
-- [ ] Basic info form validates properly
-- [ ] Progress indicator displays accurately
-- [ ] Mobile responsive design implemented
-- [ ] Form data persists during navigation
-- [ ] Accessibility requirements met
-- [ ] Consistent with design system
+- [ ] Detailed talent profiles display correctly
+- [ ] Analytics dashboard shows accurate metrics
+- [ ] Export functionality works for all data
+- [ ] Admin notes and approval workflow function
+- [ ] Time-based filtering provides insights
+- [ ] Saved filter presets work properly
+- [ ] Analytics calculations are accurate
 
 ## Links & References
-- [Project Spec](../spec.md)
-- [Ponte Design System](../../../src/app/globals.css) 
+- [Project Spec](../spec.md) 

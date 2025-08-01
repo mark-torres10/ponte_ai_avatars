@@ -1,66 +1,70 @@
-# PON-39: Core Wizard Framework and Basic Info Step
+# PON-42: Review, Submit, and Mock Dashboard
 
 ## Linear Issue
-[View in Linear](https://linear.app/metresearch/issue/PON-39/core-wizard-framework-and-basic-info-step)
+[View in Linear](https://linear.app/metresearch/issue/PON-42/review-submit-and-mock-dashboard)
 
 ## Context & Motivation
-Create the foundational wizard structure and implement the first step of the talent onboarding flow. This establishes the core architecture for the multi-step onboarding process.
+Create the final review step and mock dashboard to complete the onboarding flow and provide talent with a preview of their profile and potential earnings.
 
 ## Functional Requirements
-- Create main `OnboardingWizard` component with step navigation
-- Implement `BasicInfoStep` component with form validation
-- Set up React Hook Form for state management
-- Add progress indicator and responsive design
-- Create step container architecture
+- Create `ReviewStep` with summary display and edit functionality
+- Implement form submission and success flow
+- Build `MockDashboard` with profile overview and mock data
+- Add AI persona generation button and OpenAI integration
+- Create earnings projections and usage statistics display
+- Implement success confirmation and redirect flow
 
 ## Non-functional Requirements
-- Mobile-responsive design
-- Accessible form controls (WCAG 2.1 AA)
-- Fast loading and smooth transitions
-- Consistent with Ponte design system
+- Clear and comprehensive review interface
+- Smooth submission process
+- Engaging dashboard with realistic mock data
+- Fast AI persona generation response
 
 ## Success Criteria
-- Users can navigate between steps smoothly
-- Form validation works correctly for all fields
-- Progress indicator accurately reflects current step
-- Mobile experience is seamless
-- Form data persists during navigation
+- Users can review all collected information
+- Edit functionality works for all sections
+- Form submission completes successfully
+- Mock dashboard displays realistic data
+- AI persona generation produces relevant results
+- Success flow provides clear next steps
 
 ## Test Plan
-- Test step navigation (forward/backward)
-- Validate form fields (name, email, phone, location)
-- Test mobile responsiveness
-- Verify accessibility compliance
-- Test form data persistence
+- Test review step with all data types
+- Verify edit functionality for each section
+- Test form submission process
+- Validate mock dashboard data display
+- Test AI persona generation
+- Verify success flow and redirects
 
 ## Dependencies
-- Existing Ponte design system
-- React Hook Form library
-- Next.js 14 setup
+- OpenAI API integration
+- Form submission handling
+- Mock data generation
 
 ## Suggested Implementation Plan
-1. Create `OnboardingWizard` container component
-2. Implement step navigation logic
-3. Create `ProgressIndicator` component
-4. Build `BasicInfoStep` with form validation
-5. Add responsive styling and animations
-6. Test across different devices
+1. Create `ReviewStep` component
+2. Implement edit functionality for all sections
+3. Build `MockDashboard` component
+4. Add OpenAI API integration for persona generation
+5. Create mock earnings and usage data
+6. Implement success flow and redirects
+7. Test AI integration and mock data
 
 ## Effort Estimate
 3-4 days
 
 ## Priority & Impact
-High Priority - Foundation for entire onboarding flow
+High Priority - Completes onboarding flow and provides value
 
 ## Acceptance Checklist
-- [ ] Wizard navigation works correctly
-- [ ] Basic info form validates properly
-- [ ] Progress indicator displays accurately
-- [ ] Mobile responsive design implemented
-- [ ] Form data persists during navigation
-- [ ] Accessibility requirements met
-- [ ] Consistent with design system
+- [ ] Review step displays all information correctly
+- [ ] Edit functionality works for all sections
+- [ ] Form submission completes successfully
+- [ ] Mock dashboard shows realistic data
+- [ ] AI persona generation works
+- [ ] Success flow provides clear guidance
+- [ ] Redirects work correctly
 
 ## Links & References
 - [Project Spec](../spec.md)
-- [Ponte Design System](../../../src/app/globals.css) 
+- [OpenAI API Documentation](https://platform.openai.com/docs) 
