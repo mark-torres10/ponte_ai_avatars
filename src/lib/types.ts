@@ -11,6 +11,12 @@ export interface GenerateVoiceResponse {
     audioData?: string; // Base64 encoded audio for immediate playback
     personaId: string;
     text: string;
+    storageInfo?: {
+      fileKey: string;
+      publicUrl?: string;
+      version: number;
+      metadataKey?: string;
+    };
   };
   error?: string | { code: string; message: string };
   timestamp: string;

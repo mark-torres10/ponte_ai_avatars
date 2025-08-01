@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import { apiClient } from '@/lib/api';
 import { Persona } from '@/lib/personas';
+import StorageErrorDisplay from './StorageErrorDisplay';
 
 interface VoiceGenerationProps {
   selectedPersona: Persona | null;
@@ -26,6 +27,7 @@ export default function VoiceGeneration({
   const [isGenerating, setIsGenerating] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [storageError, setStorageError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasPlayedAudio, setHasPlayedAudio] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -49,6 +51,7 @@ export default function VoiceGeneration({
 
     setIsGenerating(true);
     setError(null);
+    setStorageError(null);
     setHasPlayedAudio(false);
 
     try {
@@ -57,6 +60,11 @@ export default function VoiceGeneration({
       if (response.success && response.data) {
         setAudioUrl(response.data.audioUrl);
         onVoiceGenerated(response.data.audioUrl);
+        
+        // Check for storage errors in the response
+        if (response.data.storageInfo === undefined) {
+          setStorageError('Audio was generated but could not be saved to storage. You can still play and download the audio.');
+        }
       } else {
         setError(response.error as string || 'Failed to generate voice');
       }
@@ -137,6 +145,13 @@ export default function VoiceGeneration({
             <p className="text-red-500 text-sm">{error}</p>
           </div>
         )}
+
+        {/* Storage Error Display */}
+        <StorageErrorDisplay
+          error={storageError}
+          onDismiss={() => setStorageError(null)}
+          showRetry={false}
+        />
 
         {/* Script Selection */}
         {originalText && personalizedText && (

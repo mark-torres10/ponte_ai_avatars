@@ -4,6 +4,10 @@ process.env['PORT'] = '3002';
 process.env['CORS_ORIGIN'] = 'http://localhost:3000';
 process.env['LOG_LEVEL'] = 'error'; // Reduce log noise during tests
 
+// Storage configuration for tests
+process.env['STORAGE_BUCKET'] = 'test-bucket-ponteai';
+process.env['DEFAULT_REQUESTER_ID'] = 'test_user_id';
+
 // Global test timeout
 jest.setTimeout(10000);
 

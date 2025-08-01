@@ -29,6 +29,15 @@ const validateConfig = (): EnvironmentConfig => {
     throw new Error(`Invalid RATE_LIMIT_MAX_REQUESTS value: ${process.env['RATE_LIMIT_MAX_REQUESTS']}. Must be a positive number.`);
   }
 
+  // Validate storage configuration
+  if (!process.env['STORAGE_BUCKET']) {
+    throw new Error('STORAGE_BUCKET environment variable is required');
+  }
+
+  if (!process.env['DEFAULT_REQUESTER_ID']) {
+    throw new Error('DEFAULT_REQUESTER_ID environment variable is required');
+  }
+
   return {
     NODE_ENV: process.env['NODE_ENV']!,
     PORT: port,
@@ -39,6 +48,13 @@ const validateConfig = (): EnvironmentConfig => {
     // ElevenLabs voice IDs - TODO: These will eventually be fetched from Supabase database
     ELEVENLABS_TERRY_CREWS_VOICE_ID: process.env['ELEVENLABS_TERRY_CREWS_VOICE_ID'],
     ELEVENLABS_WILL_HOWARD_VOICE_ID: process.env['ELEVENLABS_WILL_HOWARD_VOICE_ID'],
+    // Supabase Configuration
+    SUPABASE_URL: process.env['SUPABASE_URL'],
+    SUPABASE_ANON_KEY: process.env['SUPABASE_ANON_KEY'],
+    SUPABASE_SERVICE_ROLE_KEY: process.env['SUPABASE_SERVICE_ROLE_KEY'],
+    // Storage Configuration
+    STORAGE_BUCKET: process.env['STORAGE_BUCKET']!,
+    DEFAULT_REQUESTER_ID: process.env['DEFAULT_REQUESTER_ID']!,
     RATE_LIMIT_WINDOW_MS: rateLimitWindowMs,
     RATE_LIMIT_MAX_REQUESTS: rateLimitMaxRequests,
     LOG_LEVEL: process.env['LOG_LEVEL'] || 'info',

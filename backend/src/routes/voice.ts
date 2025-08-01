@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { config } from '../utils/config';
 import { logger } from '../utils/logger';
 import { GenerateVoiceRequest, GenerateVoiceResponse } from '../types/voice';
+import { uploadAudioFile, getPublicUrl, ElevenLabsResponse } from '../services/storage';
 
 const router = Router();
 
@@ -142,14 +143,49 @@ router.post('/generate', async (req: Request, res: Response) => {
     const audioBuffer = await elevenLabsResponse.arrayBuffer();
     const audioBase64 = Buffer.from(audioBuffer).toString('base64');
 
+    // Upload to Supabase storage
+    const elevenLabsApiResponse: ElevenLabsResponse = {
+      status: elevenLabsResponse.status,
+      headers: elevenLabsResponse.headers ? Object.fromEntries(elevenLabsResponse.headers.entries()) : {}
+    };
+
+    const storageResult = await uploadAudioFile({
+      voiceActorId: personaId,
+      audioBuffer,
+      text,
+      format: 'mp3',
+      apiResponseData: {
+        elevenlabs_response: elevenLabsApiResponse
+      }
+    });
+
+    // Prepare response data
+    const responseData: any = {
+      audioUrl: `data:audio/mpeg;base64,${audioBase64}`,
+      audioData: audioBase64,
+      personaId,
+      text,
+    };
+
+    // Add storage information if successful
+    if (storageResult.success) {
+      responseData.storageInfo = {
+        fileKey: storageResult.fileKey,
+        publicUrl: storageResult.fileKey ? getPublicUrl(storageResult.fileKey) : undefined,
+        version: storageResult.version,
+        metadataKey: storageResult.metadataKey
+      };
+    } else {
+      // Log storage failure but don't fail the entire request
+      logger.warn('Storage upload failed, but voice generation succeeded', {
+        requestId,
+        storageError: storageResult.error
+      });
+    }
+
     const response: GenerateVoiceResponse = {
       success: true,
-      data: {
-        audioUrl: `data:audio/mpeg;base64,${audioBase64}`,
-        audioData: audioBase64,
-        personaId,
-        text,
-      },
+      data: responseData,
       timestamp: new Date().toISOString(),
     };
 
