@@ -16,9 +16,10 @@ async function testVideoGeneration() {
   // Create Basic Auth header
   const authHeader = `Basic ${Buffer.from(`${apiKey}:`).toString('base64')}`;
   
-  // Use the provided URLs
-  const audioUrl = 'https://evfgjtpvrasitxpbftva.supabase.co/storage/v1/object/public/test-bucket-ponteai/test_user_id/will-howard/2025-08-01_02-58-51/audio_v1.mp3';
-  const imageUrl = 'https://evfgjtpvrasitxpbftva.supabase.co/storage/v1/object/sign/ponteai-assets/avatar_assets/voice_actor_b/static/pic1.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV83MmMwYjc1My1kMzE1LTRmYjMtOTU1OC02NjVlNGFlMTBmNzMiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwb250ZWFpLWFzc2V0cy9hdmF0YXJfYXNzZXRzL3ZvaWNlX2FjdG9yX2Ivc3RhdGljL3BpYzEuanBlZyIsImlhdCI6MTc1NDAyMDc5MCwiZXhwIjoxNzU0NjI1NTkwfQ.vdxS4dkgDDPUax8lUinO_qzjwBAyHYqZcbGG1GUQJCM';
+  // Use environment variables or placeholder URLs for testing
+  // NOTE: For actual testing, get these URLs from the Supabase console for the given assets
+  const audioUrl = process.env.TEST_AUDIO_URL || 'https://example.com/test-audio.mp3';
+  const imageUrl = process.env.TEST_IMAGE_URL || 'https://example.com/test-image.jpeg';
   
   try {
     console.log('🚀 Testing D-ID video generation with audio...');

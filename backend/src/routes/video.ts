@@ -120,12 +120,12 @@ router.post('/generate', async (req: Request, res: Response) => {
       });
     }
 
-    // Validate that we have a proper URL
-    if (!imageSource.startsWith('http')) {
-      logger.error('Invalid image URL provided', { requestId, personaId, imageSource });
+    // Validate that we have a secure URL
+    if (!imageSource.startsWith('https://')) {
+      logger.error('Invalid image URL provided - must be HTTPS', { requestId, personaId, imageSource });
       return res.status(400).json({
         success: false,
-        error: 'Invalid avatar image URL provided - must be a full HTTP URL',
+        error: 'Invalid avatar image URL provided - must be a secure HTTPS URL',
         timestamp: new Date().toISOString(),
       });
     }

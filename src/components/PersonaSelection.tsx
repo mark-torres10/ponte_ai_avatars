@@ -59,7 +59,13 @@ export default function PersonaSelection({ onPersonaSelect }: PersonaSelectionPr
         
         // Only update personas if we got real images (not fallbacks)
         const hasRealImages = Object.values(avatarImages).some(images => 
-          images.some(img => !img.url.includes('picsum.photos'))
+          images.some(img => {
+            const imageUrl = typeof img === 'string' ? img : img.url;
+            // Check for multiple placeholder URL patterns
+            return !imageUrl.includes('picsum.photos') && 
+                   !imageUrl.includes('via.placeholder.com') &&
+                   !imageUrl.includes('placeholder.com');
+          })
         );
         
         if (hasRealImages) {
@@ -83,7 +89,7 @@ export default function PersonaSelection({ onPersonaSelect }: PersonaSelectionPr
     };
 
     loadImages();
-  }, []);
+  }, [personas, loadAvatarImages]);
 
   return (
     <div className="space-y-8">

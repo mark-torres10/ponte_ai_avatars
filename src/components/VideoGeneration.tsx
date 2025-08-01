@@ -63,13 +63,16 @@ export default function VideoGeneration({
       // Get the image URL (handle both string and AvatarImage object)
       const imageUrl = typeof selectedImage === 'string' ? selectedImage : selectedImage.url;
       
-      console.log('Sending video generation request:', {
-        text: currentText,
-        personaId: selectedPersona.id,
-        audioUrl: audioUrl,
-        avatarImageUrl: imageUrl,
-        useCachedAvatar: useCachedAvatar
-      });
+      // Only log in development environment
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Sending video generation request:', {
+          text: currentText,
+          personaId: selectedPersona.id,
+          audioUrl: audioUrl ? '[REDACTED]' : null,
+          avatarImageUrl: imageUrl ? '[REDACTED]' : null,
+          useCachedAvatar: useCachedAvatar
+        });
+      }
       
       const response = await apiClient.generateVideo({
         text: currentText,

@@ -170,7 +170,8 @@ class DidService {
    */
   async uploadImage(
     imageBuffer: Buffer,
-    filename?: string
+    filename?: string,
+    contentType?: string
   ): Promise<DIDUploadImageResponse> {
     const requestId = `did-upload-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
@@ -179,9 +180,31 @@ class DidService {
 
       // Create form data for multipart upload
       const form = new FormData();
+      
+      // Detect content type from filename or use provided content type
+      let detectedContentType = contentType;
+      if (!detectedContentType && filename) {
+        const extension = filename.toLowerCase().split('.').pop();
+        switch (extension) {
+          case 'png':
+            detectedContentType = 'image/png';
+            break;
+          case 'gif':
+            detectedContentType = 'image/gif';
+            break;
+          case 'webp':
+            detectedContentType = 'image/webp';
+            break;
+          default:
+            detectedContentType = 'image/jpeg';
+        }
+      } else if (!detectedContentType) {
+        detectedContentType = 'image/jpeg'; // Default fallback
+      }
+      
       form.append('image', imageBuffer, {
         filename: filename || 'avatar.jpg',
-        contentType: 'image/jpeg'
+        contentType: detectedContentType
       });
       
       if (filename) {
@@ -301,6 +324,7 @@ class DidService {
   async pollVideoStatus(talkId: string): Promise<DIDGetTalkResponse> {
     const maxAttempts = 60; // 5 minutes max (5 second intervals)
     let attempts = 0;
+    let errorRetries = 0;
     const requestId = `did-poll-${talkId}`;
 
     logger.info(`Starting to poll video status for talk ID: ${talkId}`, { requestId });
@@ -335,13 +359,14 @@ class DidService {
         await this.sleep(DID_CONFIG.retryDelay);
         
       } catch (error: any) {
-        logger.error(`Error polling video status (attempt ${attempts + 1}):`, { 
+        logger.error(`Error polling video status (attempt ${attempts + 1}, error retry ${errorRetries + 1}):`, { 
           requestId, 
           talkId,
           error: error.message 
         });
         
-        if (attempts >= DID_CONFIG.retryAttempts) {
+        errorRetries++;
+        if (errorRetries >= DID_CONFIG.retryAttempts) {
           throw this.handleDidApiError(error, 'pollVideoStatus');
         }
         

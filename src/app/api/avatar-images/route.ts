@@ -1,9 +1,18 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { AvatarImage, PersonaImages } from '@/types/avatar-images';
+
+// Validate required environment variables
+if (!process.env.SUPABASE_URL) {
+  throw new Error('SUPABASE_URL environment variable is required');
+}
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  throw new Error('SUPABASE_SERVICE_ROLE_KEY environment variable is required');
+}
 
 // Initialize Supabase client with server-side environment variables
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const prodStorageBucket = process.env.PROD_STORAGE_BUCKET || 'ponteai-assets';
 
 // Use service role key for server-side operations to bypass RLS
@@ -14,15 +23,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
   }
 });
 
-export interface AvatarImage {
-  url: string;
-  alt: string;
-  index: number;
-}
 
-export interface PersonaImages {
-  [personaId: string]: AvatarImage[];
-}
 
 /**
  * Load avatar images from Supabase storage
@@ -57,12 +58,7 @@ async function loadAvatarImages(): Promise<PersonaImages> {
           if (error) {
             console.error(`Backend: Error loading image ${imagePath}:`, error);
             // Fallback to a placeholder image
-            const randomSeed = persona.id === 'terry-crews' ? i : i + 5;
-            images.push({
-              url: `https://picsum.photos/300/300?random=${randomSeed}&blur=2`,
-              alt: `${persona.id} - Image ${i}`,
-              index: i
-            });
+            images.push(createFallbackImage(persona.id, i));
           } else if (data?.signedUrl) {
             console.log(`Backend: Successfully loaded image for ${persona.id} - Image ${i}:`, data.signedUrl.substring(0, 50) + '...');
             images.push({
@@ -74,12 +70,7 @@ async function loadAvatarImages(): Promise<PersonaImages> {
         } catch (error) {
           console.error(`Backend: Failed to load image ${imagePath}:`, error);
           // Fallback to a placeholder image
-          const randomSeed = persona.id === 'terry-crews' ? i : i + 5;
-          images.push({
-            url: `https://picsum.photos/300/300?random=${randomSeed}&blur=2`,
-            alt: `${persona.id} - Image ${i}`,
-            index: i
-          });
+          images.push(createFallbackImage(persona.id, i));
         }
       }
       
@@ -96,20 +87,26 @@ async function loadAvatarImages(): Promise<PersonaImages> {
 }
 
 /**
+ * Create fallback image for a specific persona and index
+ */
+function createFallbackImage(personaId: string, index: number): AvatarImage {
+  const randomSeed = personaId === 'terry-crews' ? index : index + 5;
+  const personaName = personaId === 'terry-crews' ? 'Terry Crews' : 'Will Howard';
+  
+  return {
+    url: `https://picsum.photos/300/300?random=${randomSeed}&blur=2`,
+    alt: `${personaName} - Image ${index}`,
+    index: index
+  };
+}
+
+/**
  * Get fallback images when Supabase is not available
  */
 function getFallbackImages(): PersonaImages {
   return {
-    'terry-crews': Array.from({ length: 5 }, (_, i) => ({
-      url: `https://picsum.photos/300/300?random=${i + 1}&blur=2`,
-      alt: `Terry Crews - Image ${i + 1}`,
-      index: i + 1
-    })),
-    'will-howard': Array.from({ length: 5 }, (_, i) => ({
-      url: `https://picsum.photos/300/300?random=${i + 6}&blur=2`,
-      alt: `Will Howard - Image ${i + 1}`,
-      index: i + 1
-    }))
+    'terry-crews': Array.from({ length: 5 }, (_, i) => createFallbackImage('terry-crews', i + 1)),
+    'will-howard': Array.from({ length: 5 }, (_, i) => createFallbackImage('will-howard', i + 1))
   };
 }
 

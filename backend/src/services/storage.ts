@@ -317,7 +317,20 @@ export const uploadVideoFile = async (options: VideoUploadOptions): Promise<Stor
 
   try {
     const client = getSupabaseClient();
-    await validateBucket(STORAGE_BUCKET);
+    
+    // Validate bucket before proceeding
+    try {
+      await validateBucket(STORAGE_BUCKET);
+    } catch (bucketError) {
+      logger.error('Bucket validation failed', { 
+        bucket: STORAGE_BUCKET, 
+        error: bucketError instanceof Error ? bucketError.message : 'Unknown error' 
+      });
+      return {
+        success: false,
+        error: `Invalid bucket configuration: ${bucketError instanceof Error ? bucketError.message : 'Unknown error'}`
+      };
+    }
 
     // Generate file paths
     const timestamp = generateTimestamp();
