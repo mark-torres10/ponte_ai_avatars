@@ -90,7 +90,7 @@ CREATE TABLE success_stories (
 ```typescript
 // GET /api/avatars - Enhanced with personality data
 // GET /api/success-stories - For emotional engagement
-// POST /api/form-progress - Save progress to localStorage
+// POST /api/form-progress - Save progress to server-side form_progress table
 // GET /api/form-progress/:sessionId - Retrieve saved progress
 ```
 
@@ -173,7 +173,7 @@ interface CampaignPreviewProps {
 // 3. AI Integration Service
 interface AIPreviewService {
   generateCampaignPreview(data: CampaignData): Promise<PreviewResult>;
-  suggestTemplates(industry: string, useCase: string): Promise<Template[]>;
+  suggestTemplates(industry: string, useCase: string): Promise<IndustryTemplate[]>;
 }
 ```
 
@@ -329,14 +329,19 @@ const calculateROI = (data: ROICalculation): ROICalculation => {
     'ecommerce': 0.10
   };
   
+  // Get conversion rate with fallback to prevent crashes
+  const conversionRate = conversionRates[data.industry] || 0.05; // Default 5% fallback
+  
   // Calculate projected revenue
-  const projectedRevenue = data.estimatedViews * 
-    conversionRates[data.industry] * data.averageOrderValue;
+  const projectedRevenue = data.estimatedViews * conversionRate * data.averageOrderValue;
   
   // Calculate ROI
   const roi = ((projectedRevenue - data.costOfCampaign) / data.costOfCampaign) * 100;
   
-  return { ...data, projectedRevenue, roi };
+  // Calculate payback period (months)
+  const paybackPeriod = data.costOfCampaign / (projectedRevenue / 12);
+  
+  return { ...data, projectedRevenue, roi, paybackPeriod };
 };
 ```
 

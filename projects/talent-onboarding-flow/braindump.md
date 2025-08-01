@@ -56,7 +56,7 @@ Build a seamless talent onboarding flow for avatar creation that allows creators
 #### Frontend Architecture
 - **Form Management**: React Hook Form vs custom state management?
 - **Validation**: Client-side validation rules?
-- **File Upload**: Direct upload or base64 encoding?
+- **File Upload**: Chunked/resumable upload using libraries like uppy, tus, or Supabase's resumable upload API
 - **Preview**: Real-time avatar preview generation?
 
 #### Data Structure
@@ -65,7 +65,7 @@ interface TalentProfile {
   id: string;
   name: string;
   email: string;
-  headshots: string[]; // URLs or base64
+  headshots: string[]; // URLs only - base64 handled transiently on client side
   videoSample?: string;
   toneDescriptors: string[];
   preferredTopics: string[];
