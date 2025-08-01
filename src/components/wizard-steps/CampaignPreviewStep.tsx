@@ -1,6 +1,6 @@
 'use client';
 
-export default function CampaignPreviewStep(): JSX.Element {
+export default function CampaignPreviewStep() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
