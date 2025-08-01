@@ -1,6 +1,7 @@
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
+const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
 // Supabase configuration
@@ -17,6 +18,16 @@ async function testSupabaseUpload() {
   console.log('🔑 Service Role Key length:', SUPABASE_SERVICE_ROLE_KEY.length);
   
   try {
+    // Initialize Supabase client
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    });
+    
+    console.log('✅ Supabase client initialized');
+    
     // Check if metadata file exists
     if (!fs.existsSync('video-metadata.json')) {
       console.error('❌ video-metadata.json not found. Please run test-video-generation.js first.');
@@ -39,9 +50,9 @@ async function testSupabaseUpload() {
     const videoBuffer = fs.readFileSync(metadata.localFilePath);
     console.log('📊 Video file size:', videoBuffer.length, 'bytes');
     
-    // Upload to Supabase
+    // Upload to Supabase using the same approach as the existing codebase
     console.log('⬆️ Uploading to Supabase...');
-    const uploadResult = await uploadToSupabase(videoBuffer, metadata.talkId);
+    const uploadResult = await uploadToSupabase(supabase, videoBuffer, metadata.talkId);
     console.log('✅ Upload result:', uploadResult);
     
     // Update metadata with upload result
@@ -62,47 +73,50 @@ async function testSupabaseUpload() {
   }
 }
 
-async function uploadToSupabase(videoBuffer, talkId) {
+async function uploadToSupabase(supabase, videoBuffer, talkId) {
   try {
     console.log('⬆️ Uploading to Supabase...');
     
-    // Create a unique filename
+    // Create a unique filename following the existing pattern
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const filename = `test-upload/did-video-${talkId}-${timestamp}.mp4`;
     
     console.log('📁 Uploading to path:', filename);
     
-    // Upload to Supabase Storage
-    const uploadResponse = await axios.post(
-      `${SUPABASE_URL}/storage/v1/object/ponteai-assets/${filename}`,
-      videoBuffer,
-      {
-        headers: {
-          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-          'Content-Type': 'video/mp4',
-          'Content-Length': videoBuffer.length.toString()
-        },
-        timeout: 60000
-      }
-    );
+    // Upload to Supabase Storage using the client library
+    const { data, error } = await supabase.storage
+      .from('ponteai-assets')
+      .upload(filename, videoBuffer, {
+        contentType: 'video/mp4',
+        upsert: false
+      });
+    
+    if (error) {
+      console.error('❌ Upload failed:', error.message);
+      throw new Error(`Upload failed: ${error.message}`);
+    }
     
     console.log('✅ Upload successful!');
     console.log('📁 File path:', filename);
-    console.log('🔗 Public URL:', `${SUPABASE_URL}/storage/v1/object/public/ponteai-assets/${filename}`);
+    console.log('📊 Upload data:', data);
+    
+    // Get the public URL
+    const { data: publicUrlData } = supabase.storage
+      .from('ponteai-assets')
+      .getPublicUrl(filename);
+    
+    console.log('🔗 Public URL:', publicUrlData.publicUrl);
     
     return {
       success: true,
       filePath: filename,
-      publicUrl: `${SUPABASE_URL}/storage/v1/object/public/ponteai-assets/${filename}`,
+      publicUrl: publicUrlData.publicUrl,
       size: videoBuffer.length,
-      response: uploadResponse.data
+      uploadData: data
     };
     
   } catch (error) {
     console.error('❌ Failed to upload to Supabase:', error.message);
-    if (error.response?.data) {
-      console.error('📊 Response data:', JSON.stringify(error.response.data, null, 2));
-    }
     throw error;
   }
 }
