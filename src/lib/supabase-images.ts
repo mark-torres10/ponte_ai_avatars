@@ -1,14 +1,3 @@
-import { createClient } from '@supabase/supabase-js';
-
-// Initialize Supabase client with fallback
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-const prodStorageBucket = process.env.PROD_STORAGE_BUCKET || 'ponteai-assets';
-
-const supabase = supabaseUrl && supabaseAnonKey 
-  ? createClient(supabaseUrl, supabaseAnonKey)
-  : null;
-
 export interface AvatarImage {
   url: string;
   alt: string;
@@ -20,95 +9,37 @@ export interface PersonaImages {
 }
 
 /**
- * Generate signed URLs for avatar images from Supabase
+ * Load avatar images by calling the backend API route
  */
 export const loadAvatarImages = async (): Promise<PersonaImages> => {
   try {
-    const personaImages: PersonaImages = {};
+    console.log('Frontend: Calling API route for avatar images...');
     
-    console.log('Starting to load avatar images from Supabase...');
-    console.log('Supabase URL:', supabaseUrl);
-    console.log('Production bucket:', prodStorageBucket);
+    const response = await fetch('/api/avatar-images');
     
-    // Check if Supabase is configured
-    if (!supabase) {
-      console.warn('Supabase not configured, using fallback images');
-      return getFallbackImages();
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.status} ${response.statusText}`);
     }
     
-    // Define the persona configurations
-    const personas = [
-      { id: 'terry-crews', folder: 'voice_actor_a' },
-      { id: 'will-howard', folder: 'voice_actor_b' }
-    ];
-
-    for (const persona of personas) {
-      const images: AvatarImage[] = [];
-      
-      // Load 5 images for each persona (pic1.jpeg through pic5.jpeg)
-      for (let i = 1; i <= 5; i++) {
-        const imagePath = `avatar_assets/${persona.folder}/static/pic${i}.jpeg`;
-        
-        try {
-          // Generate a signed URL that expires in 1 hour
-          const { data, error } = await supabase.storage
-            .from(prodStorageBucket) // Use production bucket from env var
-            .createSignedUrl(imagePath, 3600); // 1 hour expiry
-          
-          if (error) {
-            console.error(`Error loading image ${imagePath}:`, error);
-            // Fallback to a placeholder image
-            const randomSeed = persona.id === 'terry-crews' ? i : i + 5;
-            images.push({
-              url: `https://picsum.photos/300/300?random=${randomSeed}&blur=2`,
-              alt: `${persona.id} - Image ${i}`,
-              index: i
-            });
-          } else if (data?.signedUrl) {
-            console.log(`Successfully loaded image for ${persona.id} - Image ${i}:`, data.signedUrl.substring(0, 50) + '...');
-            images.push({
-              url: data.signedUrl,
-              alt: `${persona.id} - Image ${i}`,
-              index: i
-            });
-          }
-        } catch (error) {
-          console.error(`Failed to load image ${imagePath}:`, error);
-          // Fallback to a placeholder image
-          const randomSeed = persona.id === 'terry-crews' ? i : i + 5;
-          images.push({
-            url: `https://picsum.photos/300/300?random=${randomSeed}&blur=2`,
-            alt: `${persona.id} - Image ${i}`,
-            index: i
-          });
-        }
-      }
-      
-      personaImages[persona.id] = images;
+    const result = await response.json();
+    
+    if (result.success) {
+      console.log('Frontend: Successfully loaded avatar images from API');
+      return result.data;
+    } else {
+      console.warn('Frontend: API returned error, using fallback images');
+      return result.data; // API returns fallback images on error
     }
-
-    return personaImages;
   } catch (error) {
-    console.error('Failed to load avatar images:', error);
+    console.error('Frontend: Failed to load avatar images from API:', error);
     
-    // Return fallback images if loading fails
+    // Return fallback images if API call fails
     return getFallbackImages();
   }
 };
 
 /**
- * Get public URL for an image (if bucket is public)
- */
-export const getPublicImageUrl = (personaId: string, imageIndex: number): string => {
-  const folder = personaId === 'terry-crews' ? 'voice_actor_a' : 'voice_actor_b';
-  const imagePath = `avatar_assets/${folder}/static/pic${imageIndex}.jpeg`;
-  
-  // If your bucket is public, you can use the public URL
-  return `${supabaseUrl}/storage/v1/object/public/${prodStorageBucket}/${imagePath}`;
-};
-
-/**
- * Get fallback images when Supabase is not available
+ * Get fallback images when API is not available
  */
 const getFallbackImages = (): PersonaImages => {
   return {
@@ -123,11 +54,4 @@ const getFallbackImages = (): PersonaImages => {
       index: i + 1
     }))
   };
-};
-
-/**
- * Check if Supabase is configured
- */
-export const isSupabaseConfigured = (): boolean => {
-  return !!(supabaseUrl && supabaseAnonKey);
 }; 
