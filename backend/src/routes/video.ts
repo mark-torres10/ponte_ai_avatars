@@ -214,11 +214,47 @@ router.post('/generate', async (req: Request, res: Response) => {
         // Map persona ID to voice actor ID
         const voiceActorId = personaId === 'terry-crews' ? 'voice_actor_a' : 'voice_actor_b';
         
-        // Generate video using the new service
+        // Create signed URL for audio file
+        logger.info('Creating signed URL for audio file', { requestId, audioUrl });
+        
+        let signedAudioUrl: string;
+        let audioFileKey: string;
+        
+        // Check if audioUrl is a base64 data URL or a Supabase storage URL
+        if (audioUrl.startsWith('data:audio/')) {
+          // Handle base64 data URL - use it directly for D-ID
+          logger.info('Using base64 audio data directly for D-ID', { requestId });
+          signedAudioUrl = audioUrl;
+          // For base64 URLs, we'll use a placeholder for the file key since it's not stored in Supabase
+          audioFileKey = 'base64_audio_data';
+        } else {
+          // Handle Supabase storage URL
+          const audioUrlMatch = audioUrl.match(/\/storage\/v1\/object\/public\/(.+)$/);
+          if (!audioUrlMatch || !audioUrlMatch[1]) {
+            throw new Error('Could not extract audio file key from URL');
+          }
+          audioFileKey = decodeURIComponent(audioUrlMatch[1]);
+          
+          // Create signed URL for audio with longer expiry for D-ID processing
+          signedAudioUrl = await createPublicImageUrl(
+            audioFileKey,
+            'test-bucket-ponteai', // Audio is in test bucket
+            7200 // 2 hours expiry for D-ID processing
+          );
+        }
+        
+        logger.info('Successfully created signed audio URL for D-ID', { 
+          requestId, 
+          audioFileKey, 
+          signedUrl: signedAudioUrl.substring(0, 50) + '...' 
+        });
+        
+        // Generate video using the new service with signed URLs
         const videoResult: VideoGenerationResult = await didService.generateVideo({
           scriptText: text,
           voiceActorId: voiceActorId as 'voice_actor_a' | 'voice_actor_b',
-          sourceUrl: publicImageUrl
+          audioUrl: signedAudioUrl,
+          imageUrl: publicImageUrl
         });
 
         if (!videoResult.success || !videoResult.data?.videoUrl) {
@@ -239,7 +275,7 @@ router.post('/generate', async (req: Request, res: Response) => {
         const videoFileKey = generateFilePath(requesterId, personaId, timestamp, `video_v${version}.mp4`);
         const metadataKey = generateFilePath(requesterId, personaId, timestamp, 'video_metadata.json');
 
-        // Upload video file
+        // Upload video file with proper metadata
         const videoUploadResult = await uploadVideoFile({
           requesterId,
           voiceActorId: personaId,
@@ -247,6 +283,8 @@ router.post('/generate', async (req: Request, res: Response) => {
           text,
           format: 'mp4',
           version,
+          audioFileKey: audioFileKey,
+          imageFileKey: imagePath,
           apiResponseData: {
             did_response: {
               talk_id: videoResult.data?.taskId || 'unknown',
