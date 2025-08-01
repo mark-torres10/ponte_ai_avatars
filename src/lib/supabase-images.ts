@@ -38,17 +38,20 @@ export const loadAvatarImages = async (): Promise<PersonaImages> => {
       return result.data; // API returns fallback images on error
     }
   } catch (error) {
-    // Distinguish between different error types
-    if (error instanceof Error) {
-      if (error.name === 'AbortError') {
-        console.error('Frontend: Request timeout while loading avatar images');
-      } else if (error.message.includes('Failed to fetch')) {
-        console.error('Frontend: Network error while loading avatar images');
+    // Only log errors in development environment
+    if (process.env.NODE_ENV === 'development') {
+      // Distinguish between different error types
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          console.error('Frontend: Request timeout while loading avatar images');
+        } else if (error.message.includes('Failed to fetch')) {
+          console.error('Frontend: Network error while loading avatar images');
+        } else {
+          console.error('Frontend: Failed to load avatar images from API:', error.message);
+        }
       } else {
-        console.error('Frontend: Failed to load avatar images from API:', error.message);
+        console.error('Frontend: Unknown error while loading avatar images');
       }
-    } else {
-      console.error('Frontend: Unknown error while loading avatar images');
     }
     
     // Return fallback images if API call fails
