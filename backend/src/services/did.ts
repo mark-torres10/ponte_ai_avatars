@@ -234,8 +234,6 @@ class DidService {
         sourceImageId: params.sourceImageId, 
         scriptLength: params.scriptText.length 
       });
-
-      const presenterUrl = params.presenterId || VOICE_ACTOR_CONFIG.voiceActorA.imageUrl;
       
       const requestData: any = {
         script: {
