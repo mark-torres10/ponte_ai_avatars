@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { WizardFormData, WizardStepProps } from '@/types/wizard';
+import { WizardStepProps } from '@/types/wizard';
 
 export default function BrandCustomizationStep({ onDataUpdate, formData }: WizardStepProps) {
   const [selectedVoice, setSelectedVoice] = useState<string>('');

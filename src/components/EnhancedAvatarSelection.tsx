@@ -79,7 +79,7 @@ export default function EnhancedAvatarSelection({
     }
 
     return PERSONAS.map(persona => {
-      const images = (avatarImages as Record<string, any>)?.[persona.id] || [];
+      const images = (avatarImages as Record<string, Array<{url: string; alt: string}>>)?.[persona.id] || [];
       const personality = avatarPersonalities[persona.id as keyof typeof avatarPersonalities];
       const isSelected = selectedPersonaId === persona.id;
 

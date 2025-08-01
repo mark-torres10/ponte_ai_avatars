@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { WizardFormData, WizardStepProps } from '@/types/wizard';
+import { WizardStepProps } from '@/types/wizard';
 
 interface ValidationErrors {
   brandMission?: string;
@@ -47,23 +47,30 @@ export default function StoryCreationStep({ onDataUpdate, formData }: WizardStep
     return undefined;
   };
 
-  // Validate all fields and update form validity
-  const validateForm = (): boolean => {
-    const newErrors: ValidationErrors = {};
-    let isValid = true;
+  // Validate on mount if form data exists and when storyData changes
+  useEffect(() => {
+    if (Object.values(storyData).some(value => value)) {
+      // Validate all fields and update form validity
+      const validateForm = (): boolean => {
+        const newErrors: ValidationErrors = {};
+        let isValid = true;
 
-    Object.keys(storyData).forEach(field => {
-      const error = validateField(field, storyData[field as keyof typeof storyData]);
-      if (error) {
-        newErrors[field as keyof ValidationErrors] = error;
-        isValid = false;
-      }
-    });
+        Object.keys(storyData).forEach(field => {
+          const error = validateField(field, storyData[field as keyof typeof storyData]);
+          if (error) {
+            newErrors[field as keyof ValidationErrors] = error;
+            isValid = false;
+          }
+        });
 
-    setErrors(newErrors);
-    setIsFormValid(isValid);
-    return isValid;
-  };
+        setErrors(newErrors);
+        setIsFormValid(isValid);
+        return isValid;
+      };
+      
+      validateForm();
+    }
+  }, [storyData]);
 
   const handleInputChange = (field: string, value: string) => {
     const updatedData = { ...storyData, [field]: value };
@@ -84,13 +91,6 @@ export default function StoryCreationStep({ onDataUpdate, formData }: WizardStep
     const error = validateField(field, storyData[field as keyof typeof storyData]);
     setErrors(prev => ({ ...prev, [field]: error }));
   };
-
-  // Validate on mount if form data exists and when storyData changes
-  useEffect(() => {
-    if (Object.values(storyData).some(value => value)) {
-      validateForm();
-    }
-  }, [storyData]);
 
   const getFieldClassName = (field: string) => {
     const hasError = errors[field as keyof ValidationErrors];

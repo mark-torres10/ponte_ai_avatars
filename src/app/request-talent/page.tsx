@@ -111,16 +111,16 @@ export default function RequestTalentPage() {
   const validateStep3 = useCallback((): boolean => {
     const { brandMission, storyToTell, emotionalTone, callToAction } = formData;
     return (
-      brandMission && 
+      Boolean(brandMission) && 
       typeof brandMission === 'string' && 
       brandMission.trim().length >= 10 &&
-      storyToTell && 
+      Boolean(storyToTell) && 
       typeof storyToTell === 'string' && 
       storyToTell.trim().length >= 20 &&
-      emotionalTone && 
+      Boolean(emotionalTone) && 
       typeof emotionalTone === 'string' &&
       emotionalTone.trim() !== '' &&
-      callToAction && 
+      Boolean(callToAction) && 
       typeof callToAction === 'string' && 
       callToAction.trim().length >= 5
     );
@@ -196,12 +196,7 @@ export default function RequestTalentPage() {
       title: 'Preview',
       emotionalTitle: "See Your Future 🔮",
       description: 'Here\'s your campaign in action',
-      component: (
-        <CampaignPreviewStep
-          onDataUpdate={handleDataUpdate}
-          formData={formData}
-        />
-      ),
+      component: <CampaignPreviewStep />,
       isComplete: false,
       isAccessible: true
     },
@@ -209,13 +204,8 @@ export default function RequestTalentPage() {
       id: 'success-story',
       title: 'Success',
       emotionalTitle: "Your Success Story 📈",
-      description: 'Here\'s what success looks like for you',
-      component: (
-        <SuccessStoryStep
-          onDataUpdate={handleDataUpdate}
-          formData={formData}
-        />
-      ),
+      description: 'See what success looks like',
+      component: <SuccessStoryStep />,
       isComplete: false,
       isAccessible: true
     },

@@ -2,7 +2,7 @@
 
 import { WizardStepProps } from '@/types/wizard';
 
-export default function FinalReviewStep({ onDataUpdate, onComplete, formData }: WizardStepProps) {
+export default function FinalReviewStep({ onComplete, formData }: WizardStepProps) {
 
   const handleSubmit = () => {
     if (onComplete) {

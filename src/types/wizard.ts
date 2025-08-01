@@ -6,13 +6,25 @@ export interface WizardFormData {
   storyToTell?: string;
   emotionalTone?: string;
   callToAction?: string;
-  selectedAvatar?: any;
+  selectedAvatar?: {
+    id: string;
+    name: string;
+    description?: string;
+  };
   quizResults?: {
     persona: string;
     score: number;
   };
-  recommendedAvatar?: any;
-  selectedPersona?: any;
+  recommendedAvatar?: {
+    id: string;
+    name: string;
+    description?: string;
+  };
+  selectedPersona?: {
+    id: string;
+    name: string;
+    description?: string;
+  };
   landingInteraction?: boolean;
   engagementTime?: number;
   viewedStories?: number;

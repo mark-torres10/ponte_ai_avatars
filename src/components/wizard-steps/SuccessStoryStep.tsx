@@ -1,8 +1,6 @@
 'use client';
 
-import { WizardStepProps } from '@/types/wizard';
-
-export default function SuccessStoryStep({ onDataUpdate, formData }: WizardStepProps) {
+export default function SuccessStoryStep(): JSX.Element {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
