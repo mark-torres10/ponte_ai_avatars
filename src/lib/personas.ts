@@ -1,8 +1,10 @@
+import { AvatarImage } from './supabase-images';
+
 export interface Persona {
   id: string;
   name: string;
   description: string;
-  images: string[];
+  images: string[] | AvatarImage[];
   selected: boolean;
 }
 

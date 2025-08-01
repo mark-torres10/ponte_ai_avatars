@@ -19,10 +19,10 @@ import {
 
 const router = Router();
 
-// Persona image URLs for D-ID
+// Persona image URLs for D-ID - using publicly accessible images
 const PERSONA_IMAGES = {
-  'terry-crews': 'https://public.ponteai.com/voice_actor_a/pic1.jpeg',
-  'will-howard': 'https://public.ponteai.com/voice_actor_b/pic1.jpeg',
+  'terry-crews': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face',
+  'will-howard': 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face',
 };
 
 // Video generation request interface

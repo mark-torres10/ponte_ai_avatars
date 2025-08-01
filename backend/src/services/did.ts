@@ -100,18 +100,12 @@ export const createTalk = async (
   try {
     logger.info('Creating D-ID talk', { requestId, sourceUrl, scriptLength: scriptText.length });
 
+    // Simplified payload to avoid potential circular reference issues
     const payload: DIDCreateTalkRequest = {
       source_url: sourceUrl,
       script: {
         type: 'text',
         input: scriptText,
-      },
-      config: {
-        fluent: true,
-        pad_audio: 0.5,
-        stitch: true,
-        result_format: 'mp4',
-        quality: 'preview',
       },
     };
 

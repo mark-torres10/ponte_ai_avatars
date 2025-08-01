@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Persona, PERSONAS, resetPersonaSelection } from '@/lib/personas';
+import { loadAvatarImages, AvatarImage } from '@/lib/supabase-images';
 
 interface PersonaSelectionProps {
   onPersonaSelect?: (persona: Persona | null) => void;
@@ -11,6 +12,8 @@ interface PersonaSelectionProps {
 export default function PersonaSelection({ onPersonaSelect }: PersonaSelectionProps) {
   const [personas, setPersonas] = useState<Persona[]>(PERSONAS);
   const [selectedPersona, setSelectedPersona] = useState<Persona | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const handlePersonaSelect = (personaId: string) => {
     const updatedPersonas = personas.map(persona => ({
@@ -45,6 +48,33 @@ export default function PersonaSelection({ onPersonaSelect }: PersonaSelectionPr
     }
   };
 
+  // Load avatar images from Supabase on component mount
+  useEffect(() => {
+    const loadImages = async () => {
+      try {
+        setIsLoading(true);
+        setLoadError(null);
+        
+        const avatarImages = await loadAvatarImages();
+        
+        // Update personas with loaded images
+        const updatedPersonas = personas.map(persona => ({
+          ...persona,
+          images: avatarImages[persona.id] || persona.images
+        }));
+        
+        setPersonas(updatedPersonas);
+      } catch (error) {
+        console.error('Failed to load avatar images:', error);
+        setLoadError('Failed to load avatar images. Using fallback images.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadImages();
+  }, []);
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -56,6 +86,23 @@ export default function PersonaSelection({ onPersonaSelect }: PersonaSelectionPr
           Select a persona to generate your personalized AI avatar content
         </p>
       </div>
+
+      {/* Loading State */}
+      {isLoading && (
+        <div className="text-center py-8">
+          <div className="inline-flex items-center gap-2">
+            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-foreground/70">Loading avatar images...</span>
+          </div>
+        </div>
+      )}
+
+      {/* Error State */}
+      {loadError && (
+        <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+          <p className="text-yellow-600 text-sm">{loadError}</p>
+        </div>
+      )}
 
       {/* Persona Grid */}
       <div className="grid md:grid-cols-2 gap-8">
@@ -82,24 +129,32 @@ export default function PersonaSelection({ onPersonaSelect }: PersonaSelectionPr
 
             {/* Image Gallery */}
             <div className="grid grid-cols-2 gap-2 mb-4">
-              {persona.images.map((image, index) => (
-                <div
-                  key={index}
-                  className="aspect-square rounded-lg overflow-hidden bg-muted relative"
-                >
-                  <Image
-                    src={image}
-                    alt={`${persona.name} - Image ${index + 1}`}
-                    fill
-                    className="object-cover hover:scale-110 transition-transform duration-300"
-                    sizes="(max-width: 768px) 50vw, 25vw"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                    }}
-                  />
-                </div>
-              ))}
+              {persona.images.map((image, index) => {
+                // Handle both string URLs and AvatarImage objects
+                const imageUrl = typeof image === 'string' ? image : image.url;
+                const imageAlt = typeof image === 'string' 
+                  ? `${persona.name} - Image ${index + 1}` 
+                  : image.alt;
+                
+                return (
+                  <div
+                    key={index}
+                    className="aspect-square rounded-lg overflow-hidden bg-muted relative"
+                  >
+                    <Image
+                      src={imageUrl}
+                      alt={imageAlt}
+                      fill
+                      className="object-cover hover:scale-110 transition-transform duration-300"
+                      sizes="(max-width: 768px) 50vw, 25vw"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                );
+              })}
             </div>
 
             {/* Selection Indicator */}
