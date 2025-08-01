@@ -116,7 +116,7 @@ class DidService {
       baseURL: `${this.baseUrl}`,
       timeout: DID_CONFIG.timeout,
       headers: {
-        'Authorization': `Basic ${this.apiKey}`,
+        'Authorization': `Basic ${Buffer.from(`${this.apiKey}:`).toString('base64')}`,
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       }
@@ -136,17 +136,17 @@ class DidService {
     try {
       logger.info('Testing D-ID API connection', { requestId });
 
-      // Test with a simple endpoint - get voices
-      const response = await this.client.get('/voices');
+      // Test with a simple endpoint - get talks
+      const response = await this.client.get('/talks');
       const data = response.data as any;
-      const voicesCount = Array.isArray(data) ? data.length : 0;
+      const talksCount = Array.isArray(data) ? data.length : 0;
       
-      logger.info('D-ID API test successful', { requestId, voicesCount });
+      logger.info('D-ID API test successful', { requestId, talksCount });
       
       return {
         valid: true,
         accountStatus: {
-          voicesAvailable: voicesCount,
+          talksAvailable: talksCount,
           apiKeyValid: true
         }
       };
@@ -222,6 +222,8 @@ class DidService {
     sourceUrl?: string;
     sourceImageId?: string;
     presenterId?: string;
+    audioUrl?: string;
+    imageUrl?: string;
   }): Promise<DIDCreateTalkResponse> {
     const requestId = `did-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
@@ -237,27 +239,27 @@ class DidService {
       
       const requestData: any = {
         script: {
-          type: 'text',
-          input: params.scriptText,
-          provider: { type: 'microsoft' },
-          ssml: false,
-          subtitles: 'false'
+          type: 'audio',
+          audio_url: params.audioUrl,
+          reduce_noise: true
         },
         config: {
           result_format: 'mp4',
-          fluent: false,
+          fluent: true,
           pad_audio: 0.0,
           stitch: true,
           align_driver: true,
-          align_expand_factor: 1.0
+          align_expand_factor: 0.3
         }
       };
 
       // Add source (either URL or image ID)
       if (params.sourceImageId) {
         requestData.source_image_id = params.sourceImageId;
+      } else if (params.imageUrl) {
+        requestData.source_url = params.imageUrl;
       } else {
-        requestData.source_url = params.sourceUrl || presenterUrl;
+        requestData.source_url = params.sourceUrl || VOICE_ACTOR_CONFIG.voiceActorA.imageUrl;
       }
 
       logger.info('Creating D-ID talk request:', {
@@ -356,30 +358,26 @@ class DidService {
     voiceActorId?: 'voice_actor_a' | 'voice_actor_b';
     sourceUrl?: string;
     sourceImageId?: string;
+    audioUrl?: string;
+    imageUrl?: string;
   }): Promise<VideoGenerationResult> {
     try {
       logger.info('Starting video generation process', { voiceActorId: params.voiceActorId });
-      
-      // Determine the presenter based on voice actor selection
-      let presenterUrl = params.sourceUrl;
-      if (!presenterUrl && !params.sourceImageId) {
-        if (params.voiceActorId === 'voice_actor_b') {
-          presenterUrl = VOICE_ACTOR_CONFIG.voiceActorB.imageUrl;
-        } else {
-          presenterUrl = VOICE_ACTOR_CONFIG.voiceActorA.imageUrl;
-        }
-      }
       
       // Step 1: Create talk request
       const talkRequestParams: any = {
         scriptText: params.scriptText
       };
       
-      if (presenterUrl) {
-        talkRequestParams.sourceUrl = presenterUrl;
+      if (params.audioUrl) {
+        talkRequestParams.audioUrl = params.audioUrl;
       }
-      if (params.sourceImageId) {
+      if (params.imageUrl) {
+        talkRequestParams.imageUrl = params.imageUrl;
+      } else if (params.sourceImageId) {
         talkRequestParams.sourceImageId = params.sourceImageId;
+      } else if (params.sourceUrl) {
+        talkRequestParams.sourceUrl = params.sourceUrl;
       }
       
       const talkRequest = await this.createTalkRequest(talkRequestParams);

@@ -33,6 +33,7 @@ export interface StorageMetadata {
   text: string;
   audio_file_key: string;
   video_file_key?: string;
+  image_file_key?: string;
   generation_timestamp: string;
   api_response_data: {
     elevenlabs_response?: ElevenLabsResponse;
@@ -70,6 +71,8 @@ export interface VideoUploadOptions {
   text: string;
   format?: string;
   version?: number;
+  audioFileKey?: string;
+  imageFileKey?: string;
   apiResponseData?: {
     did_response?: DIDResponse;
   };
@@ -307,6 +310,8 @@ export const uploadVideoFile = async (options: VideoUploadOptions): Promise<Stor
     text,
     format = 'mp4',
     version = 1,
+    audioFileKey = '',
+    imageFileKey = '',
     apiResponseData = {}
   } = options;
 
@@ -342,8 +347,9 @@ export const uploadVideoFile = async (options: VideoUploadOptions): Promise<Stor
     const videoMetadata: StorageMetadata = {
       actor: voiceActorId,
       text: text,
-      audio_file_key: '', // Will be updated if audio file exists
+      audio_file_key: audioFileKey,
       video_file_key: fileKey,
+      image_file_key: imageFileKey,
       generation_timestamp: timestamp,
       api_response_data: {
         ...(apiResponseData.did_response && { did_response: apiResponseData.did_response })
