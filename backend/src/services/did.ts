@@ -264,8 +264,13 @@ class DidService {
 
       logger.info('Creating D-ID talk request:', {
         requestId,
-        presenterUrl: params.sourceImageId ? `image_id: ${params.sourceImageId}` : (params.sourceUrl || presenterUrl),
-        scriptLength: params.scriptText.length
+        imageUrl: params.imageUrl || params.sourceUrl || 'fallback_url',
+        scriptLength: params.scriptText.length,
+        requestData: {
+          source_url: requestData.source_url,
+          source_image_id: requestData.source_image_id,
+          audio_url: requestData.script.audio_url?.substring(0, 50) + '...'
+        }
       });
 
       const response = await this.client.post('/talks', requestData);
