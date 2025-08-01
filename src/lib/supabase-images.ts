@@ -5,10 +5,8 @@ import { PersonaImages } from '@/types/avatar-images';
  */
 export const loadAvatarImages = async (): Promise<PersonaImages> => {
   try {
-    // Only log in development environment
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Frontend: Calling API route for avatar images...');
-    }
+    // Always log in production for debugging
+    console.log('Frontend: Calling API route for avatar images...');
     
     // Add timeout to prevent hanging requests
     const controller = new AbortController();
@@ -21,37 +19,32 @@ export const loadAvatarImages = async (): Promise<PersonaImages> => {
     clearTimeout(timeoutId);
     
     if (!response.ok) {
+      console.error('Frontend: API request failed:', response.status, response.statusText);
       throw new Error(`API request failed: ${response.status} ${response.statusText}`);
     }
     
     const result = await response.json();
+    console.log('Frontend: API response received:', result.success ? 'success' : 'error');
     
     if (result.success) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Frontend: Successfully loaded avatar images from API');
-      }
+      console.log('Frontend: Successfully loaded avatar images from API');
       return result.data;
     } else {
-      if (process.env.NODE_ENV === 'development') {
-        console.warn('Frontend: API returned error, using fallback images');
-      }
+      console.warn('Frontend: API returned error, using fallback images');
       return result.data; // API returns fallback images on error
     }
   } catch (error) {
-    // Only log errors in development environment
-    if (process.env.NODE_ENV === 'development') {
-      // Distinguish between different error types
-      if (error instanceof Error) {
-        if (error.name === 'AbortError') {
-          console.error('Frontend: Request timeout while loading avatar images');
-        } else if (error.message.includes('Failed to fetch')) {
-          console.error('Frontend: Network error while loading avatar images');
-        } else {
-          console.error('Frontend: Failed to load avatar images from API:', error.message);
-        }
+    // Always log errors for debugging
+    if (error instanceof Error) {
+      if (error.name === 'AbortError') {
+        console.error('Frontend: Request timeout while loading avatar images');
+      } else if (error.message.includes('Failed to fetch')) {
+        console.error('Frontend: Network error while loading avatar images');
       } else {
-        console.error('Frontend: Unknown error while loading avatar images');
+        console.error('Frontend: Failed to load avatar images from API:', error.message);
       }
+    } else {
+      console.error('Frontend: Unknown error while loading avatar images');
     }
     
     // Return fallback images if API call fails
@@ -63,6 +56,7 @@ export const loadAvatarImages = async (): Promise<PersonaImages> => {
  * Get fallback images when API is not available
  */
 const getFallbackImages = (): PersonaImages => {
+  console.log('Frontend: Using fallback images');
   return {
     'terry-crews': Array.from({ length: 5 }, (_, i) => ({
       url: `https://picsum.photos/300/300?random=${i + 1}&blur=2`,

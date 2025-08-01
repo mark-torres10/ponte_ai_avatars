@@ -55,33 +55,21 @@ export default function PersonaSelection({ onPersonaSelect }: PersonaSelectionPr
         setIsLoading(true);
         setLoadError(null);
         
+        console.log('PersonaSelection: Starting to load avatar images...');
         const avatarImages = await loadAvatarImages();
+        console.log('PersonaSelection: Avatar images loaded:', Object.keys(avatarImages));
         
-        // Only update personas if we got real images (not fallbacks)
-        const hasRealImages = Object.values(avatarImages).some(images => 
-          images.some(img => {
-            const imageUrl = typeof img === 'string' ? img : img.url;
-            // Check for multiple placeholder URL patterns
-            return !imageUrl.includes('picsum.photos') && 
-                   !imageUrl.includes('via.placeholder.com') &&
-                   !imageUrl.includes('placeholder.com');
-          })
-        );
+        // Always update personas with loaded images, even if they're fallbacks
+        const updatedPersonas = personas.map(persona => ({
+          ...persona,
+          images: avatarImages[persona.id] || persona.images
+        }));
         
-        if (hasRealImages) {
-          // Update personas with loaded images
-          const updatedPersonas = personas.map(persona => ({
-            ...persona,
-            images: avatarImages[persona.id] || persona.images
-          }));
-          
-          setPersonas(updatedPersonas);
-        } else {
-          // If we only got fallback images, don't show them
-          setLoadError('Failed to load real avatar images. Please try again.');
-        }
+        setPersonas(updatedPersonas);
+        console.log('PersonaSelection: Personas updated with images');
+        
       } catch (error) {
-        console.error('Failed to load avatar images:', error);
+        console.error('PersonaSelection: Failed to load avatar images:', error);
         setLoadError('Failed to load avatar images. Please try again.');
       } finally {
         setIsLoading(false);
@@ -89,7 +77,7 @@ export default function PersonaSelection({ onPersonaSelect }: PersonaSelectionPr
     };
 
     loadImages();
-  }, [personas]);
+  }, []); // Empty dependency array - only run once on mount
 
   return (
     <div className="space-y-8">

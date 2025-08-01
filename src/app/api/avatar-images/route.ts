@@ -116,6 +116,8 @@ export async function GET() {
     
     const avatarImages = await loadAvatarImages();
     
+    console.log('Backend: Successfully loaded avatar images:', Object.keys(avatarImages));
+    
     return NextResponse.json({
       success: true,
       data: avatarImages
@@ -123,10 +125,14 @@ export async function GET() {
   } catch (error) {
     console.error('Backend: API route error:', error);
     
+    // Always return fallback images to prevent frontend from hanging
+    const fallbackImages = getFallbackImages();
+    console.log('Backend: Returning fallback images due to error');
+    
     return NextResponse.json({
       success: false,
       error: 'Failed to load avatar images',
-      data: getFallbackImages()
+      data: fallbackImages
     }, { status: 500 });
   }
 } 
