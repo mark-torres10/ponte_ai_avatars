@@ -2,6 +2,7 @@ import { Router } from 'express';
 import healthRoutes from './health';
 import textRoutes from './text';
 import voiceRoutes from './voice';
+import videoRoutes from './video';
 
 const router = Router();
 
@@ -20,6 +21,9 @@ router.use('/api/text', textRoutes);
 
 // Voice generation routes
 router.use('/api/voice', voiceRoutes);
+
+// Video generation routes
+router.use('/api/video', videoRoutes);
 
 // Placeholder for future avatar generation routes
 router.use('/api/v1/avatar', (_req, res) => {
