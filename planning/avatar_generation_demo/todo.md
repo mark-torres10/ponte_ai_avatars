@@ -49,7 +49,29 @@
   - [ ] Ensure responsive design and brand consistency
   - [ ] Test complete voice generation flow
 
-## Phase 4: Video Generation
+## Phase 4: Storage Integration
+- [x] **PON-38**: Implement Supabase storage integration for audio and text assets
+  - [x] Add Supabase client dependency to backend
+  - [x] Update environment configuration to include Supabase credentials
+  - [x] Create Supabase client configuration and validation
+  - [x] Add storage service module for file operations
+  - [x] Create metadata generation utilities
+  - [x] Implement file upload functionality with versioning
+  - [x] Create metadata.json file generation
+  - [x] Implement file structure following specified hierarchy
+  - [x] Add error handling for storage failures
+  - [x] Support multiple audio formats (MP3, WAV)
+  - [x] Modify voice generation endpoint to save to Supabase
+  - [x] Update response format to include storage information
+  - [x] Add version tracking for audio files
+  - [x] Implement proper error responses for storage failures
+  - [x] Add storage error display component
+  - [x] Update voice generation flow to handle storage errors
+  - [x] Write unit tests for storage service
+  - [x] Test integration with voice generation
+  - [x] Validate file structure and metadata
+
+## Phase 5: Video Generation
 - [ ] **PON-23**: Implement video generation backend (D-ID integration)
   - [ ] Add D-ID API integration to backend
   - [ ] Create video generation endpoint
@@ -69,7 +91,7 @@
   - [ ] Ensure responsive design and brand consistency
   - [ ] Test complete video generation flow
 
-## Phase 5: Final Polish
+## Phase 6: Final Polish
 - [ ] **PON-25**: Implement feedback form and final polish
   - [ ] Create feedback form component
   - [ ] Implement form validation and submission
