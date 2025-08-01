@@ -453,3 +453,56 @@ export const listFiles = async (
     return [];
   }
 }; 
+
+/**
+ * Create a public signed URL for an image from Supabase storage
+ */
+export const createPublicImageUrl = async (
+  imagePath: string,
+  bucketName: string = config.STORAGE_BUCKET,
+  expirySeconds: number = 3600 // 1 hour
+): Promise<string> => {
+  const requestId = `public-url-${Date.now()}`;
+  
+  try {
+    logger.info('Creating public signed URL for image', { 
+      requestId, 
+      imagePath, 
+      bucketName, 
+      expirySeconds 
+    });
+
+    const supabaseClient = getSupabaseClient();
+    const { data, error } = await supabaseClient.storage
+      .from(bucketName)
+      .createSignedUrl(imagePath, expirySeconds);
+
+    if (error) {
+      logger.error('Failed to create signed URL', { 
+        requestId, 
+        imagePath, 
+        error: error.message 
+      });
+      throw new Error(`Failed to create signed URL: ${error.message}`);
+    }
+
+    if (!data?.signedUrl) {
+      throw new Error('No signed URL returned from Supabase');
+    }
+
+    logger.info('Successfully created public signed URL', { 
+      requestId, 
+      imagePath, 
+      url: data.signedUrl.substring(0, 50) + '...' 
+    });
+
+    return data.signedUrl;
+  } catch (error) {
+    logger.error('Error creating public image URL', { 
+      requestId, 
+      imagePath, 
+      error: error instanceof Error ? error.message : error 
+    });
+    throw error;
+  }
+}; 

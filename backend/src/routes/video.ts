@@ -5,16 +5,18 @@ import {
   createTalk, 
   waitForTalkCompletion, 
   downloadVideo, 
+  testDIDConnection,
   isDIDConfigured,
   DIDCreateTalkResponse,
-  DIDGetTalkResponse 
+  DIDGetTalkResponse
 } from '../services/did';
 import { 
   uploadVideoFile, 
   getPublicUrl, 
   generateFilePath, 
   generateTimestamp,
-  getNextVersion 
+  getNextVersion,
+  createPublicImageUrl
 } from '../services/storage';
 
 const router = Router();
@@ -30,6 +32,7 @@ interface GenerateVideoRequest {
   text: string;
   personaId: string;
   audioUrl: string;
+  avatarImageUrl?: string;
   useCachedAvatar?: boolean;
 }
 
@@ -67,7 +70,7 @@ router.post('/generate', async (req: Request, res: Response) => {
   const requestId = req.headers['x-request-id'] as string;
 
   try {
-    const { text, personaId, audioUrl, useCachedAvatar = false }: GenerateVideoRequest = req.body;
+    const { text, personaId, audioUrl, avatarImageUrl, useCachedAvatar = false }: GenerateVideoRequest = req.body;
 
     // Validate input
     if (!text || typeof text !== 'string') {
@@ -99,11 +102,32 @@ router.post('/generate', async (req: Request, res: Response) => {
 
     // Validate persona exists
     const personaImage = PERSONA_IMAGES[personaId as keyof typeof PERSONA_IMAGES];
-    if (!personaImage) {
+    if (!personaImage && !avatarImageUrl) {
       logger.warn('Invalid persona ID provided for video generation', { requestId, personaId });
       return res.status(400).json({
         success: false,
-        error: 'Invalid persona ID provided',
+        error: 'Invalid persona ID provided or missing avatar image URL',
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    // Use provided avatar image URL or fallback to persona image
+    const imageSource = avatarImageUrl || personaImage;
+    if (!imageSource) {
+      logger.warn('No image source available for video generation', { requestId, personaId, avatarImageUrl });
+      return res.status(400).json({
+        success: false,
+        error: 'No avatar image available for video generation',
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    // Validate that we have a proper URL
+    if (!imageSource.startsWith('http')) {
+      logger.error('Invalid image URL provided', { requestId, personaId, imageSource });
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid avatar image URL provided - must be a full HTTP URL',
         timestamp: new Date().toISOString(),
       });
     }
@@ -118,10 +142,25 @@ router.post('/generate', async (req: Request, res: Response) => {
       });
     }
 
+    // Test D-ID API connection before proceeding
+    logger.info('Testing D-ID API connection', { requestId });
+    const didTest = await testDIDConnection();
+    if (!didTest.valid) {
+      logger.error('D-ID API connection test failed', { requestId, error: didTest.error });
+      return res.status(500).json({
+        success: false,
+        error: `D-ID API connection failed: ${didTest.error}`,
+        timestamp: new Date().toISOString(),
+      });
+    }
+    logger.info('D-ID API connection test successful', { requestId, accountStatus: didTest.accountStatus });
+
     logger.info('Starting video generation', { 
       requestId, 
       personaId, 
       textLength: text.length,
+      avatarImageUrl,
+      imageSource,
       useCachedAvatar 
     });
 
@@ -135,10 +174,48 @@ router.post('/generate', async (req: Request, res: Response) => {
     } else {
       // Generate video using D-ID API
       try {
-        // Create D-ID talk
+        // Create a fresh signed URL for the selected image
+        logger.info('Creating fresh signed URL for avatar image', { requestId, personaId });
+        
+        // Determine the image path based on persona and selected image
+        let imagePath: string;
+        if (avatarImageUrl && avatarImageUrl.includes('pic')) {
+          // Extract the image number from the URL (e.g., pic1.jpeg, pic2.jpeg, etc.)
+          const match = avatarImageUrl.match(/pic(\d+)\.jpeg/);
+          if (match) {
+            const imageNumber = match[1];
+            const folder = personaId === 'terry-crews' ? 'voice_actor_a' : 'voice_actor_b';
+            imagePath = `avatar_assets/${folder}/static/pic${imageNumber}.jpeg`;
+          } else {
+            throw new Error('Could not determine image path from URL');
+          }
+        } else {
+          // Fallback to first image if no specific image selected
+          const folder = personaId === 'terry-crews' ? 'voice_actor_a' : 'voice_actor_b';
+          imagePath = `avatar_assets/${folder}/static/pic1.jpeg`;
+        }
+        
+        logger.info('Creating signed URL for image path', { requestId, imagePath });
+        
+        // Create a fresh signed URL with longer expiry for D-ID processing
+        const publicImageUrl = await createPublicImageUrl(
+          imagePath, 
+          'ponteai-assets', // Use production bucket
+          7200 // 2 hours expiry for D-ID processing
+        );
+        
+        logger.info('Successfully created public image URL for D-ID', { 
+          requestId, 
+          imagePath, 
+          publicUrl: publicImageUrl.substring(0, 50) + '...' 
+        });
+        
+        // Create D-ID talk using the public image URL directly
         const talkResponse: DIDCreateTalkResponse = await createTalk(
-          personaImage,
-          text
+          text,
+          publicImageUrl, // Use the public signed URL directly
+          undefined, // No image ID since we're using URL
+          undefined // presenter ID
         );
 
         logger.info('D-ID talk created', { requestId, talkId: talkResponse.id });

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
 // Initialize Supabase client with server-side environment variables
@@ -113,7 +113,7 @@ function getFallbackImages(): PersonaImages {
   };
 }
 
-export async function GET(_request: NextRequest) {
+export async function GET() {
   try {
     console.log('Backend: API route called for avatar images');
     

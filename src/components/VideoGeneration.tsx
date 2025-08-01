@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import Image from 'next/image';
 import { apiClient } from '@/lib/api';
 import { Persona } from '@/lib/personas';
 import StorageErrorDisplay from './StorageErrorDisplay';
@@ -25,7 +26,12 @@ export default function VideoGeneration({
   const [isPlaying, setIsPlaying] = useState(false);
   const [useCachedAvatar, setUseCachedAvatar] = useState(false);
   const [generationProgress, setGenerationProgress] = useState<string>('');
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Get available images for the selected persona
+  const availableImages = selectedPersona?.images || [];
+  const selectedImage = availableImages[selectedImageIndex];
 
   const handleGenerateVideo = async () => {
     if (!selectedPersona) {
@@ -43,16 +49,33 @@ export default function VideoGeneration({
       return;
     }
 
+    if (!selectedImage) {
+      setError('Please select an avatar image');
+      return;
+    }
+
     setIsGenerating(true);
     setError(null);
     setStorageError(null);
     setGenerationProgress('Initializing video generation...');
 
     try {
+      // Get the image URL (handle both string and AvatarImage object)
+      const imageUrl = typeof selectedImage === 'string' ? selectedImage : selectedImage.url;
+      
+      console.log('Sending video generation request:', {
+        text: currentText,
+        personaId: selectedPersona.id,
+        audioUrl: audioUrl,
+        avatarImageUrl: imageUrl,
+        useCachedAvatar: useCachedAvatar
+      });
+      
       const response = await apiClient.generateVideo({
         text: currentText,
         personaId: selectedPersona.id,
         audioUrl: audioUrl,
+        avatarImageUrl: imageUrl,
         useCachedAvatar: useCachedAvatar
       });
       
@@ -150,6 +173,63 @@ export default function VideoGeneration({
           onDismiss={() => setStorageError(null)}
           showRetry={false}
         />
+
+        {/* Avatar Image Selection */}
+        {selectedPersona && availableImages.length > 0 && (
+          <div className="p-4 bg-muted/30 border border-border rounded-lg">
+            <h3 className="font-medium mb-3">Select Avatar Image:</h3>
+            <div className="grid grid-cols-5 gap-3">
+              {availableImages.map((image, index) => {
+                const imageUrl = typeof image === 'string' ? image : image.url;
+                const imageAlt = typeof image === 'string' 
+                  ? `${selectedPersona.name} - Image ${index + 1}` 
+                  : image.alt;
+                
+                return (
+                  <div
+                    key={index}
+                    className={`aspect-square rounded-lg overflow-hidden cursor-pointer transition-all duration-200 relative ${
+                      selectedImageIndex === index 
+                        ? 'ring-2 ring-primary shadow-lg scale-105' 
+                        : 'hover:scale-105 hover:shadow-md'
+                    }`}
+                    onClick={() => setSelectedImageIndex(index)}
+                  >
+                    <Image
+                      src={imageUrl}
+                      alt={imageAlt}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 20vw, 15vw"
+                    />
+                    {selectedImageIndex === index && (
+                      <div className="absolute top-2 right-2">
+                        <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                          <svg
+                            className="w-4 h-4 text-white"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-sm text-foreground/70 mt-2">
+              Choose which avatar image to use for video generation
+            </p>
+          </div>
+        )}
 
         {/* Caching Toggle for Local Testing */}
         <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">

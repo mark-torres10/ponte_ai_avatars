@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Persona, PERSONAS, resetPersonaSelection } from '@/lib/personas';
-import { loadAvatarImages, AvatarImage } from '@/lib/supabase-images';
+import { loadAvatarImages } from '@/lib/supabase-images';
 
 interface PersonaSelectionProps {
   onPersonaSelect?: (persona: Persona | null) => void;

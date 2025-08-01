@@ -101,6 +101,7 @@ class ApiClient {
     text: string;
     personaId: string;
     audioUrl: string;
+    avatarImageUrl?: string;
     useCachedAvatar?: boolean;
   }): Promise<ApiResponse<{
     videoUrl: string;
