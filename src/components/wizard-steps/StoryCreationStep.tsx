@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface FormData {
   [key: string]: unknown;
@@ -11,6 +11,13 @@ interface StoryCreationStepProps {
   formData?: FormData;
 }
 
+interface ValidationErrors {
+  brandMission?: string;
+  storyToTell?: string;
+  emotionalTone?: string;
+  callToAction?: string;
+}
+
 export default function StoryCreationStep({ onDataUpdate, formData }: StoryCreationStepProps) {
   const [storyData, setStoryData] = useState({
     brandMission: (formData?.brandMission as string) || '',
@@ -19,13 +26,89 @@ export default function StoryCreationStep({ onDataUpdate, formData }: StoryCreat
     callToAction: (formData?.callToAction as string) || ''
   });
 
+  const [errors, setErrors] = useState<ValidationErrors>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [isFormValid, setIsFormValid] = useState(false);
+
+  // Validation function
+  const validateField = (field: string, value: string): string | undefined => {
+    switch (field) {
+      case 'brandMission':
+        if (!value.trim()) return 'Brand mission is required';
+        if (value.trim().length < 10) return 'Brand mission must be at least 10 characters';
+        if (value.trim().length > 500) return 'Brand mission must be less than 500 characters';
+        break;
+      case 'storyToTell':
+        if (!value.trim()) return 'Story is required';
+        if (value.trim().length < 20) return 'Story must be at least 20 characters';
+        if (value.trim().length > 1000) return 'Story must be less than 1000 characters';
+        break;
+      case 'emotionalTone':
+        if (!value) return 'Please select an emotional tone';
+        break;
+      case 'callToAction':
+        if (!value.trim()) return 'Call to action is required';
+        if (value.trim().length < 5) return 'Call to action must be at least 5 characters';
+        if (value.trim().length > 200) return 'Call to action must be less than 200 characters';
+        break;
+    }
+    return undefined;
+  };
+
+  // Validate all fields and update form validity
+  const validateForm = (): boolean => {
+    const newErrors: ValidationErrors = {};
+    let isValid = true;
+
+    Object.keys(storyData).forEach(field => {
+      const error = validateField(field, storyData[field as keyof typeof storyData]);
+      if (error) {
+        newErrors[field as keyof ValidationErrors] = error;
+        isValid = false;
+      }
+    });
+
+    setErrors(newErrors);
+    setIsFormValid(isValid);
+    return isValid;
+  };
+
   const handleInputChange = (field: string, value: string) => {
     const updatedData = { ...storyData, [field]: value };
     setStoryData(updatedData);
     
+    // Clear error when user starts typing
+    if (errors[field as keyof ValidationErrors]) {
+      setErrors(prev => ({ ...prev, [field]: undefined }));
+    }
+    
     if (onDataUpdate) {
       onDataUpdate(updatedData);
     }
+  };
+
+  const handleBlur = (field: string) => {
+    setTouched(prev => ({ ...prev, [field]: true }));
+    const error = validateField(field, storyData[field as keyof typeof storyData]);
+    setErrors(prev => ({ ...prev, [field]: error }));
+  };
+
+  // Validate on mount if form data exists and when storyData changes
+  useEffect(() => {
+    if (Object.values(storyData).some(value => value)) {
+      validateForm();
+    }
+  }, [storyData]);
+
+  const getFieldClassName = (field: string) => {
+    const hasError = errors[field as keyof ValidationErrors];
+    const isTouched = touched[field];
+    
+    return `w-full px-4 py-3 bg-background border rounded-md text-foreground placeholder:text-foreground/50 focus:outline-none focus:border-primary resize-none ${
+      hasError && isTouched 
+        ? 'border-red-500 focus:border-red-500' 
+        : 'border-white/20 focus:border-primary'
+    }`;
   };
 
   return (
@@ -44,41 +127,62 @@ export default function StoryCreationStep({ onDataUpdate, formData }: StoryCreat
       <div className="space-y-6">
         <div>
           <label htmlFor="brandMission" className="block text-sm font-medium mb-2">
-            Your Brand&apos;s Mission
+            Your Brand&apos;s Mission <span className="text-red-500">*</span>
           </label>
           <textarea
             id="brandMission"
             value={storyData.brandMission}
             onChange={(e) => handleInputChange('brandMission', e.target.value)}
+            onBlur={() => handleBlur('brandMission')}
             placeholder="What is your brand's core mission and purpose?"
             rows={3}
-            className="w-full px-4 py-3 bg-background border border-white/20 rounded-md text-foreground placeholder:text-foreground/50 focus:outline-none focus:border-primary resize-none"
+            className={getFieldClassName('brandMission')}
           />
+          {errors.brandMission && touched.brandMission && (
+            <p className="text-red-500 text-sm mt-1 flex items-center">
+              <span className="mr-1">⚠️</span>
+              {errors.brandMission}
+            </p>
+          )}
+          <p className="text-xs text-foreground/50 mt-1">
+            {storyData.brandMission.length}/500 characters
+          </p>
         </div>
 
         <div>
           <label htmlFor="storyToTell" className="block text-sm font-medium mb-2">
-            The Story You Want to Tell
+            The Story You Want to Tell <span className="text-red-500">*</span>
           </label>
           <textarea
             id="storyToTell"
             value={storyData.storyToTell}
             onChange={(e) => handleInputChange('storyToTell', e.target.value)}
+            onBlur={() => handleBlur('storyToTell')}
             placeholder="What story do you want your avatar to tell about your brand?"
             rows={4}
-            className="w-full px-4 py-3 bg-background border border-white/20 rounded-md text-foreground placeholder:text-foreground/50 focus:outline-none focus:border-primary resize-none"
+            className={getFieldClassName('storyToTell')}
           />
+          {errors.storyToTell && touched.storyToTell && (
+            <p className="text-red-500 text-sm mt-1 flex items-center">
+              <span className="mr-1">⚠️</span>
+              {errors.storyToTell}
+            </p>
+          )}
+          <p className="text-xs text-foreground/50 mt-1">
+            {storyData.storyToTell.length}/1000 characters
+          </p>
         </div>
 
         <div>
           <label htmlFor="emotionalTone" className="block text-sm font-medium mb-2">
-            How You Want to Make People Feel
+            How You Want to Make People Feel <span className="text-red-500">*</span>
           </label>
           <select
             id="emotionalTone"
             value={storyData.emotionalTone}
             onChange={(e) => handleInputChange('emotionalTone', e.target.value)}
-            className="w-full px-4 py-3 bg-background border border-white/20 rounded-md text-foreground focus:outline-none focus:border-primary"
+            onBlur={() => handleBlur('emotionalTone')}
+            className={getFieldClassName('emotionalTone')}
           >
             <option value="">Select the emotional tone...</option>
             <option value="motivated">Motivated and Inspired</option>
@@ -87,20 +191,51 @@ export default function StoryCreationStep({ onDataUpdate, formData }: StoryCreat
             <option value="trusted">Trusted and Secure</option>
             <option value="entertained">Entertained and Engaged</option>
           </select>
+          {errors.emotionalTone && touched.emotionalTone && (
+            <p className="text-red-500 text-sm mt-1 flex items-center">
+              <span className="mr-1">⚠️</span>
+              {errors.emotionalTone}
+            </p>
+          )}
         </div>
 
         <div>
           <label htmlFor="callToAction" className="block text-sm font-medium mb-2">
-            The Action You Want Them to Take
+            The Action You Want Them to Take <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
             id="callToAction"
             value={storyData.callToAction}
             onChange={(e) => handleInputChange('callToAction', e.target.value)}
+            onBlur={() => handleBlur('callToAction')}
             placeholder="What should your audience do after watching?"
-            className="w-full px-4 py-3 bg-background border border-white/20 rounded-md text-foreground placeholder:text-foreground/50 focus:outline-none focus:border-primary"
+            className={getFieldClassName('callToAction')}
           />
+          {errors.callToAction && touched.callToAction && (
+            <p className="text-red-500 text-sm mt-1 flex items-center">
+              <span className="mr-1">⚠️</span>
+              {errors.callToAction}
+            </p>
+          )}
+          <p className="text-xs text-foreground/50 mt-1">
+            {storyData.callToAction.length}/200 characters
+          </p>
+        </div>
+      </div>
+
+      {/* Form Status */}
+      <div className="p-4 bg-background/50 border border-white/10 rounded-lg">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <div className={`w-3 h-3 rounded-full ${isFormValid ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+            <span className="text-sm text-foreground/70">
+              {isFormValid ? 'Form is complete' : 'Please fill in all required fields'}
+            </span>
+          </div>
+          <div className="text-xs text-foreground/50">
+            {Object.values(storyData).filter(v => v.trim()).length}/4 fields completed
+          </div>
         </div>
       </div>
 

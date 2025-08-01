@@ -18,6 +18,7 @@ interface SuccessMetric {
   value: string;
   description: string;
   color: string;
+  icon: string;
 }
 
 const successMetrics: SuccessMetric[] = [
@@ -26,28 +27,32 @@ const successMetrics: SuccessMetric[] = [
     metric: 'Conversion Rate',
     value: '+400%',
     description: 'FanDuel signups with Will Howard',
-    color: 'text-green-400'
+    color: 'text-green-400',
+    icon: '📈'
   },
   {
     id: 'engagement',
     metric: 'Engagement',
     value: '+285%',
     description: 'Video completion rates',
-    color: 'text-blue-400'
+    color: 'text-blue-400',
+    icon: '🎯'
   },
   {
     id: 'roi',
     metric: 'ROI',
     value: '850%',
     description: 'Return on investment',
-    color: 'text-yellow-400'
+    color: 'text-yellow-400',
+    icon: '💰'
   },
   {
     id: 'reach',
     metric: 'Reach',
     value: '2.4M+',
     description: 'Audience reached',
-    color: 'text-purple-400'
+    color: 'text-purple-400',
+    icon: '🌍'
   }
 ];
 
@@ -88,22 +93,6 @@ export default function EmotionalLanding({ onContinue, onDataUpdate }: Emotional
     return () => clearInterval(interval);
   }, []);
 
-  // Floating animation for metrics
-  useEffect(() => {
-    const animateMetrics = () => {
-      const metrics = document.querySelectorAll('.floating-metric');
-      metrics.forEach((metric, index) => {
-        const delay = index * 0.5;
-        const duration = 3 + (index * 0.3);
-        
-        (metric as HTMLElement).style.animation = `float ${duration}s ease-in-out ${delay}s infinite`;
-      });
-    };
-
-    const timer = setTimeout(animateMetrics, 1000);
-    return () => clearTimeout(timer);
-  }, []);
-
   const handleGetStarted = () => {
     if (onDataUpdate) {
       onDataUpdate({
@@ -120,221 +109,216 @@ export default function EmotionalLanding({ onContinue, onDataUpdate }: Emotional
   const currentStory = successStories[currentStoryIndex];
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
-      {/* Background Video */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-background/40 via-background/60 to-background/80 z-10" />
-        <div className="w-full h-full bg-gradient-to-r from-ponte-gradient-from/20 to-ponte-gradient-to/20 flex items-center justify-center">
+    <div className="relative min-h-screen">
+      {/* Background Video Section */}
+      <div className="relative h-64 md:h-96 bg-gradient-to-br from-background/40 via-background/60 to-background/80 rounded-2xl mb-8 overflow-hidden">
+        <video
+          className="absolute inset-0 w-full h-full object-cover"
+          autoPlay
+          muted
+          loop
+          playsInline
+          poster="/videos/background-video-poster.jpg"
+        >
+          <source src="/videos/background-video.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+        <div className="absolute inset-0 bg-gradient-to-r from-ponte-gradient-from/20 to-ponte-gradient-to/20" />
+        <div className="relative z-10 h-full flex items-center justify-center">
           <div className="text-center">
-            <div className="w-24 h-24 bg-gradient-ponte rounded-full mx-auto mb-4 flex items-center justify-center">
-              <span className="text-white text-2xl font-bold">▶</span>
+            <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-ponte rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg cursor-pointer hover:scale-110 transition-transform duration-300">
+              <span className="text-white text-xl md:text-2xl font-bold">▶</span>
             </div>
-            <p className="text-sm text-foreground/60">Background video loading...</p>
+            <p className="text-sm md:text-base text-foreground/60 font-medium">
+              Click to play background video
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Floating Success Metrics */}
-      <div className="absolute inset-0 z-20 pointer-events-none">
-        {successMetrics.map((metric, index) => (
-          <div
-            key={metric.id}
-            className={cn(
-              "floating-metric absolute card-ponte p-4 max-w-xs",
-              index === 0 && "top-24 left-8",
-              index === 1 && "top-32 right-12",
-              index === 2 && "bottom-32 left-16",
-              index === 3 && "bottom-24 right-8"
-            )}
-            style={{
-              animationDelay: `${index * 0.5}s`
-            }}
-          >
-            <div className="text-center">
-              <div className={cn("text-2xl font-bold", metric.color)}>
-                {metric.value}
+      {/* Success Metrics Grid - Now properly contained */}
+      <div className="mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          {successMetrics.map((metric) => (
+            <div
+              key={metric.id}
+              className="group relative bg-card-ponte border border-border-ponte rounded-xl p-4 md:p-6 hover:scale-105 transition-all duration-300 cursor-pointer"
+              onMouseEnter={() => setHoveredMetric(metric.id)}
+              onMouseLeave={() => setHoveredMetric(null)}
+            >
+              <div className="text-center">
+                <div className="text-2xl md:text-3xl mb-2">{metric.icon}</div>
+                <div className={cn("text-xl md:text-2xl font-bold mb-1", metric.color)}>
+                  {metric.value}
+                </div>
+                <div className="text-sm md:text-base font-semibold text-foreground mb-1">
+                  {metric.metric}
+                </div>
+                <div className="text-xs md:text-sm text-foreground/60 leading-tight">
+                  {metric.description}
+                </div>
               </div>
-              <div className="text-sm font-medium text-foreground">
-                {metric.metric}
-              </div>
-              <div className="text-xs text-foreground/60 mt-1">
-                {metric.description}
-              </div>
+              
+              {/* Hover effect */}
+              {hoveredMetric === metric.id && (
+                <div className="absolute inset-0 bg-primary/5 rounded-xl border-2 border-primary/20 flex items-center justify-center">
+                  <div className="text-primary font-semibold text-sm">Learn More</div>
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
-      {/* Main Content */}
-      <div className="relative z-30 flex items-center min-h-screen">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="max-w-4xl mx-auto text-center">
-            {/* Hero Section */}
-            <div className="mb-12">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6">
-                Transform Your Brand with{' '}
-                <span className="text-gradient">Celebrity AI Avatars</span>
-              </h1>
-              <p className="text-xl sm:text-2xl text-foreground/80 mb-8 max-w-3xl mx-auto">
-                Join industry leaders who&apos;ve revolutionized their marketing with authentic AI avatar campaigns. 
-                Your breakthrough moment starts here.
-              </p>
-            </div>
+      {/* Hero Section */}
+      <div className="text-center mb-12">
+        <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-6 leading-tight">
+          Transform Your Brand with{' '}
+          <span className="text-gradient bg-clip-text text-transparent">
+            Celebrity AI Avatars
+          </span>
+        </h1>
+        <p className="text-lg md:text-xl lg:text-2xl text-foreground/80 mb-8 max-w-4xl mx-auto leading-relaxed">
+          Join industry leaders who&apos;ve revolutionized their marketing with authentic AI avatar campaigns. 
+          Your breakthrough moment starts here.
+        </p>
+      </div>
 
-            {/* Success Story Carousel */}
-            <div className="mb-12">
-              <div className="card-ponte p-8 max-w-2xl mx-auto">
-                <div className="mb-6">
-                  <div className="flex justify-center space-x-2 mb-4">
-                    {successStories.map((_, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setCurrentStoryIndex(index)}
-                        className={cn(
-                          "w-3 h-3 rounded-full transition-all duration-300",
-                          index === currentStoryIndex
-                            ? "bg-primary scale-125"
-                            : "bg-secondary hover:bg-primary/50"
-                        )}
-                        aria-label={`View success story ${index + 1}`}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                <div className="text-center">
-                  <div className="mb-4">
-                    <h3 className="text-xl font-bold text-primary mb-2">
-                      {currentStory.company}
-                    </h3>
-                    <div className="flex justify-center items-center space-x-4 mb-3">
-                      <span className="text-lg font-semibold text-green-400">
-                        {currentStory.result}
-                      </span>
-                      <span className="text-lg font-semibold text-yellow-400">
-                        {currentStory.metric}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <blockquote className="text-foreground/80 italic mb-4">
-                    &quot;{currentStory.quote}&quot;
-                  </blockquote>
-                  
-                  <div className="text-sm text-foreground/60">
-                    Powered by <span className="font-semibold">{currentStory.avatar}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Interactive Examples */}
-            <div className="grid md:grid-cols-2 gap-6 mb-12">
-              <div
-                className="card-ponte p-6 cursor-pointer hover:scale-105 transition-all duration-300 group"
-                onMouseEnter={() => setHoveredMetric('terry-preview')}
-                onMouseLeave={() => setHoveredMetric(null)}
-              >
-                <div className="aspect-video bg-secondary/30 rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20" />
-                  <div className="relative z-10 text-center">
-                    <div className="w-16 h-16 bg-primary rounded-full mx-auto mb-3 flex items-center justify-center">
-                      <span className="text-white text-2xl font-bold">TC</span>
-                    </div>
-                    <p className="text-sm font-medium">Terry Crews Preview</p>
-                  </div>
-                  {hoveredMetric === 'terry-preview' && (
-                    <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
-                      <button className="btn-primary-ponte px-4 py-2 rounded-md font-medium">
-                        ▶ Watch Demo
-                      </button>
-                    </div>
-                  )}
-                </div>
-                <h4 className="font-semibold mb-2">Hear Terry Crews Say Your Brand Name</h4>
-                <p className="text-sm text-foreground/70">
-                  Experience the power of celebrity endorsement with authentic voice and personality
-                </p>
-              </div>
-
-              <div
-                className="card-ponte p-6 cursor-pointer hover:scale-105 transition-all duration-300 group"
-                onMouseEnter={() => setHoveredMetric('will-preview')}
-                onMouseLeave={() => setHoveredMetric(null)}
-              >
-                <div className="aspect-video bg-secondary/30 rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-green-500/20" />
-                  <div className="relative z-10 text-center">
-                    <div className="w-16 h-16 bg-blue-500 rounded-full mx-auto mb-3 flex items-center justify-center">
-                      <span className="text-white text-2xl font-bold">WH</span>
-                    </div>
-                    <p className="text-sm font-medium">Will Howard Preview</p>
-                  </div>
-                  {hoveredMetric === 'will-preview' && (
-                    <div className="absolute inset-0 bg-blue-500/10 flex items-center justify-center">
-                      <button className="btn-primary-ponte px-4 py-2 rounded-md font-medium">
-                        ▶ Watch Demo
-                      </button>
-                    </div>
-                  )}
-                </div>
-                <h4 className="font-semibold mb-2">Will Howard Sports Connection</h4>
-                <p className="text-sm text-foreground/70">
-                  Connect with sports fans through authentic NFL quarterback endorsement
-                </p>
-              </div>
-            </div>
-
-            {/* CTA Section */}
-            <div className="text-center">
+      {/* Success Story Carousel - Improved Design */}
+      <div className="mb-12">
+        <div className="bg-card-ponte border border-border-ponte rounded-2xl p-6 md:p-8 max-w-3xl mx-auto shadow-lg">
+          {/* Story Navigation Dots */}
+          <div className="flex justify-center space-x-3 mb-6">
+            {successStories.map((_, index) => (
               <button
-                onClick={handleGetStarted}
-                className="btn-primary-ponte text-lg px-12 py-4 rounded-lg font-bold hover:scale-105 transition-all duration-300 shadow-lg"
-              >
-                Transform My Brand Now ✨
-              </button>
-              <p className="text-sm text-foreground/60 mt-4">
-                Join 500+ brands that chose celebrity AI avatars • 2-minute setup
-              </p>
-            </div>
+                key={index}
+                onClick={() => setCurrentStoryIndex(index)}
+                className={cn(
+                  "w-3 h-3 rounded-full transition-all duration-300 hover:scale-125",
+                  index === currentStoryIndex
+                    ? "bg-primary scale-125 shadow-lg"
+                    : "bg-secondary hover:bg-primary/50"
+                )}
+                aria-label={`View success story ${index + 1}`}
+              />
+            ))}
+          </div>
 
-            {/* Premium Feature Tease */}
-            <div className="mt-12 p-6 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg border border-primary/20">
-              <div className="flex items-center justify-center mb-3">
-                <span className="bg-gradient-ponte text-white text-xs px-3 py-1 rounded-full font-medium">
-                  Coming Soon
+          {/* Story Content */}
+          <div className="text-center">
+            <div className="mb-6">
+              <h3 className="text-2xl md:text-3xl font-bold text-primary mb-3">
+                {currentStory.company}
+              </h3>
+              <div className="flex flex-col md:flex-row justify-center items-center space-y-2 md:space-y-0 md:space-x-6 mb-4">
+                <span className="text-lg md:text-xl font-semibold text-green-400 bg-green-400/10 px-3 py-1 rounded-full">
+                  {currentStory.result}
+                </span>
+                <span className="text-lg md:text-xl font-semibold text-yellow-400 bg-yellow-400/10 px-3 py-1 rounded-full">
+                  {currentStory.metric}
                 </span>
               </div>
-              <h4 className="font-semibold mb-2">Multi-Avatar Campaigns</h4>
-              <p className="text-sm text-foreground/70">
-                Want to dominate multiple audience segments? Our premium multi-avatar campaigns are coming soon!
-              </p>
+            </div>
+            
+            <blockquote className="text-lg md:text-xl text-foreground/80 italic mb-6 leading-relaxed">
+              &quot;{currentStory.quote}&quot;
+            </blockquote>
+            
+            <div className="text-sm md:text-base text-foreground/60">
+              Powered by <span className="font-semibold text-primary">{currentStory.avatar}</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Custom Styles */}
-      <style jsx>{`
-        @keyframes float {
-          0%, 100% {
-            transform: translateY(0px) rotate(0deg);
-          }
-          25% {
-            transform: translateY(-10px) rotate(1deg);
-          }
-          50% {
-            transform: translateY(0px) rotate(0deg);
-          }
-          75% {
-            transform: translateY(-5px) rotate(-1deg);
-          }
-        }
+      {/* Interactive Avatar Examples - Improved Layout */}
+      <div className="grid md:grid-cols-2 gap-6 md:gap-8 mb-12">
+        <div
+          className="group relative bg-card-ponte border border-border-ponte rounded-2xl p-6 md:p-8 cursor-pointer hover:scale-105 transition-all duration-300 shadow-lg"
+          onMouseEnter={() => setHoveredMetric('terry-preview')}
+          onMouseLeave={() => setHoveredMetric(null)}
+        >
+          <div className="aspect-video bg-gradient-to-br from-primary/20 to-secondary/20 rounded-xl mb-6 flex items-center justify-center relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10" />
+            <div className="relative z-10 text-center">
+              <div className="w-20 h-20 md:w-24 md:h-24 bg-primary rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg">
+                <span className="text-white text-2xl md:text-3xl font-bold">TC</span>
+              </div>
+              <p className="text-sm md:text-base font-medium text-foreground">Terry Crews Preview</p>
+            </div>
+            {hoveredMetric === 'terry-preview' && (
+              <div className="absolute inset-0 bg-primary/20 backdrop-blur-sm flex items-center justify-center rounded-xl">
+                <button className="btn-primary-ponte px-6 py-3 rounded-lg font-semibold text-lg shadow-lg">
+                  ▶ Watch Demo
+                </button>
+              </div>
+            )}
+          </div>
+          <h4 className="text-xl md:text-2xl font-bold mb-3 text-foreground">
+            Hear Terry Crews Say Your Brand Name
+          </h4>
+          <p className="text-base md:text-lg text-foreground/70 leading-relaxed">
+            Experience the power of celebrity endorsement with authentic voice and personality
+          </p>
+        </div>
 
-        .floating-metric {
-          animation: float 3s ease-in-out infinite;
-        }
-      `}</style>
+        <div
+          className="group relative bg-card-ponte border border-border-ponte rounded-2xl p-6 md:p-8 cursor-pointer hover:scale-105 transition-all duration-300 shadow-lg"
+          onMouseEnter={() => setHoveredMetric('will-preview')}
+          onMouseLeave={() => setHoveredMetric(null)}
+        >
+          <div className="aspect-video bg-gradient-to-br from-blue-500/20 to-green-500/20 rounded-xl mb-6 flex items-center justify-center relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-green-500/10" />
+            <div className="relative z-10 text-center">
+              <div className="w-20 h-20 md:w-24 md:h-24 bg-blue-500 rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg">
+                <span className="text-white text-2xl md:text-3xl font-bold">WH</span>
+              </div>
+              <p className="text-sm md:text-base font-medium text-foreground">Will Howard Preview</p>
+            </div>
+            {hoveredMetric === 'will-preview' && (
+              <div className="absolute inset-0 bg-blue-500/20 backdrop-blur-sm flex items-center justify-center rounded-xl">
+                <button className="btn-primary-ponte px-6 py-3 rounded-lg font-semibold text-lg shadow-lg">
+                  ▶ Watch Demo
+                </button>
+              </div>
+            )}
+          </div>
+          <h4 className="text-xl md:text-2xl font-bold mb-3 text-foreground">
+            Will Howard Sports Connection
+          </h4>
+          <p className="text-base md:text-lg text-foreground/70 leading-relaxed">
+            Connect with sports fans through authentic NFL quarterback endorsement
+          </p>
+        </div>
+      </div>
+
+      {/* CTA Section - Enhanced */}
+      <div className="text-center mb-12">
+        <button
+          onClick={handleGetStarted}
+          className="btn-primary-ponte text-lg md:text-xl px-8 md:px-12 py-4 md:py-5 rounded-xl font-bold hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl"
+        >
+          Transform My Brand Now ✨
+        </button>
+        <p className="text-sm md:text-base text-foreground/60 mt-4 font-medium">
+          Join 500+ brands that chose celebrity AI avatars • 2-minute setup
+        </p>
+      </div>
+
+      {/* Premium Feature Tease - Improved Design */}
+      <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl border border-primary/20 p-6 md:p-8 text-center">
+        <div className="flex items-center justify-center mb-4">
+          <span className="bg-gradient-ponte text-white text-sm md:text-base px-4 py-2 rounded-full font-semibold shadow-lg">
+            Coming Soon
+          </span>
+        </div>
+        <h4 className="text-xl md:text-2xl font-bold mb-3 text-foreground">
+          Multi-Avatar Campaigns
+        </h4>
+        <p className="text-base md:text-lg text-foreground/70 leading-relaxed max-w-2xl mx-auto">
+          Want to dominate multiple audience segments? Our premium multi-avatar campaigns are coming soon!
+        </p>
+      </div>
     </div>
   );
 }

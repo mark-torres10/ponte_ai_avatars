@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Navigation from "@/components/navigation"
 import MultiStepWizard, { WizardStep } from "@/components/MultiStepWizard"
 import EmotionalLanding from "@/components/EmotionalLanding"
@@ -11,35 +11,122 @@ import SuccessStoryStep from "@/components/wizard-steps/SuccessStoryStep"
 import PremiumFeaturesStep from "@/components/wizard-steps/PremiumFeaturesStep"
 import BrandCustomizationStep from "@/components/wizard-steps/BrandCustomizationStep"
 import FinalReviewStep from "@/components/wizard-steps/FinalReviewStep"
-import { Persona } from "@/lib/personas"
+import { Persona, PERSONAS } from "@/lib/personas"
+import { loadAvatarImages } from "@/lib/supabase-images"
+import PersonalityQuiz from "@/components/PersonalityQuiz"
 
 interface FormData {
   [key: string]: unknown;
 }
 
+// Global cache for avatar images
+let avatarImagesCache: Record<string, unknown> | null = null;
+let avatarImagesLoading = false;
+
 export default function RequestTalentPage() {
   const [selectedPersona, setSelectedPersona] = useState<Persona | null>(null)
   const [formData, setFormData] = useState<FormData>({})
+  const [avatarImages, setAvatarImages] = useState<Record<string, unknown> | null>(null)
+  const [avatarLoading, setAvatarLoading] = useState(false)
+  const [avatarError, setAvatarError] = useState<string | null>(null)
+
+  // Load avatar images once on page load
+  const loadAvatarData = useCallback(async () => {
+    // If already loading, don't start another request
+    if (avatarImagesLoading) {
+      return;
+    }
+
+    // If we have cached images, use them
+    if (avatarImagesCache) {
+      setAvatarImages(avatarImagesCache);
+      return;
+    }
+
+    // Set loading state
+    avatarImagesLoading = true;
+    setAvatarLoading(true);
+    setAvatarError(null);
+
+    try {
+      console.log('Page: Loading avatar images...');
+      const images = await loadAvatarImages();
+      
+      // Cache the results
+      avatarImagesCache = images;
+      setAvatarImages(images);
+      console.log('Page: Avatar images loaded successfully');
+    } catch (err) {
+      console.error('Page: Failed to load avatar images:', err);
+      setAvatarError('Failed to load avatar images. Please try again.');
+    } finally {
+      avatarImagesLoading = false;
+      setAvatarLoading(false);
+    }
+  }, []);
+
+  // Load avatar images on page mount
+  useEffect(() => {
+    loadAvatarData();
+  }, [loadAvatarData]);
 
   // Update form data from any step
-  const handleDataUpdate = (stepData: FormData) => {
+  const handleDataUpdate = useCallback((stepData: FormData) => {
     setFormData(prev => ({ ...prev, ...stepData }))
-  }
+  }, []);
 
   // Handle avatar selection from step 2
-  const handleAvatarSelect = (persona: Persona) => {
+  const handleAvatarSelect = useCallback((persona: Persona) => {
     setSelectedPersona(persona)
     setFormData(prev => ({ ...prev, selectedAvatar: persona }))
-  }
+  }, []);
+
+  // Handle personality quiz completion
+  const handleQuizComplete = useCallback((results: { persona: string; score: number }) => {
+    const recommendedPersona = PERSONAS.find(p => p.id === results.persona);
+    if (recommendedPersona) {
+      setSelectedPersona(recommendedPersona);
+      setFormData(prev => ({ 
+        ...prev, 
+        quizResults: results,
+        recommendedAvatar: recommendedPersona 
+      }));
+    }
+  }, []);
+
+
 
   // Handle wizard completion
-  const handleWizardComplete = (finalData: FormData) => {
+  const handleWizardComplete = useCallback((finalData: FormData) => {
     console.log("Campaign request completed:", finalData)
     // TODO: In future phases, this will submit to backend
     alert("🎉 Campaign request submitted successfully! We'll be in touch within 24 hours.")
-  }
+  }, []);
 
-  // Define the 8-step wizard flow
+  // Validation functions for each step - memoized to prevent infinite re-renders
+  const validateStep2 = useCallback((): boolean => {
+    return selectedPersona !== null;
+  }, [selectedPersona]);
+
+  const validateStep3 = useCallback((): boolean => {
+    const { brandMission, storyToTell, emotionalTone, callToAction } = formData;
+    return (
+      brandMission && 
+      typeof brandMission === 'string' && 
+      brandMission.trim().length >= 10 &&
+      storyToTell && 
+      typeof storyToTell === 'string' && 
+      storyToTell.trim().length >= 20 &&
+      emotionalTone && 
+      typeof emotionalTone === 'string' &&
+      emotionalTone.trim() !== '' &&
+      callToAction && 
+      typeof callToAction === 'string' && 
+      callToAction.trim().length >= 5
+    );
+  }, [formData]);
+
+  // Define the 9-step wizard flow (added personality quiz)
   const wizardSteps: WizardStep[] = [
     {
       id: 'emotional-landing',
@@ -56,6 +143,20 @@ export default function RequestTalentPage() {
       isAccessible: true
     },
     {
+      id: 'personality-quiz',
+      title: 'Quiz',
+      emotionalTitle: "Discover Your Perfect Match 🎯",
+      description: 'Take our quick personality quiz to find your ideal avatar',
+      component: (
+        <PersonalityQuiz
+          onComplete={handleQuizComplete}
+          onDataUpdate={handleDataUpdate}
+        />
+      ),
+      isComplete: false,
+      isAccessible: true
+    },
+    {
       id: 'avatar-selection',
       title: 'Avatar',
       emotionalTitle: "Meet Your Perfect Match 💫",
@@ -65,10 +166,15 @@ export default function RequestTalentPage() {
           onAvatarSelect={handleAvatarSelect}
           onDataUpdate={handleDataUpdate}
           selectedPersona={selectedPersona}
+          avatarImages={avatarImages || undefined}
+          loading={avatarLoading}
+          error={avatarError}
+          onRetry={loadAvatarData}
         />
       ),
       isComplete: false,
-      isAccessible: true
+      isAccessible: true,
+      validation: validateStep2
     },
     {
       id: 'story-creation',
@@ -82,7 +188,8 @@ export default function RequestTalentPage() {
         />
       ),
       isComplete: false,
-      isAccessible: true
+      isAccessible: true,
+      validation: validateStep3
     },
     {
       id: 'campaign-preview',
@@ -157,14 +264,12 @@ export default function RequestTalentPage() {
     }
   ]
 
-  const handleStepChange = (stepIndex: number, step: WizardStep) => {
-    // setCurrentStepIndex(stepIndex) // This line was removed
-    
+  const handleStepChange = useCallback((stepIndex: number, step: WizardStep) => {
     // Track step interactions for analytics
     if (typeof window !== 'undefined') {
-      console.log(`Step changed to: ${step.title} (${stepIndex + 1}/8)`)
+      console.log(`Step changed to: ${step.title} (${stepIndex + 1}/9)`)
     }
-  }
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
