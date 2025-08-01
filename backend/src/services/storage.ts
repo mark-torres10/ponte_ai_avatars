@@ -1,9 +1,25 @@
 import { getSupabaseClient, validateBucket } from '../utils/supabase';
 import { logger } from '../utils/logger';
+import { config } from '../utils/config';
 
-// Storage configuration
-const STORAGE_BUCKET = 'test-bucket-ponteai';
-const DEFAULT_REQUESTER_ID = 'test_user_id';
+// Storage configuration from environment variables
+const STORAGE_BUCKET = config.STORAGE_BUCKET;
+const DEFAULT_REQUESTER_ID = config.DEFAULT_REQUESTER_ID;
+
+// API Response Interfaces for better type safety
+export interface ElevenLabsResponse {
+  status: number;
+  headers?: Record<string, string>;
+  data?: any;
+  error?: string;
+}
+
+export interface OpenAIResponse {
+  status: number;
+  headers?: Record<string, string>;
+  data?: any;
+  error?: string;
+}
 
 export interface StorageMetadata {
   actor: string;
@@ -11,8 +27,8 @@ export interface StorageMetadata {
   audio_file_key: string;
   generation_timestamp: string;
   api_response_data: {
-    elevenlabs_response?: any;
-    openai_response?: any;
+    elevenlabs_response?: ElevenLabsResponse;
+    openai_response?: OpenAIResponse;
   };
   version: number;
   format: string;
@@ -33,8 +49,8 @@ export interface FileUploadOptions {
   text: string;
   format?: string;
   apiResponseData?: {
-    elevenlabs_response?: any;
-    openai_response?: any;
+    elevenlabs_response?: ElevenLabsResponse;
+    openai_response?: OpenAIResponse;
   };
 }
 
@@ -68,6 +84,15 @@ export const generateTimestamp = (): string => {
 };
 
 /**
+ * Escape special regex characters in a string
+ * @param str - String to escape
+ * @returns Escaped string safe for regex
+ */
+const escapeRegex = (str: string): string => {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
+
+/**
  * Get next version number for a file
  * @param requesterId - User ID
  * @param voiceActorId - Voice actor ID
@@ -98,10 +123,11 @@ export const getNextVersion = async (
     }
 
     // Find existing versions of the file
+    const escapedBaseFilename = escapeRegex(baseFilename);
     const existingVersions = data
       ?.filter(file => file.name?.startsWith(baseFilename))
       .map(file => {
-        const match = file.name?.match(new RegExp(`${baseFilename}_v(\\d+)\\.`));
+        const match = file.name?.match(new RegExp(`${escapedBaseFilename}_v(\\d+)\\.`));
         return match && match[1] ? parseInt(match[1], 10) : 0;
       })
       .filter(version => version > 0) || [];
@@ -257,6 +283,12 @@ export const getPublicUrl = (fileKey: string): string => {
   const { data } = client.storage
     .from(STORAGE_BUCKET)
     .getPublicUrl(fileKey);
+  
+  // Add null safety check
+  if (!data || !data.publicUrl) {
+    logger.warn('Public URL not available for file', { fileKey });
+    return '';
+  }
   
   return data.publicUrl;
 };

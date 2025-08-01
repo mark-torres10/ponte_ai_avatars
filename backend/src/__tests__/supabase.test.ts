@@ -6,7 +6,7 @@ jest.mock('@supabase/supabase-js');
 jest.mock('../utils/config', () => ({
   config: {
     SUPABASE_URL: 'https://test.supabase.co',
-    SUPABASE_ANON_KEY: 'test-key',
+    SUPABASE_SERVICE_ROLE_KEY: 'test-service-key',
   },
 }));
 jest.mock('../utils/logger', () => ({
@@ -40,7 +40,7 @@ describe('Supabase Utils', () => {
 
       expect(mockCreateClient).toHaveBeenCalledWith(
         'https://test.supabase.co',
-        'test-key',
+        'test-service-key',
         {
           auth: {
             autoRefreshToken: false,

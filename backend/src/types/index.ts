@@ -90,6 +90,10 @@ export interface EnvironmentConfig {
   // Supabase Configuration
   SUPABASE_URL: string | undefined;
   SUPABASE_ANON_KEY: string | undefined;
+  SUPABASE_SERVICE_ROLE_KEY: string | undefined;
+  // Storage Configuration
+  STORAGE_BUCKET: string;
+  DEFAULT_REQUESTER_ID: string;
   RATE_LIMIT_WINDOW_MS: number;
   RATE_LIMIT_MAX_REQUESTS: number;
   LOG_LEVEL: string;

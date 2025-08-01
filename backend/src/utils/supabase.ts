@@ -20,12 +20,12 @@ export const initializeSupabase = (): SupabaseClient => {
     throw new Error('SUPABASE_URL environment variable is required');
   }
 
-  if (!config.SUPABASE_ANON_KEY) {
-    throw new Error('SUPABASE_ANON_KEY environment variable is required');
+  if (!config.SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY environment variable is required');
   }
 
-  // Create Supabase client
-  supabaseClient = createClient(config.SUPABASE_URL, config.SUPABASE_ANON_KEY, {
+  // Create Supabase client with service role key for backend operations
+  supabaseClient = createClient(config.SUPABASE_URL, config.SUPABASE_SERVICE_ROLE_KEY, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,

@@ -86,7 +86,7 @@ router.get('/detailed', asyncHandler(async (_req: Request, res: Response) => {
           hasElevenLabsKey: !!config.ELEVENLABS_API_KEY,
           hasDIDKey: !!config.DID_API_KEY,
           hasSupabaseUrl: !!config.SUPABASE_URL,
-          hasSupabaseKey: !!config.SUPABASE_ANON_KEY,
+          hasSupabaseServiceKey: !!config.SUPABASE_SERVICE_ROLE_KEY,
         },
       }),
     };

@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { config } from '../utils/config';
 import { logger } from '../utils/logger';
 import { GenerateVoiceRequest, GenerateVoiceResponse } from '../types/voice';
-import { uploadAudioFile, getPublicUrl } from '../services/storage';
+import { uploadAudioFile, getPublicUrl, ElevenLabsResponse } from '../services/storage';
 
 const router = Router();
 
@@ -144,16 +144,18 @@ router.post('/generate', async (req: Request, res: Response) => {
     const audioBase64 = Buffer.from(audioBuffer).toString('base64');
 
     // Upload to Supabase storage
+    const elevenLabsApiResponse: ElevenLabsResponse = {
+      status: elevenLabsResponse.status,
+      headers: elevenLabsResponse.headers ? Object.fromEntries(elevenLabsResponse.headers.entries()) : {}
+    };
+
     const storageResult = await uploadAudioFile({
       voiceActorId: personaId,
       audioBuffer,
       text,
       format: 'mp3',
       apiResponseData: {
-        elevenlabs_response: {
-          status: elevenLabsResponse.status,
-          headers: elevenLabsResponse.headers ? Object.fromEntries(elevenLabsResponse.headers.entries()) : {}
-        }
+        elevenlabs_response: elevenLabsApiResponse
       }
     });
 
