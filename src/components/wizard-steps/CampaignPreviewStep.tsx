@@ -1,11 +1,18 @@
 'use client';
 
+interface FormData {
+  [key: string]: unknown;
+}
+
 interface CampaignPreviewStepProps {
-  onDataUpdate?: (data: any) => void;
-  formData?: any;
+  onDataUpdate?: (data: FormData) => void;
+  formData?: FormData;
 }
 
 export default function CampaignPreviewStep({ onDataUpdate, formData }: CampaignPreviewStepProps) {
+  // Note: onDataUpdate and formData are available for future use
+  console.log('Campaign preview data:', { onDataUpdate, formData });
+
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       {/* Header */}
@@ -14,7 +21,7 @@ export default function CampaignPreviewStep({ onDataUpdate, formData }: Campaign
           See Your <span className="text-gradient">Future</span>
         </h2>
         <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
-          Here's how your campaign will look across different platforms with your chosen avatar.
+          Here&apos;s how your campaign will look across different platforms with your chosen avatar.
         </p>
       </div>
 

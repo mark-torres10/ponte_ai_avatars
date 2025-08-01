@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import Navigation from "@/components/navigation"
 import MultiStepWizard, { WizardStep } from "@/components/MultiStepWizard"
 import EmotionalLanding from "@/components/EmotionalLanding"
@@ -14,14 +13,16 @@ import BrandCustomizationStep from "@/components/wizard-steps/BrandCustomization
 import FinalReviewStep from "@/components/wizard-steps/FinalReviewStep"
 import { Persona } from "@/lib/personas"
 
+interface FormData {
+  [key: string]: unknown;
+}
+
 export default function RequestTalentPage() {
-  const router = useRouter()
   const [selectedPersona, setSelectedPersona] = useState<Persona | null>(null)
-  const [formData, setFormData] = useState<any>({})
-  const [currentStepIndex, setCurrentStepIndex] = useState(0)
+  const [formData, setFormData] = useState<FormData>({})
 
   // Update form data from any step
-  const handleDataUpdate = (stepData: any) => {
+  const handleDataUpdate = (stepData: FormData) => {
     setFormData(prev => ({ ...prev, ...stepData }))
   }
 
@@ -32,7 +33,7 @@ export default function RequestTalentPage() {
   }
 
   // Handle wizard completion
-  const handleWizardComplete = (finalData: any) => {
+  const handleWizardComplete = (finalData: FormData) => {
     console.log("Campaign request completed:", finalData)
     // TODO: In future phases, this will submit to backend
     alert("🎉 Campaign request submitted successfully! We'll be in touch within 24 hours.")
@@ -47,7 +48,7 @@ export default function RequestTalentPage() {
       description: 'Transform your brand with celebrity AI avatars',
       component: (
         <EmotionalLanding
-          onContinue={() => setCurrentStepIndex(1)}
+          onContinue={() => {/* Navigation handled by wizard */}}
           onDataUpdate={handleDataUpdate}
         />
       ),
@@ -157,7 +158,7 @@ export default function RequestTalentPage() {
   ]
 
   const handleStepChange = (stepIndex: number, step: WizardStep) => {
-    setCurrentStepIndex(stepIndex)
+    // setCurrentStepIndex(stepIndex) // This line was removed
     
     // Track step interactions for analytics
     if (typeof window !== 'undefined') {

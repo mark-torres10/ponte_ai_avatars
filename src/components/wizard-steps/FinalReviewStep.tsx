@@ -1,12 +1,19 @@
 'use client';
 
+interface FormData {
+  [key: string]: unknown;
+}
+
 interface FinalReviewStepProps {
-  onDataUpdate?: (data: any) => void;
+  onDataUpdate?: (data: FormData) => void;
   onComplete?: () => void;
-  formData?: any;
+  formData?: FormData;
 }
 
 export default function FinalReviewStep({ onDataUpdate, onComplete, formData }: FinalReviewStepProps) {
+  // Note: onDataUpdate is available for future use
+  console.log('Final review data:', { onDataUpdate, formData });
+
   const handleSubmit = () => {
     if (onComplete) {
       onComplete();
@@ -32,11 +39,15 @@ export default function FinalReviewStep({ onDataUpdate, onComplete, formData }: 
           <div className="space-y-3">
             <div>
               <span className="text-sm text-foreground/60">Selected Avatar:</span>
-              <div className="font-medium">{formData?.selectedAvatar?.name || 'Not selected'}</div>
+              <div className="font-medium">
+                {formData?.selectedAvatar && typeof formData.selectedAvatar === 'object' 
+                  ? (formData.selectedAvatar as { name?: string }).name 
+                  : 'Not selected'}
+              </div>
             </div>
             <div>
               <span className="text-sm text-foreground/60">Brand Mission:</span>
-              <div className="text-sm">{formData?.brandMission || 'Not provided'}</div>
+              <div className="text-sm">{(formData?.brandMission as string) || 'Not provided'}</div>
             </div>
             <div>
               <span className="text-sm text-foreground/60">Campaign Type:</span>
@@ -74,7 +85,7 @@ export default function FinalReviewStep({ onDataUpdate, onComplete, formData }: 
           <div>
             <h4 className="font-semibold mb-2">🚀 Rush Delivery Available</h4>
             <p className="text-sm text-foreground/70">
-              Don't let your competitors get there first! Get your campaign delivered in 24-48 hours.
+              Don&apos;t let your competitors get there first! Get your campaign delivered in 24-48 hours.
             </p>
           </div>
           <button className="btn-secondary-ponte px-4 py-2 rounded-md text-sm">

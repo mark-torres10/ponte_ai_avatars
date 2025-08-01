@@ -13,10 +13,14 @@ export interface WizardStep {
   isAccessible: boolean;
 }
 
+interface FormData {
+  [key: string]: unknown;
+}
+
 interface MultiStepWizardProps {
   steps: WizardStep[];
   onStepChange?: (stepIndex: number, step: WizardStep) => void;
-  onComplete?: (formData: any) => void;
+  onComplete?: (formData: FormData) => void;
   persistKey?: string; // localStorage key for persistence
 }
 
@@ -27,8 +31,7 @@ export default function MultiStepWizard({
   persistKey = 'ponte-wizard-progress'
 }: MultiStepWizardProps) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [formData, setFormData] = useState<any>({});
-  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState<FormData>({});
 
   // Load progress from localStorage on mount
   useEffect(() => {
@@ -84,17 +87,6 @@ export default function MultiStepWizard({
   const prevStep = () => {
     if (currentStepIndex > 0) {
       goToStep(currentStepIndex - 1);
-    }
-  };
-
-  const updateFormData = (data: any) => {
-    setFormData(prev => ({ ...prev, ...data }));
-  };
-
-  const completeCurrentStep = () => {
-    steps[currentStepIndex].isComplete = true;
-    if (currentStepIndex < totalSteps - 1) {
-      steps[currentStepIndex + 1].isAccessible = true;
     }
   };
 
@@ -168,22 +160,10 @@ export default function MultiStepWizard({
       {/* Step Content */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-4xl mx-auto">
-          {/* Loading State */}
-          {isLoading && (
-            <div className="text-center py-12">
-              <div className="inline-flex items-center gap-3">
-                <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                <span className="text-lg text-foreground/70">Processing...</span>
-              </div>
-            </div>
-          )}
-
           {/* Step Component */}
-          {!isLoading && (
-            <div className="animate-fade-in">
-              {currentStep.component}
-            </div>
-          )}
+          <div className="animate-fade-in">
+            {currentStep.component}
+          </div>
 
           {/* Navigation Controls */}
           <div className="flex justify-between items-center mt-12 pt-8 border-t border-white/10">

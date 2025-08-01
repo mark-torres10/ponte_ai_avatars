@@ -1,11 +1,18 @@
 'use client';
 
+interface FormData {
+  [key: string]: unknown;
+}
+
 interface SuccessStoryStepProps {
-  onDataUpdate?: (data: any) => void;
-  formData?: any;
+  onDataUpdate?: (data: FormData) => void;
+  formData?: FormData;
 }
 
 export default function SuccessStoryStep({ onDataUpdate, formData }: SuccessStoryStepProps) {
+  // Note: onDataUpdate and formData are available for future use
+  console.log('Success story data:', { onDataUpdate, formData });
+
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       {/* Header */}
@@ -14,7 +21,7 @@ export default function SuccessStoryStep({ onDataUpdate, formData }: SuccessStor
           Your <span className="text-gradient">Success Story</span>
         </h2>
         <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
-          Here's what success looks like for brands like yours using celebrity AI avatars.
+          Here&apos;s what success looks like for brands like yours using celebrity AI avatars.
         </p>
       </div>
 

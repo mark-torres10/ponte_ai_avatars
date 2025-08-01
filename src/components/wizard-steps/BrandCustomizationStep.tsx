@@ -1,11 +1,18 @@
 'use client';
 
+interface FormData {
+  [key: string]: unknown;
+}
+
 interface BrandCustomizationStepProps {
-  onDataUpdate?: (data: any) => void;
-  formData?: any;
+  onDataUpdate?: (data: FormData) => void;
+  formData?: FormData;
 }
 
 export default function BrandCustomizationStep({ onDataUpdate, formData }: BrandCustomizationStepProps) {
+  // Note: onDataUpdate and formData are available for future use
+  console.log('Brand customization data:', { onDataUpdate, formData });
+
   return (
     <div className="max-w-3xl mx-auto space-y-8">
       {/* Header */}
@@ -14,7 +21,7 @@ export default function BrandCustomizationStep({ onDataUpdate, formData }: Brand
           Make It <span className="text-gradient">Perfect</span>
         </h2>
         <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
-          Let's make your avatar campaign perfectly aligned with your brand identity.
+          Let&apos;s make your avatar campaign perfectly aligned with your brand identity.
         </p>
       </div>
 
@@ -23,7 +30,7 @@ export default function BrandCustomizationStep({ onDataUpdate, formData }: Brand
         <div className="card-ponte p-6">
           <h3 className="font-semibold mb-4">Brand Voice Customization</h3>
           <p className="text-sm text-foreground/70 mb-4">
-            Fine-tune your avatar's speaking style to match your brand's unique voice and personality.
+            Fine-tune your avatar&apos;s speaking style to match your brand&apos;s unique voice and personality.
           </p>
           <div className="grid md:grid-cols-3 gap-4">
             <div className="p-3 bg-secondary/30 rounded-lg text-center">
@@ -44,7 +51,7 @@ export default function BrandCustomizationStep({ onDataUpdate, formData }: Brand
         <div className="card-ponte p-6">
           <h3 className="font-semibold mb-4">Visual Style Matching</h3>
           <p className="text-sm text-foreground/70 mb-4">
-            Ensure your avatar's appearance perfectly complements your brand's visual identity.
+            Ensure your avatar&apos;s appearance perfectly complements your brand&apos;s visual identity.
           </p>
           <div className="aspect-video bg-secondary/30 rounded-lg flex items-center justify-center">
             <p className="text-foreground/60">Brand alignment preview loading...</p>

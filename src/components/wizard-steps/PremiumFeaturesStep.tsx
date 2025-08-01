@@ -1,11 +1,18 @@
 'use client';
 
+interface FormData {
+  [key: string]: unknown;
+}
+
 interface PremiumFeaturesStepProps {
-  onDataUpdate?: (data: any) => void;
-  formData?: any;
+  onDataUpdate?: (data: FormData) => void;
+  formData?: FormData;
 }
 
 export default function PremiumFeaturesStep({ onDataUpdate, formData }: PremiumFeaturesStepProps) {
+  // Note: onDataUpdate and formData are available for future use
+  console.log('Premium features data:', { onDataUpdate, formData });
+
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       {/* Header */}

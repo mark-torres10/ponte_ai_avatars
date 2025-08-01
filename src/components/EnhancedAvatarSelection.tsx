@@ -1,14 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { Persona, PERSONAS } from '@/lib/personas';
 import { loadAvatarImages } from '@/lib/supabase-images';
 
+interface FormData {
+  [key: string]: unknown;
+}
+
 interface EnhancedAvatarSelectionProps {
   onAvatarSelect?: (persona: Persona) => void;
-  onDataUpdate?: (data: any) => void;
+  onDataUpdate?: (data: FormData) => void;
   selectedPersona?: Persona | null;
 }
 
@@ -105,31 +109,31 @@ export default function EnhancedAvatarSelection({
   const [hoveredPersona, setHoveredPersona] = useState<string | null>(null);
 
   // Load avatar images from Supabase
-  useEffect(() => {
-    const loadImages = async () => {
-      try {
-        setIsLoading(true);
-        setLoadError(null);
-        
-        const avatarImages = await loadAvatarImages();
-        
-        const updatedPersonas = personas.map(persona => ({
-          ...persona,
-          images: avatarImages[persona.id] || persona.images
-        }));
-        
-        setPersonas(updatedPersonas);
-        
-      } catch (error) {
-        console.error('Failed to load avatar images:', error);
-        setLoadError('Failed to load avatar images. Using fallback images.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const loadImages = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setLoadError(null);
+      
+      const avatarImages = await loadAvatarImages();
+      
+      const updatedPersonas = personas.map(persona => ({
+        ...persona,
+        images: avatarImages[persona.id] || persona.images
+      }));
+      
+      setPersonas(updatedPersonas);
+      
+    } catch (error) {
+      console.error('Failed to load avatar images:', error);
+      setLoadError('Failed to load avatar images. Using fallback images.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [personas]);
 
+  useEffect(() => {
     loadImages();
-  }, []);
+  }, [loadImages]);
 
   const handlePersonaSelect = (personaId: string) => {
     const updatedPersonas = personas.map(persona => ({
@@ -208,7 +212,7 @@ export default function EnhancedAvatarSelection({
           Meet Your <span className="text-gradient">Perfect Match</span>
         </h2>
         <p className="text-lg text-foreground/70 mb-6 max-w-2xl mx-auto">
-          Choose the celebrity AI avatar that best represents your brand's personality and connects with your audience.
+          Choose the celebrity AI avatar that best represents your brand&apos;s personality and connects with your audience.
         </p>
         
         {/* Quiz Toggle */}
@@ -391,7 +395,7 @@ export default function EnhancedAvatarSelection({
                   </div>
                   <div className="p-3 bg-secondary/20 rounded-lg">
                     <p className="text-sm italic">
-                      "Hi, I'm {persona.name}. I'm excited to help bring your brand's message to life with authentic energy and connection."
+                      &quot;Hi, I&apos;m {persona.name}. I&apos;m excited to help bring your brand&apos;s message to life with authentic energy and connection.&quot;
                     </p>
                   </div>
                 </div>

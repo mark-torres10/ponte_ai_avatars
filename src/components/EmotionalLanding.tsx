@@ -3,9 +3,13 @@
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
+interface FormData {
+  [key: string]: unknown;
+}
+
 interface EmotionalLandingProps {
   onContinue?: () => void;
-  onDataUpdate?: (data: any) => void;
+  onDataUpdate?: (data: FormData) => void;
 }
 
 interface SuccessMetric {
@@ -74,7 +78,6 @@ const successStories = [
 export default function EmotionalLanding({ onContinue, onDataUpdate }: EmotionalLandingProps) {
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
   const [hoveredMetric, setHoveredMetric] = useState<string | null>(null);
-  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
 
   // Auto-rotate success stories
   useEffect(() => {
@@ -93,7 +96,7 @@ export default function EmotionalLanding({ onContinue, onDataUpdate }: Emotional
         const delay = index * 0.5;
         const duration = 3 + (index * 0.3);
         
-        metric.style.animation = `float ${duration}s ease-in-out ${delay}s infinite`;
+        (metric as HTMLElement).style.animation = `float ${duration}s ease-in-out ${delay}s infinite`;
       });
     };
 
@@ -173,7 +176,7 @@ export default function EmotionalLanding({ onContinue, onDataUpdate }: Emotional
                 <span className="text-gradient">Celebrity AI Avatars</span>
               </h1>
               <p className="text-xl sm:text-2xl text-foreground/80 mb-8 max-w-3xl mx-auto">
-                Join industry leaders who've revolutionized their marketing with authentic AI avatar campaigns. 
+                Join industry leaders who&apos;ve revolutionized their marketing with authentic AI avatar campaigns. 
                 Your breakthrough moment starts here.
               </p>
             </div>
@@ -215,7 +218,7 @@ export default function EmotionalLanding({ onContinue, onDataUpdate }: Emotional
                   </div>
                   
                   <blockquote className="text-foreground/80 italic mb-4">
-                    "{currentStory.quote}"
+                    &quot;{currentStory.quote}&quot;
                   </blockquote>
                   
                   <div className="text-sm text-foreground/60">

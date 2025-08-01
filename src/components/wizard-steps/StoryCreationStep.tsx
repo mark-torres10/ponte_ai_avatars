@@ -1,19 +1,22 @@
 'use client';
 
 import { useState } from 'react';
-import { cn } from '@/lib/utils';
+
+interface FormData {
+  [key: string]: unknown;
+}
 
 interface StoryCreationStepProps {
-  onDataUpdate?: (data: any) => void;
-  formData?: any;
+  onDataUpdate?: (data: FormData) => void;
+  formData?: FormData;
 }
 
 export default function StoryCreationStep({ onDataUpdate, formData }: StoryCreationStepProps) {
   const [storyData, setStoryData] = useState({
-    brandMission: formData?.brandMission || '',
-    storyToTell: formData?.storyToTell || '',
-    emotionalTone: formData?.emotionalTone || '',
-    callToAction: formData?.callToAction || ''
+    brandMission: (formData?.brandMission as string) || '',
+    storyToTell: (formData?.storyToTell as string) || '',
+    emotionalTone: (formData?.emotionalTone as string) || '',
+    callToAction: (formData?.callToAction as string) || ''
   });
 
   const handleInputChange = (field: string, value: string) => {
@@ -33,7 +36,7 @@ export default function StoryCreationStep({ onDataUpdate, formData }: StoryCreat
           Your Story, <span className="text-gradient">Their Voice</span>
         </h2>
         <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
-          Let's craft the perfect message that captures your brand's essence and connects with your audience.
+          Let&apos;s craft the perfect message that captures your brand&apos;s essence and connects with your audience.
         </p>
       </div>
 
@@ -41,7 +44,7 @@ export default function StoryCreationStep({ onDataUpdate, formData }: StoryCreat
       <div className="space-y-6">
         <div>
           <label htmlFor="brandMission" className="block text-sm font-medium mb-2">
-            Your Brand's Mission
+            Your Brand&apos;s Mission
           </label>
           <textarea
             id="brandMission"
