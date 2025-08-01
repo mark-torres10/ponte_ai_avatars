@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 // Initialize Supabase client with fallback
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const prodStorageBucket = process.env.PROD_STORAGE_BUCKET || 'ponteai-assets';
 
 const supabase = supabaseUrl && supabaseAnonKey 
   ? createClient(supabaseUrl, supabaseAnonKey)
@@ -47,14 +48,16 @@ export const loadAvatarImages = async (): Promise<PersonaImages> => {
         try {
           // Generate a signed URL that expires in 1 hour
           const { data, error } = await supabase.storage
-            .from('test-bucket-ponteai') // Replace with your actual bucket name
+            .from(prodStorageBucket) // Use production bucket from env var
             .createSignedUrl(imagePath, 3600); // 1 hour expiry
           
           if (error) {
             console.error(`Error loading image ${imagePath}:`, error);
             // Fallback to a placeholder image
+            const fallbackColor = persona.id === 'terry-crews' ? '3b82f6' : '10b981';
+            const fallbackName = persona.id === 'terry-crews' ? 'Terry+Crews' : 'Will+Howard';
             images.push({
-              url: `/api/placeholder/300/300?text=${persona.id}-${i}`,
+              url: `https://via.placeholder.com/300x300/${fallbackColor}/ffffff?text=${fallbackName}+${i}`,
               alt: `${persona.id} - Image ${i}`,
               index: i
             });
@@ -68,8 +71,10 @@ export const loadAvatarImages = async (): Promise<PersonaImages> => {
         } catch (error) {
           console.error(`Failed to load image ${imagePath}:`, error);
           // Fallback to a placeholder image
+          const fallbackColor = persona.id === 'terry-crews' ? '3b82f6' : '10b981';
+          const fallbackName = persona.id === 'terry-crews' ? 'Terry+Crews' : 'Will+Howard';
           images.push({
-            url: `/api/placeholder/300/300?text=${persona.id}-${i}`,
+            url: `https://via.placeholder.com/300x300/${fallbackColor}/ffffff?text=${fallbackName}+${i}`,
             alt: `${persona.id} - Image ${i}`,
             index: i
           });
@@ -96,7 +101,7 @@ export const getPublicImageUrl = (personaId: string, imageIndex: number): string
   const imagePath = `avatar_assets/${folder}/static/pic${imageIndex}.jpeg`;
   
   // If your bucket is public, you can use the public URL
-  return `${supabaseUrl}/storage/v1/object/public/test-bucket-ponteai/${imagePath}`;
+  return `${supabaseUrl}/storage/v1/object/public/${prodStorageBucket}/${imagePath}`;
 };
 
 /**
@@ -105,12 +110,12 @@ export const getPublicImageUrl = (personaId: string, imageIndex: number): string
 const getFallbackImages = (): PersonaImages => {
   return {
     'terry-crews': Array.from({ length: 5 }, (_, i) => ({
-      url: `/api/placeholder/300/300?text=terry-crews-${i + 1}`,
+      url: `https://via.placeholder.com/300x300/3b82f6/ffffff?text=Terry+Crews+${i + 1}`,
       alt: `Terry Crews - Image ${i + 1}`,
       index: i + 1
     })),
     'will-howard': Array.from({ length: 5 }, (_, i) => ({
-      url: `/api/placeholder/300/300?text=will-howard-${i + 1}`,
+      url: `https://via.placeholder.com/300x300/10b981/ffffff?text=Will+Howard+${i + 1}`,
       alt: `Will Howard - Image ${i + 1}`,
       index: i + 1
     }))
