@@ -51,7 +51,6 @@ const SelfInterviewStep: React.FC = () => {
   const { register, setValue, watch } = useFormContext()
   const [recordingStates, setRecordingStates] = useState<Record<string, RecordingState>>({})
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null)
-  const [stream, setStream] = useState<MediaStream | null>(null)
   const [currentRecordingQuestion, setCurrentRecordingQuestion] = useState<string | null>(null)
   
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -76,16 +75,19 @@ const SelfInterviewStep: React.FC = () => {
     setRecordingStates(initialStates)
   }, [])
 
-  // Cleanup audio URLs on unmount
+  // Track created URLs using a ref to ensure proper cleanup
+  const createdUrlsRef = useRef<Set<string>>(new Set())
+
+  // Cleanup audio URLs on unmount only
   useEffect(() => {
     return () => {
-      Object.values(recordingStates).forEach(state => {
-        if (state.audioUrl) {
-          URL.revokeObjectURL(state.audioUrl)
-        }
+      const urlsToCleanup = createdUrlsRef.current
+      urlsToCleanup.forEach(url => {
+        URL.revokeObjectURL(url)
       })
+      urlsToCleanup.clear()
     }
-  }, [recordingStates])
+  }, [])
 
   // Check browser support for media recording
   const isRecordingSupported = typeof MediaRecorder !== 'undefined' && 
@@ -107,7 +109,6 @@ const SelfInterviewStep: React.FC = () => {
       }
 
       const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      setStream(mediaStream)
       setCurrentRecordingQuestion(questionId)
 
       const mimeType = getSupportedMimeType()
@@ -128,6 +129,9 @@ const SelfInterviewStep: React.FC = () => {
         const audioUrl = URL.createObjectURL(audioBlob)
         const duration = Math.round((Date.now() - startTime) / 1000)
 
+        // Track the created URL for cleanup
+        createdUrlsRef.current.add(audioUrl)
+
         setRecordingStates(prev => ({
           ...prev,
           [questionId]: {
@@ -146,10 +150,8 @@ const SelfInterviewStep: React.FC = () => {
         // Cleanup
         setMediaRecorder(null)
         setCurrentRecordingQuestion(null)
-        if (stream) {
-          stream.getTracks().forEach(track => track.stop())
-          setStream(null)
-        }
+        // Note: stream cleanup is handled within the callback scope
+        // where stream is defined, so we don't need it in dependencies
       }
 
       recorder.start()
@@ -173,7 +175,7 @@ const SelfInterviewStep: React.FC = () => {
         }
       }))
     }
-  }, [isRecordingSupported, setValue, stream])
+  }, [isRecordingSupported, setValue])
 
   // Stop recording
   const stopRecording = useCallback(() => {
@@ -199,7 +201,8 @@ const SelfInterviewStep: React.FC = () => {
         }
       }))
 
-      audioRef.current.onended = () => {
+      // Store the onended handler for cleanup
+      const onEndedHandler = () => {
         setRecordingStates(prev => ({
           ...prev,
           [questionId]: {
@@ -207,6 +210,15 @@ const SelfInterviewStep: React.FC = () => {
             isPlaying: false,
           }
         }))
+      }
+
+      audioRef.current.onended = onEndedHandler
+
+      // Cleanup function to remove the handler
+      return () => {
+        if (audioRef.current) {
+          audioRef.current.onended = null
+        }
       }
     }
   }, [recordingStates])
@@ -216,6 +228,7 @@ const SelfInterviewStep: React.FC = () => {
     const state = recordingStates[questionId]
     if (state.audioUrl) {
       URL.revokeObjectURL(state.audioUrl)
+      createdUrlsRef.current.delete(state.audioUrl)
     }
 
     setRecordingStates(prev => ({
@@ -399,7 +412,7 @@ const SelfInterviewStep: React.FC = () => {
           </span>
           <span className="text-primary font-medium">
             {Object.keys(predefinedAnswers).filter(key => !key.includes('_audio')).length >= INTERVIEW_QUESTIONS.filter(q => q.required).length 
-              ? 'Great! You&apos;ve completed the required questions.' 
+              ? 'Great! You have completed the required questions.' 
               : 'Please answer the required questions marked with *.'}
           </span>
         </div>

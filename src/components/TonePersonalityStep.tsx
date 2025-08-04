@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useFormContext } from 'react-hook-form'
 
 // Predefined tone categories
@@ -31,6 +31,12 @@ const TonePersonalityStep: React.FC = () => {
   // Watch current values
   const personalityTraits = watch('personality.personalityTraits')
   const customTone = watch('personality.customTone')
+
+  // Synchronize selectedTones with form values
+  useEffect(() => {
+    const toneCategories = watch('personality.toneCategories') || []
+    setSelectedTones(toneCategories)
+  }, [watch])
 
   // Handle tone category selection
   const handleToneToggle = (toneId: string) => {
