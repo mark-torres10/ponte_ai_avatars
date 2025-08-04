@@ -95,17 +95,48 @@ function ReviewSection({ title, children, onEdit, isEditing, onSave, onCancel, i
   )
 }
 
-export default function ReviewStep() {
-  const { watch, formState } = useFormContext()
+interface ReviewStepProps {
+  onNavigateToStep?: (stepIndex: number) => void
+}
+
+export default function ReviewStep({ onNavigateToStep }: ReviewStepProps) {
+  const { watch, trigger } = useFormContext()
   const formData = watch()
   const [editingSection, setEditingSection] = useState<string | null>(null)
+
+  // Map section names to step indices
+  const sectionToStepMap: Record<string, number> = {
+    'basic-info': 0,
+    'media': 1,
+    'personality': 2,
+    'interview': 3,
+  }
 
   const handleEdit = (section: string) => {
     setEditingSection(section)
   }
 
-  const handleSave = () => {
-    setEditingSection(null)
+  const handleSave = async () => {
+    // Validate the current section before saving
+    if (editingSection) {
+      const isValid = await trigger(editingSection)
+      if (isValid) {
+        // Navigate back to the appropriate step for editing
+        const stepIndex = sectionToStepMap[editingSection]
+        if (stepIndex !== undefined && onNavigateToStep) {
+          onNavigateToStep(stepIndex)
+        } else {
+          // Fallback: just exit edit mode if navigation is not available
+          setEditingSection(null)
+        }
+        // Show success feedback (could add a toast notification here)
+        console.log(`${editingSection} section - navigating to edit step`)
+      } else {
+        // Show error feedback (could add a toast notification here)
+        console.log(`Please fix validation errors in ${editingSection} section`)
+        return
+      }
+    }
   }
 
   const handleCancel = () => {
@@ -117,14 +148,6 @@ export default function ReviewStep() {
   const isMediaComplete = formData.media?.headshots?.length > 0 || formData.media?.videoSample
   const isPersonalityComplete = formData.personality?.toneCategories?.length > 0 || formData.personality?.customTone
   const isInterviewComplete = Object.keys(formData.interview?.predefinedAnswers || {}).filter(key => !key.includes('_audio')).length >= 3
-
-  const getCompletionStatus = (isComplete: boolean) => {
-    return isComplete ? (
-      <span className="text-green-500 text-sm">✓ Complete</span>
-    ) : (
-      <span className="text-red-500 text-sm">⚠ Incomplete</span>
-    )
-  }
 
   return (
     <div className="space-y-6">

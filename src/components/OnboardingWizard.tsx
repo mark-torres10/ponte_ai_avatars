@@ -4,8 +4,6 @@ import React, { useState } from 'react'
 import { useForm, FormProvider } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import Link from 'next/link'
-import { AlertCircle } from 'lucide-react'
 import ProgressIndicator from './ProgressIndicator'
 import BasicInfoStep from './BasicInfoStep'
 import MediaUploadStep from './MediaUploadStep'
@@ -88,7 +86,7 @@ export default function OnboardingWizard() {
     mode: 'onChange',
   })
 
-  const { handleSubmit, formState } = methods
+  const { formState } = methods
 
   const goToNextStep = async () => {
     // Validate current step before proceeding
@@ -144,6 +142,10 @@ export default function OnboardingWizard() {
     setCurrentStep(0) // Go back to first step
   }
 
+  const handleNavigateToStep = (stepIndex: number) => {
+    setCurrentStep(stepIndex)
+  }
+
   const CurrentStepComponent = steps[currentStep].component
 
   // Show mock dashboard after submission
@@ -177,64 +179,67 @@ export default function OnboardingWizard() {
                 </div>
                 <h1 className="text-3xl sm:text-4xl font-bold mb-4">
                   Application{" "}
-                  <span className="text-gradient">Submitted!</span>
+                  <span className="text-gradient-ponte">Submitted!</span>
                 </h1>
-                <p className="text-lg text-foreground/70">
-                  Thank you for your interest in joining Ponte AI as talent. We&apos;ll review your application and get back to you soon.
+                <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
+                  Thank you for your application! We&apos;ve received your information and will review it carefully.
                 </p>
               </div>
 
-              {/* Success Content */}
-              <div className="card-ponte p-8 rounded-lg text-center">
-                <div className="mb-6">
-                  <h2 className="text-2xl font-bold mb-4">What happens next?</h2>
-                  <div className="grid md:grid-cols-3 gap-6 mb-8">
-                    <div className="text-center">
-                      <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <span className="text-primary text-xl">📧</span>
+              {/* Success Details */}
+              <div className="card-ponte p-8 rounded-lg mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-3">What happens next?</h3>
+                    <ul className="space-y-2 text-sm text-foreground/70">
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-1">•</span>
+                        <span>Our team will review your application within 2-3 business days</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-1">•</span>
+                        <span>We&apos;ll contact you via email with next steps</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-1">•</span>
+                        <span>If approved, we&apos;ll help you create your first AI avatar</span>
+                      </li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-3">Application Details</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-foreground/60">Application ID:</span>
+                        <span className="font-mono text-primary">APP-{Date.now().toString().slice(-6)}</span>
                       </div>
-                      <h3 className="font-semibold mb-2">Review Process</h3>
-                      <p className="text-sm text-foreground/60">Our team will review your application within 2-3 business days</p>
-                    </div>
-                    
-                    <div className="text-center">
-                      <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <span className="text-primary text-xl">🎯</span>
+                      <div className="flex justify-between">
+                        <span className="text-foreground/60">Submitted:</span>
+                        <span>{new Date().toLocaleDateString()}</span>
                       </div>
-                      <h3 className="font-semibold mb-2">Approval</h3>
-                      <p className="text-sm text-foreground/60">Once approved, you&apos;ll receive access to your talent dashboard</p>
-                    </div>
-                    
-                    <div className="text-center">
-                      <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <span className="text-primary text-xl">💰</span>
+                      <div className="flex justify-between">
+                        <span className="text-foreground/60">Status:</span>
+                        <span className="text-yellow-500">Under Review</span>
                       </div>
-                      <h3 className="font-semibold mb-2">Start Earning</h3>
-                      <p className="text-sm text-foreground/60">Begin monetizing your likeness through AI avatar licensing</p>
                     </div>
                   </div>
                 </div>
+              </div>
 
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <button
-                    onClick={handleViewDashboard}
-                    className="btn-primary-ponte text-base px-6 py-3 rounded-md font-medium"
-                  >
-                    🚀 Preview Your Earning Potential
-                  </button>
-                  <Link
-                    href="/"
-                    className="btn-secondary-ponte text-base px-6 py-3 rounded-md font-medium"
-                  >
-                    Return to Home
-                  </Link>
-                  <Link
-                    href="/request-talent"
-                    className="btn-secondary-ponte text-base px-6 py-3 rounded-md font-medium"
-                  >
-                    Browse Avatars
-                  </Link>
-                </div>
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <button
+                  onClick={handleViewDashboard}
+                  className="btn-primary-ponte px-8 py-3 rounded-md font-medium"
+                >
+                  View Demo Dashboard
+                </button>
+                <button
+                  onClick={handleEditProfile}
+                  className="btn-secondary-ponte px-8 py-3 rounded-md font-medium"
+                >
+                  Edit Application
+                </button>
               </div>
             </div>
           </div>
@@ -248,112 +253,61 @@ export default function OnboardingWizard() {
       <div className="pt-24 pb-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
-            {/* Header */}
-            <div className="text-center mb-8">
-              <div className="w-20 h-20 bg-gradient-ponte rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-3xl text-white">👤</span>
-              </div>
-              <h1 className="text-3xl sm:text-4xl font-bold mb-4">
-                Join as{" "}
-                <span className="text-gradient">Talent</span>
-              </h1>
-              <p className="text-lg text-foreground/70">
-                Complete your profile to start monetizing your likeness through AI avatar licensing.
-              </p>
-            </div>
-
             {/* Progress Indicator */}
-            <div className="mb-8">
-              <ProgressIndicator 
-                currentStep={currentStep} 
-                totalSteps={steps.length}
-                stepTitles={steps.map(step => step.title)}
-              />
-            </div>
+            <ProgressIndicator
+              currentStep={currentStep}
+              totalSteps={steps.length}
+              stepTitles={steps.map(step => step.title)}
+            />
 
-            {/* Wizard Container */}
-            <div className="card-ponte p-8 rounded-lg">
-              <FormProvider {...methods}>
-                <form onSubmit={handleSubmit(onSubmit)}>
-                  <CurrentStepComponent />
-                  
-                  {/* Validation Errors Display */}
-                  {Object.keys(formState.errors).length > 0 && (
-                    <div className="mt-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
-                      <div className="flex items-start gap-3">
-                        <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <h4 className="font-medium text-red-500 mb-2">Please fix the following errors:</h4>
-                          <ul className="space-y-1 text-sm text-red-400">
-                            {Object.entries(formState.errors).map(([field, error]) => {
-                              // Handle nested errors recursively
-                              const renderError = (fieldName: string, errorObj: any): React.ReactNode => {
-                                if (errorObj && typeof errorObj === 'object') {
-                                  if ('type' in errorObj && 'message' in errorObj) {
-                                    return (
-                                      <li key={fieldName}>
-                                        <strong className="capitalize">{fieldName.replace(/([A-Z])/g, ' $1').trim()}:</strong> {errorObj.message || 'This field is required'}
-                                      </li>
-                                    )
-                                  } else {
-                                    // Handle nested object errors
-                                    return Object.entries(errorObj).map(([nestedField, nestedError]) => 
-                                      renderError(`${fieldName}.${nestedField}`, nestedError)
-                                    )
-                                  }
-                                }
-                                return (
-                                  <li key={fieldName}>
-                                    <strong className="capitalize">{fieldName.replace(/([A-Z])/g, ' $1').trim()}:</strong> {errorObj?.message || 'This field is required'}
-                                  </li>
-                                )
-                              }
-                              
-                              return renderError(field, error)
-                            })}
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
+            {/* Form */}
+            <FormProvider {...methods}>
+              <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-8">
+                {/* Current Step Component */}
+                <div className="card-ponte p-8 rounded-lg">
+                  {currentStep === steps.length - 1 ? (
+                    <ReviewStep onNavigateToStep={handleNavigateToStep} />
+                  ) : (
+                    <CurrentStepComponent />
                   )}
+                </div>
+
+                {/* Navigation Buttons */}
+                <div className="flex justify-between items-center mt-8 pt-6 border-t border-white/20">
+                  <button
+                    type="button"
+                    onClick={goToPreviousStep}
+                    disabled={currentStep === 0}
+                    className="btn-secondary-ponte px-6 py-3 rounded-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Previous
+                  </button>
                   
-                  {/* Navigation Buttons */}
-                  <div className="flex justify-between items-center mt-8 pt-6 border-t border-white/20">
+                  <div className="text-sm text-foreground/60">
+                    Step {currentStep + 1} of {steps.length}
+                  </div>
+                  
+                  {currentStep === steps.length - 1 ? (
                     <button
                       type="button"
-                      onClick={goToPreviousStep}
-                      disabled={currentStep === 0}
-                      className="btn-secondary-ponte px-6 py-3 rounded-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={handleSubmitClick}
+                      disabled={!formState.isValid || formState.isSubmitting}
+                      className="btn-primary-ponte px-6 py-3 rounded-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Previous
+                      {formState.isSubmitting ? 'Submitting...' : 'Submit Application'}
                     </button>
-                    
-                    <div className="text-sm text-foreground/60">
-                      Step {currentStep + 1} of {steps.length}
-                    </div>
-                    
-                                        {currentStep === steps.length - 1 ? (
-                      <button
-                        type="button"
-                        onClick={handleSubmitClick}
-                        disabled={!formState.isValid || formState.isSubmitting}
-                        className="btn-primary-ponte px-6 py-3 rounded-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {formState.isSubmitting ? 'Submitting...' : 'Submit Application'}
-                      </button>
-                      ) : (
-                      <button
-                        type="button"
-                        onClick={goToNextStep}
-                        className="btn-primary-ponte px-6 py-3 rounded-md font-medium"
-                      >
-                        Next
-                      </button>
-                    )}
-                  </div>
-                </form>
-              </FormProvider>
-            </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={goToNextStep}
+                      className="btn-primary-ponte px-6 py-3 rounded-md font-medium"
+                    >
+                      Next
+                    </button>
+                  )}
+                </div>
+              </form>
+            </FormProvider>
           </div>
         </div>
       </div>

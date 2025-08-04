@@ -1,3 +1,5 @@
+import { getApiUrl } from './config'
+
 // OpenAI API integration for AI persona generation
 export interface OpenAIPersonaRequest {
   name: string
@@ -19,16 +21,59 @@ export interface OpenAIPersonaResponse {
 }
 
 class OpenAIClient {
-  private apiKey: string | undefined
+  private backendUrl: string
 
   constructor() {
-    this.apiKey = process.env.NEXT_PUBLIC_OPENAI_API_KEY
+    // Use backend API instead of direct OpenAI calls
+    this.backendUrl = getApiUrl()
   }
 
   async generatePersona(request: OpenAIPersonaRequest): Promise<OpenAIPersonaResponse> {
-    // For now, return a mock response since we don't have the actual API key
-    // In production, this would make a real API call to OpenAI
-    return this.generateMockPersona(request)
+    try {
+      const response = await fetch(`${this.backendUrl}/api/openai/generate-persona`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(request),
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+      return data
+    } catch (error) {
+      console.error('Error calling backend OpenAI API:', error)
+      // Fallback to mock response if backend is unavailable
+      return this.generateMockPersona(request)
+    }
+  }
+
+  async generatePrompt(request: { prompt: string; model?: string; maxTokens?: number; temperature?: number }): Promise<{ success: boolean; content?: string; error?: string }> {
+    try {
+      const response = await fetch(`${this.backendUrl}/api/openai/prompt`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(request),
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+      return data
+    } catch (error) {
+      console.error('Error calling backend OpenAI API:', error)
+      return {
+        success: false,
+        error: 'Failed to generate prompt response',
+      }
+    }
   }
 
   private async generateMockPersona(request: OpenAIPersonaRequest): Promise<OpenAIPersonaResponse> {
@@ -113,58 +158,12 @@ Perfect for: ${this.getUseCases(toneCategories)}`
     return selectedUseCases.length > 0 ? selectedUseCases.join(', ') : 'versatile content creation'
   }
 
-  // Real OpenAI API integration (for future use)
+  // Real OpenAI API integration (moved to backend for security)
+  // This method is kept for reference but should not be used in production
+  // All OpenAI calls should go through the backend API
   private async callOpenAIAPI(request: OpenAIPersonaRequest): Promise<OpenAIPersonaResponse> {
-    if (!this.apiKey) {
-      throw new Error('OpenAI API key not configured')
-    }
-
-    try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`,
-        },
-        body: JSON.stringify({
-          model: 'gpt-4',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are an expert at creating AI persona descriptions for talent avatars. Create engaging, professional descriptions that highlight the unique characteristics and use cases for each avatar.',
-            },
-            {
-              role: 'user',
-              content: this.buildPrompt(request),
-            },
-          ],
-          max_tokens: 500,
-          temperature: 0.7,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error(`OpenAI API error: ${response.status}`)
-      }
-
-      const data = await response.json()
-      const persona = data.choices[0]?.message?.content
-
-      if (!persona) {
-        throw new Error('No persona generated')
-      }
-
-      return {
-        success: true,
-        persona,
-      }
-    } catch (error) {
-      console.error('OpenAI API error:', error)
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      }
-    }
+    console.warn('Direct OpenAI API calls are deprecated. Use backend API instead.')
+    throw new Error('Direct OpenAI API calls are not allowed. Use the backend API.')
   }
 
   private buildPrompt(request: OpenAIPersonaRequest): string {

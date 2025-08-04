@@ -215,7 +215,7 @@ export default function MockDashboard({ onEditProfile }: MockDashboardProps) {
             This is what your success could look like, {formData.basicInfo?.name || 'Talent'}!
           </p>
           <p className="text-sm text-green-400 font-medium">
-            ✨ Based on your profile, here's your earning potential
+            ✨ Based on your profile, here&apos;s your earning potential
           </p>
         </div>
         {onEditProfile && (
@@ -234,7 +234,7 @@ export default function MockDashboard({ onEditProfile }: MockDashboardProps) {
         <div className="text-center mb-4">
           <h2 className="text-xl font-bold text-green-400 mb-2">💫 Your Earning Potential</h2>
           <p className="text-foreground/70">
-            Based on similar talent profiles, here's what you could be earning:
+            Based on similar talent profiles, here&apos;s what you could be earning:
           </p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
