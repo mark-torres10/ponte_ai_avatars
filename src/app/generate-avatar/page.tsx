@@ -8,6 +8,7 @@ import TextInput from "@/components/TextInput"
 import VoiceGeneration from "@/components/VoiceGeneration"
 import VideoGeneration from "@/components/VideoGeneration"
 import CollapsibleBackendStatus from "@/components/CollapsibleBackendStatus"
+import LocalTestingMode from "@/components/LocalTestingMode"
 import { Persona } from "@/lib/personas"
 
 export default function GenerateAvatarPage() {
@@ -130,6 +131,9 @@ export default function GenerateAvatarPage() {
 
       {/* Collapsible Backend Status */}
       <CollapsibleBackendStatus />
+      
+      {/* Local Testing Mode */}
+      <LocalTestingMode />
     </div>
   )
 } 

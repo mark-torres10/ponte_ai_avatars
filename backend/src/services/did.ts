@@ -73,11 +73,8 @@ export interface DIDGetTalkResponse {
   status: 'created' | 'started' | 'done' | 'error';
   created_at: string;
   updated_at: string;
-  result?: {
-    video_url?: string;
-    duration?: number;
-    size?: number;
-  };
+  result_url?: string;
+  duration?: number;
   error?: {
     code: string;
     message: string;
@@ -283,6 +280,8 @@ class DidService {
         requestData.source_url = params.sourceUrl || VOICE_ACTOR_CONFIG.voiceActorA.imageUrl;
       }
 
+
+
       logger.info('Creating D-ID talk request:', {
         requestId,
         imageUrl: params.imageUrl || params.sourceUrl || 'fallback_url',
@@ -296,6 +295,8 @@ class DidService {
 
       const response = await this.client.post('/talks', requestData);
       const data = response.data as DIDCreateTalkResponse;
+      
+
       
       logger.info('D-ID talk request created:', {
         requestId,
@@ -413,10 +414,12 @@ class DidService {
       // Step 2: Poll for completion
       const completedVideo = await this.pollVideoStatus(talkRequest.id);
 
+
+      
       logger.info('Video generation completed:', {
         id: completedVideo.id,
-        videoUrl: completedVideo.result?.video_url?.substring(0, 50) + '...',
-        duration: completedVideo.result?.duration
+        videoUrl: completedVideo.result_url?.substring(0, 50) + '...',
+        duration: completedVideo.duration
       });
 
       const resultData: any = {
@@ -425,11 +428,11 @@ class DidService {
         createdAt: completedVideo.created_at
       };
       
-      if (completedVideo.result?.video_url) {
-        resultData.videoUrl = completedVideo.result.video_url;
+      if (completedVideo.result_url) {
+        resultData.videoUrl = completedVideo.result_url;
       }
-      if (completedVideo.result?.duration) {
-        resultData.duration = completedVideo.result.duration;
+      if (completedVideo.duration) {
+        resultData.duration = completedVideo.duration;
       }
       
       return {

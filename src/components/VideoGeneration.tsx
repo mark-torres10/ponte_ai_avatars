@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { apiClient } from '@/lib/api';
 import { Persona } from '@/lib/personas';
 import StorageErrorDisplay from './StorageErrorDisplay';
+import { useLocalTesting } from '@/lib/local-testing-context';
 
 interface VideoGenerationProps {
   selectedPersona: Persona | null;
@@ -27,7 +28,9 @@ export default function VideoGeneration({
   const [useCachedAvatar, setUseCachedAvatar] = useState(false);
   const [generationProgress, setGenerationProgress] = useState<string>('');
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
+  const [showQualityFeedback, setShowQualityFeedback] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const { isLocalMode } = useLocalTesting();
 
   // Get available images for the selected persona
   const availableImages = selectedPersona?.images || [];
@@ -60,6 +63,21 @@ export default function VideoGeneration({
     setGenerationProgress('Initializing video generation...');
 
     try {
+      // Handle local testing mode
+      if (isLocalMode) {
+        setGenerationProgress('Using local testing mode...');
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Use the local testing video URL from environment
+        const localVideoUrl = "https://evfgjtpvrasitxpbftva.supabase.co/storage/v1/object/public/test-bucket-ponteai/test_user_id/will-howard/2025-08-04_17-57-08/video_v1.mp4";
+        setVideoUrl(localVideoUrl);
+        onVideoGenerated(localVideoUrl);
+        setGenerationProgress('Local video loaded successfully!');
+        setShowQualityFeedback(true);
+        return;
+      }
+
       // Get the image URL (handle both string and AvatarImage object)
       const imageUrl = typeof selectedImage === 'string' ? selectedImage : selectedImage.url;
       
@@ -86,6 +104,7 @@ export default function VideoGeneration({
         setVideoUrl(response.data.videoUrl);
         onVideoGenerated(response.data.videoUrl);
         setGenerationProgress('Video generated successfully!');
+        setShowQualityFeedback(true);
         
         // Check for storage errors in the response
         if (response.data.storageInfo === undefined) {
@@ -358,6 +377,57 @@ export default function VideoGeneration({
                 Avatar video generated successfully
               </span>
             </div>
+
+            {/* Quality Feedback */}
+            {showQualityFeedback && (
+              <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg">
+                <h3 className="font-medium text-gray-800 mb-3">How was your video quality?</h3>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => {
+                      console.log('Video quality feedback: Excellent');
+                      setShowQualityFeedback(false);
+                    }}
+                    className="px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition-colors"
+                  >
+                    🎯 Excellent
+                  </button>
+                  <button
+                    onClick={() => {
+                      console.log('Video quality feedback: Good');
+                      setShowQualityFeedback(false);
+                    }}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors"
+                  >
+                    👍 Good
+                  </button>
+                  <button
+                    onClick={() => {
+                      console.log('Video quality feedback: Fair');
+                      setShowQualityFeedback(false);
+                    }}
+                    className="px-4 py-2 bg-yellow-500 text-white rounded-lg text-sm font-medium hover:bg-yellow-600 transition-colors"
+                  >
+                    ⚠️ Fair
+                  </button>
+                  <button
+                    onClick={() => {
+                      console.log('Video quality feedback: Poor');
+                      setShowQualityFeedback(false);
+                    }}
+                    className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 transition-colors"
+                  >
+                    ❌ Poor
+                  </button>
+                  <button
+                    onClick={() => setShowQualityFeedback(false)}
+                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-400 transition-colors"
+                  >
+                    Skip
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
