@@ -1,0 +1,43 @@
+name: CI - Build Check
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        
+    - name: Install frontend dependencies
+      run: npm ci
+      
+    - name: Build frontend
+      run: npm run build
+      
+    - name: Install backend dependencies
+      run: |
+        cd backend
+        npm ci
+        
+    - name: Build backend
+      run: |
+        cd backend
+        npm run build
+        
+    - name: Verify builds completed
+      run: |
+        echo "✅ Frontend build completed successfully"
+        echo "✅ Backend build completed successfully"
+        echo "✅ All TypeScript compilation passed" 
