@@ -7,6 +7,7 @@ import { z } from 'zod'
 import Link from 'next/link'
 import ProgressIndicator from './ProgressIndicator'
 import BasicInfoStep from './BasicInfoStep'
+import ReviewStep from './ReviewStep'
 
 // Form schema for the entire onboarding process
 const onboardingSchema = z.object({
@@ -44,7 +45,7 @@ const steps = [
   { id: 'media-upload', title: 'Media Upload', component: () => <div>Media Upload Step (Coming Soon)</div> },
   { id: 'tone-personality', title: 'Tone & Personality', component: () => <div>Tone & Personality Step (Coming Soon)</div> },
   { id: 'self-interview', title: 'Self Interview', component: () => <div>Self Interview Step (Coming Soon)</div> },
-  { id: 'review', title: 'Review & Submit', component: () => <div>Review Step (Coming Soon)</div> },
+  { id: 'review', title: 'Review & Submit', component: ReviewStep },
 ]
 
 export default function OnboardingWizard() {
@@ -90,8 +91,10 @@ export default function OnboardingWizard() {
 
   const onSubmit = (data: OnboardingFormData) => {
     console.log('Form submitted:', data)
+    console.log('Setting isSubmitted to true')
     // TODO: Handle form submission
     setIsSubmitted(true)
+    console.log('isSubmitted should now be true')
   }
 
   const CurrentStepComponent = steps[currentStep].component
