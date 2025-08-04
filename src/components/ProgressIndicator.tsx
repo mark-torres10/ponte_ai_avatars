@@ -21,7 +21,7 @@ export default function ProgressIndicator({
           <div 
             className="h-full bg-gradient-ponte transition-all duration-500 ease-out"
             style={{ 
-              width: `${((currentStep + 1) / totalSteps) * 100}%` 
+              width: totalSteps === 0 ? '0%' : `${((currentStep + 1) / totalSteps) * 100}%` 
             }}
           />
         </div>
@@ -56,7 +56,10 @@ export default function ProgressIndicator({
       {/* Current Step Title */}
       <div className="text-center mb-6">
         <h2 className="text-2xl font-bold mb-2">
-          {stepTitles[currentStep]}
+          {currentStep >= 0 && currentStep < stepTitles.length 
+            ? stepTitles[currentStep] 
+            : 'Loading...'
+          }
         </h2>
         <p className="text-foreground/70">
           Step {currentStep + 1} of {totalSteps}
