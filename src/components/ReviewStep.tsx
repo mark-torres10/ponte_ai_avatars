@@ -42,9 +42,37 @@ export default function ReviewStep() {
       {/* Media Upload Review */}
       <div className="card-ponte p-6 rounded-lg">
         <h4 className="text-lg font-semibold mb-4 text-primary">Media Upload</h4>
-        <p className="text-foreground/70">
-          Media upload functionality will be available in the next step of development.
-        </p>
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium text-foreground/60">Headshots</label>
+            <div className="mt-2">
+              {formData.media?.headshots && formData.media.headshots.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {formData.media.headshots.map((file: File, index: number) => (
+                    <div key={index} className="text-sm text-foreground/80 bg-white/10 px-3 py-1 rounded">
+                      {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-foreground/60">No headshots uploaded</p>
+              )}
+            </div>
+          </div>
+          
+          <div>
+            <label className="text-sm font-medium text-foreground/60">Video Sample</label>
+            <div className="mt-2">
+              {formData.media?.videoSample ? (
+                <div className="text-sm text-foreground/80 bg-white/10 px-3 py-1 rounded inline-block">
+                  {formData.media.videoSample.name} ({(formData.media.videoSample.size / 1024 / 1024).toFixed(2)} MB)
+                </div>
+              ) : (
+                <p className="text-foreground/60">No video sample uploaded</p>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Tone & Personality Review */}
