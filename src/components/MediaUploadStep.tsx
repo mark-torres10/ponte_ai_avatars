@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { useFormContext } from 'react-hook-form'
 import { useDropzone } from 'react-dropzone'
 import imageCompression from 'browser-image-compression'
@@ -22,11 +22,25 @@ const MediaUploadStep: React.FC = () => {
   const [videoSample, setVideoSample] = useState<UploadedFile | null>(null)
   const [isCompressing, setIsCompressing] = useState(false)
 
+  // Cleanup object URLs on component unmount
+  useEffect(() => {
+    return () => {
+      // Cleanup headshot preview URLs
+      headshots.forEach(headshot => {
+        URL.revokeObjectURL(headshot.preview)
+      })
+      // Cleanup video preview URL
+      if (videoSample) {
+        URL.revokeObjectURL(videoSample.preview)
+      }
+    }
+  }, [headshots, videoSample])
+
   // File validation constants
   const MAX_IMAGE_SIZE = 10 * 1024 * 1024 // 10MB
   const MAX_VIDEO_SIZE = 50 * 1024 * 1024 // 50MB
   const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png']
-  const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/mov', 'video/webm']
+  const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/quicktime', 'video/webm']
   const MAX_HEADSHOTS = 5
 
   // Compress image function
@@ -101,7 +115,8 @@ const MediaUploadStep: React.FC = () => {
         const uploadedFile = createUploadedFile(compressedFile, 'image')
         uploadedFile.compressed = compressedFile.size < file.size
         newHeadshots.push(uploadedFile)
-             } catch {
+             } catch (error) {
+         console.error('Image processing failed:', error)
          const errorFile = createUploadedFile(file, 'image')
          errorFile.error = 'Failed to process image'
          newHeadshots.push(errorFile)
@@ -135,6 +150,10 @@ const MediaUploadStep: React.FC = () => {
 
   // Remove headshot
   const removeHeadshot = (id: string) => {
+    const headshotToRemove = headshots.find(h => h.id === id)
+    if (headshotToRemove) {
+      URL.revokeObjectURL(headshotToRemove.preview)
+    }
     const updatedHeadshots = headshots.filter(h => h.id !== id)
     setHeadshots(updatedHeadshots)
     setValue('media.headshots', updatedHeadshots.map(h => h.file))
@@ -142,6 +161,9 @@ const MediaUploadStep: React.FC = () => {
 
   // Remove video
   const removeVideo = () => {
+    if (videoSample) {
+      URL.revokeObjectURL(videoSample.preview)
+    }
     setVideoSample(null)
     setValue('media.videoSample', null)
   }
