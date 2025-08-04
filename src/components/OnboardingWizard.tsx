@@ -7,6 +7,7 @@ import { z } from 'zod'
 import Link from 'next/link'
 import ProgressIndicator from './ProgressIndicator'
 import BasicInfoStep from './BasicInfoStep'
+import MediaUploadStep from './MediaUploadStep'
 import ReviewStep from './ReviewStep'
 
 // Form schema for the entire onboarding process
@@ -18,8 +19,8 @@ const onboardingSchema = z.object({
     location: z.string().optional(),
   }),
   media: z.object({
-    headshots: z.array(z.any()).optional(),
-    videoSample: z.any().optional(),
+    headshots: z.array(z.instanceof(File)).optional(),
+    videoSample: z.instanceof(File).optional(),
   }),
   personality: z.object({
     toneCategories: z.array(z.string()).optional(),
@@ -42,7 +43,7 @@ type OnboardingFormData = z.infer<typeof onboardingSchema>
 
 const steps = [
   { id: 'basic-info', title: 'Basic Information', component: BasicInfoStep },
-  { id: 'media-upload', title: 'Media Upload', component: () => <div>Media Upload Step (Coming Soon)</div> },
+  { id: 'media-upload', title: 'Media Upload', component: MediaUploadStep },
   { id: 'tone-personality', title: 'Tone & Personality', component: () => <div>Tone & Personality Step (Coming Soon)</div> },
   { id: 'self-interview', title: 'Self Interview', component: () => <div>Self Interview Step (Coming Soon)</div> },
   { id: 'review', title: 'Review & Submit', component: ReviewStep },
