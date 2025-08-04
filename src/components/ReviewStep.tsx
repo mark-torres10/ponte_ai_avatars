@@ -45,13 +45,23 @@ interface ReviewSectionProps {
   isEditing?: boolean
   onSave?: () => void
   onCancel?: () => void
+  isComplete?: boolean
 }
 
-function ReviewSection({ title, children, onEdit, isEditing, onSave, onCancel }: ReviewSectionProps) {
+function ReviewSection({ title, children, onEdit, isEditing, onSave, onCancel, isComplete }: ReviewSectionProps) {
   return (
     <div className="card-ponte p-6 rounded-lg">
       <div className="flex justify-between items-center mb-4">
-        <h4 className="text-lg font-semibold text-primary">{title}</h4>
+        <div className="flex items-center gap-3">
+          <h4 className="text-lg font-semibold text-primary">{title}</h4>
+          {isComplete !== undefined && (
+            isComplete ? (
+              <span className="text-green-500 text-sm">✓ Complete</span>
+            ) : (
+              <span className="text-red-500 text-sm">⚠ Incomplete</span>
+            )
+          )}
+        </div>
         {!isEditing && onEdit && (
           <button
             onClick={onEdit}
@@ -86,7 +96,7 @@ function ReviewSection({ title, children, onEdit, isEditing, onSave, onCancel }:
 }
 
 export default function ReviewStep() {
-  const { watch } = useFormContext()
+  const { watch, formState } = useFormContext()
   const formData = watch()
   const [editingSection, setEditingSection] = useState<string | null>(null)
 
@@ -100,6 +110,20 @@ export default function ReviewStep() {
 
   const handleCancel = () => {
     setEditingSection(null)
+  }
+
+  // Check completion status for each section
+  const isBasicInfoComplete = formData.basicInfo?.name && formData.basicInfo?.email
+  const isMediaComplete = formData.media?.headshots?.length > 0 || formData.media?.videoSample
+  const isPersonalityComplete = formData.personality?.toneCategories?.length > 0 || formData.personality?.customTone
+  const isInterviewComplete = Object.keys(formData.interview?.predefinedAnswers || {}).filter(key => !key.includes('_audio')).length >= 3
+
+  const getCompletionStatus = (isComplete: boolean) => {
+    return isComplete ? (
+      <span className="text-green-500 text-sm">✓ Complete</span>
+    ) : (
+      <span className="text-red-500 text-sm">⚠ Incomplete</span>
+    )
   }
 
   return (
@@ -118,6 +142,7 @@ export default function ReviewStep() {
         isEditing={editingSection === 'basic-info'}
         onSave={handleSave}
         onCancel={handleCancel}
+        isComplete={isBasicInfoComplete}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -146,6 +171,7 @@ export default function ReviewStep() {
         isEditing={editingSection === 'media'}
         onSave={handleSave}
         onCancel={handleCancel}
+        isComplete={isMediaComplete}
       >
         <div className="space-y-4">
           <div>
@@ -187,6 +213,7 @@ export default function ReviewStep() {
         isEditing={editingSection === 'personality'}
         onSave={handleSave}
         onCancel={handleCancel}
+        isComplete={isPersonalityComplete}
       >
         <div className="space-y-4">
           {/* Tone Categories */}
@@ -237,6 +264,7 @@ export default function ReviewStep() {
         isEditing={editingSection === 'interview'}
         onSave={handleSave}
         onCancel={handleCancel}
+        isComplete={isInterviewComplete}
       >
         <div className="space-y-4">
           {/* Predefined Answers */}

@@ -17,10 +17,18 @@ interface UploadedFile {
 }
 
 const MediaUploadStep: React.FC = () => {
-  const { setValue } = useFormContext()
+  const { setValue, getValues } = useFormContext()
   const [headshots, setHeadshots] = useState<UploadedFile[]>([])
   const [videoSample, setVideoSample] = useState<UploadedFile | null>(null)
   const [isCompressing, setIsCompressing] = useState(false)
+
+  // Initialize media field if not already set
+  useEffect(() => {
+    setValue('media', {
+      headshots: [],
+      videoSample: undefined,
+    })
+      }, [setValue, getValues])
 
   // Cleanup object URLs on component unmount
   useEffect(() => {
@@ -65,12 +73,27 @@ const MediaUploadStep: React.FC = () => {
     const maxSize = type === 'image' ? MAX_IMAGE_SIZE : MAX_VIDEO_SIZE
     const allowedTypes = type === 'image' ? ALLOWED_IMAGE_TYPES : ALLOWED_VIDEO_TYPES
 
+    // Check file size
     if (file.size > maxSize) {
       return `File size must be less than ${type === 'image' ? '10MB' : '50MB'}`
     }
 
-    if (!allowedTypes.includes(file.type)) {
-      return `File type not supported. Please use ${type === 'image' ? 'JPG or PNG' : 'MP4, MOV, or WebM'}`
+    // Check file type more robustly
+    const fileExtension = file.name.toLowerCase().split('.').pop()
+    const mimeType = file.type.toLowerCase()
+    
+    const isValidType = allowedTypes.some(allowedType => {
+      const allowedMime = allowedType.toLowerCase()
+      const allowedExt = allowedType.split('/')[1]?.toLowerCase()
+      
+      return mimeType === allowedMime || 
+             (fileExtension && allowedExt && fileExtension === allowedExt) ||
+             (type === 'image' && mimeType.startsWith('image/') && ['jpeg', 'jpg', 'png'].includes(fileExtension || '')) ||
+             (type === 'video' && mimeType.startsWith('video/') && ['mp4', 'mov', 'webm'].includes(fileExtension || ''))
+    })
+
+    if (!isValidType) {
+      return `File type not supported. Please use ${type === 'image' ? 'JPG, JPEG, or PNG' : 'MP4, MOV, or WebM'} files. Detected: ${file.name} (${mimeType})`
     }
 
     return null
@@ -125,9 +148,12 @@ const MediaUploadStep: React.FC = () => {
 
     const updatedHeadshots = [...headshots, ...newHeadshots]
     setHeadshots(updatedHeadshots)
-    setValue('media.headshots', updatedHeadshots.map(h => h.file))
+    setValue('media', {
+      ...getValues('media'),
+      headshots: updatedHeadshots.map(h => h.file)
+    })
     setIsCompressing(false)
-  }, [headshots, setValue, validateFile])
+      }, [headshots, setValue, getValues, validateFile])
 
   // Handle video upload
   const onVideoDrop = useCallback(async (acceptedFiles: File[]) => {
@@ -145,8 +171,11 @@ const MediaUploadStep: React.FC = () => {
 
     const uploadedFile = createUploadedFile(file, 'video')
     setVideoSample(uploadedFile)
-    setValue('media.videoSample', file)
-  }, [setValue, validateFile])
+    setValue('media', {
+      ...getValues('media'),
+      videoSample: file
+    })
+      }, [setValue, getValues, validateFile])
 
   // Remove headshot
   const removeHeadshot = (id: string) => {
@@ -156,7 +185,10 @@ const MediaUploadStep: React.FC = () => {
     }
     const updatedHeadshots = headshots.filter(h => h.id !== id)
     setHeadshots(updatedHeadshots)
-    setValue('media.headshots', updatedHeadshots.map(h => h.file))
+    setValue('media', {
+      ...getValues('media'),
+      headshots: updatedHeadshots.map(h => h.file)
+    })
   }
 
   // Remove video
@@ -165,14 +197,18 @@ const MediaUploadStep: React.FC = () => {
       URL.revokeObjectURL(videoSample.preview)
     }
     setVideoSample(null)
-    setValue('media.videoSample', null)
+    setValue('media', {
+      ...getValues('media'),
+      videoSample: null
+    })
   }
 
   // Dropzone configurations
   const headshotsDropzone = useDropzone({
     onDrop: onHeadshotsDrop,
     accept: {
-      'image/*': ['.jpeg', '.jpg', '.png']
+      'image/jpeg': ['.jpg', '.jpeg'],
+      'image/png': ['.png']
     },
     multiple: true,
     disabled: isCompressing
@@ -181,7 +217,9 @@ const MediaUploadStep: React.FC = () => {
   const videoDropzone = useDropzone({
     onDrop: onVideoDrop,
     accept: {
-      'video/*': ['.mp4', '.mov', '.webm']
+      'video/mp4': ['.mp4'],
+      'video/quicktime': ['.mov'],
+      'video/webm': ['.webm']
     },
     multiple: false
   })
@@ -233,7 +271,7 @@ const MediaUploadStep: React.FC = () => {
               {isCompressing ? 'Processing images...' : 'Drag & drop headshots here, or click to select'}
             </p>
             <p className="text-xs text-foreground/50">
-              JPG, PNG up to 10MB each • Up to {MAX_HEADSHOTS} images
+              JPG, JPEG, PNG up to 10MB each • Up to {MAX_HEADSHOTS} images
             </p>
           </div>
         </div>
@@ -303,7 +341,7 @@ const MediaUploadStep: React.FC = () => {
               Drag & drop video here, or click to select
             </p>
             <p className="text-xs text-foreground/50">
-              MP4, MOV, WebM up to 50MB
+              MP4, MOV, WebM up to 50MB • Video files only
             </p>
           </div>
         </div>
@@ -339,6 +377,25 @@ const MediaUploadStep: React.FC = () => {
             )}
           </div>
         )}
+      </div>
+
+      {/* File Type Requirements */}
+      <div className="card-ponte p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+        <h4 className="font-semibold mb-2 flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 text-yellow-500" />
+          File Type Requirements
+        </h4>
+        <div className="text-sm text-foreground/70 space-y-2">
+          <div>
+            <strong>Headshots:</strong> Only JPG, JPEG, or PNG files up to 10MB each
+          </div>
+          <div>
+            <strong>Video:</strong> Only MP4, MOV, or WebM files up to 50MB
+          </div>
+          <div className="text-xs text-foreground/50 mt-1">
+            Other file types will be rejected automatically
+          </div>
+        </div>
       </div>
 
       {/* Upload Tips */}

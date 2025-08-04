@@ -5,6 +5,7 @@ import { useForm, FormProvider } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import Link from 'next/link'
+import { AlertCircle } from 'lucide-react'
 import ProgressIndicator from './ProgressIndicator'
 import BasicInfoStep from './BasicInfoStep'
 import MediaUploadStep from './MediaUploadStep'
@@ -22,9 +23,9 @@ const onboardingSchema = z.object({
     location: z.string().optional(),
   }),
   media: z.object({
-    headshots: z.array(z.instanceof(File)).optional(),
-    videoSample: z.instanceof(File).optional(),
-  }),
+    headshots: z.array(z.any()).optional(),
+    videoSample: z.any().optional(),
+  }).optional(),
   personality: z.object({
     toneCategories: z.array(z.string()).optional(),
     personalityTraits: z.object({
@@ -66,6 +67,10 @@ export default function OnboardingWizard() {
         phone: '',
         location: '',
       },
+      media: {
+        headshots: [],
+        videoSample: undefined,
+      },
       personality: {
         personalityTraits: {
           extroversion: 50,
@@ -74,15 +79,21 @@ export default function OnboardingWizard() {
           professionalism: 50,
         },
       },
+      interview: {
+        predefinedAnswers: {},
+        freeformText: '',
+        freeformAudio: '',
+      },
     },
     mode: 'onChange',
   })
 
-  const { handleSubmit } = methods
+  const { handleSubmit, formState } = methods
 
   const goToNextStep = async () => {
-    // For now, just proceed to next step (validation can be added later)
-    if (currentStep < steps.length - 1) {
+    // Validate current step before proceeding
+    const isValid = await methods.trigger()
+    if (isValid && currentStep < steps.length - 1) {
       console.log('Moving to next step:', currentStep + 1)
       setCurrentStep(currentStep + 1)
     }
@@ -102,13 +113,24 @@ export default function OnboardingWizard() {
     console.log('isSubmitted should now be true')
   }
 
-  const handleSubmitClick = () => {
+  const handleSubmitClick = async () => {
     console.log('Submit button clicked!')
-    console.log('Current form data:', methods.getValues())
-    console.log('Form errors:', methods.formState.errors)
-    console.log('Form is valid:', methods.formState.isValid)
     
-    // Force submit the form
+    // Validate the entire form before submission
+    const isValid = await methods.trigger()
+    
+    if (!isValid) {
+      console.log('Form validation failed:', methods.formState.errors)
+      console.log('Current form data:', methods.getValues())
+      console.log('Form errors:', methods.formState.errors)
+      // Don't proceed with submission - errors will be displayed in UI
+      return
+    }
+    
+    console.log('Form is valid, proceeding with submission')
+    console.log('Current form data:', methods.getValues())
+    
+    // Submit the form
     methods.handleSubmit(onSubmit)()
   }
 
@@ -198,7 +220,7 @@ export default function OnboardingWizard() {
                     onClick={handleViewDashboard}
                     className="btn-primary-ponte text-base px-6 py-3 rounded-md font-medium"
                   >
-                    View Mock Dashboard
+                    🚀 Preview Your Earning Potential
                   </button>
                   <Link
                     href="/"
@@ -255,6 +277,46 @@ export default function OnboardingWizard() {
                 <form onSubmit={handleSubmit(onSubmit)}>
                   <CurrentStepComponent />
                   
+                  {/* Validation Errors Display */}
+                  {Object.keys(formState.errors).length > 0 && (
+                    <div className="mt-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
+                      <div className="flex items-start gap-3">
+                        <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <h4 className="font-medium text-red-500 mb-2">Please fix the following errors:</h4>
+                          <ul className="space-y-1 text-sm text-red-400">
+                            {Object.entries(formState.errors).map(([field, error]) => {
+                              // Handle nested errors recursively
+                              const renderError = (fieldName: string, errorObj: any): React.ReactNode => {
+                                if (errorObj && typeof errorObj === 'object') {
+                                  if ('type' in errorObj && 'message' in errorObj) {
+                                    return (
+                                      <li key={fieldName}>
+                                        <strong className="capitalize">{fieldName.replace(/([A-Z])/g, ' $1').trim()}:</strong> {errorObj.message || 'This field is required'}
+                                      </li>
+                                    )
+                                  } else {
+                                    // Handle nested object errors
+                                    return Object.entries(errorObj).map(([nestedField, nestedError]) => 
+                                      renderError(`${fieldName}.${nestedField}`, nestedError)
+                                    )
+                                  }
+                                }
+                                return (
+                                  <li key={fieldName}>
+                                    <strong className="capitalize">{fieldName.replace(/([A-Z])/g, ' $1').trim()}:</strong> {errorObj?.message || 'This field is required'}
+                                  </li>
+                                )
+                              }
+                              
+                              return renderError(field, error)
+                            })}
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
                   {/* Navigation Buttons */}
                   <div className="flex justify-between items-center mt-8 pt-6 border-t border-white/20">
                     <button
@@ -270,15 +332,16 @@ export default function OnboardingWizard() {
                       Step {currentStep + 1} of {steps.length}
                     </div>
                     
-                    {currentStep === steps.length - 1 ? (
+                                        {currentStep === steps.length - 1 ? (
                       <button
                         type="button"
                         onClick={handleSubmitClick}
-                        className="btn-primary-ponte px-6 py-3 rounded-md font-medium"
+                        disabled={!formState.isValid || formState.isSubmitting}
+                        className="btn-primary-ponte px-6 py-3 rounded-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        Submit Application
+                        {formState.isSubmitting ? 'Submitting...' : 'Submit Application'}
                       </button>
-                    ) : (
+                      ) : (
                       <button
                         type="button"
                         onClick={goToNextStep}
