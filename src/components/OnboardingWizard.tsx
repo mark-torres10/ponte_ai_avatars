@@ -8,6 +8,8 @@ import Link from 'next/link'
 import ProgressIndicator from './ProgressIndicator'
 import BasicInfoStep from './BasicInfoStep'
 import MediaUploadStep from './MediaUploadStep'
+import TonePersonalityStep from './TonePersonalityStep'
+import SelfInterviewStep from './SelfInterviewStep'
 import ReviewStep from './ReviewStep'
 
 // Form schema for the entire onboarding process
@@ -44,8 +46,8 @@ type OnboardingFormData = z.infer<typeof onboardingSchema>
 const steps = [
   { id: 'basic-info', title: 'Basic Information', component: BasicInfoStep },
   { id: 'media-upload', title: 'Media Upload', component: MediaUploadStep },
-  { id: 'tone-personality', title: 'Tone & Personality', component: () => <div>Tone & Personality Step (Coming Soon)</div> },
-  { id: 'self-interview', title: 'Self Interview', component: () => <div>Self Interview Step (Coming Soon)</div> },
+  { id: 'tone-personality', title: 'Tone & Personality', component: TonePersonalityStep },
+  { id: 'self-interview', title: 'Self Interview', component: SelfInterviewStep },
   { id: 'review', title: 'Review & Submit', component: ReviewStep },
 ]
 
