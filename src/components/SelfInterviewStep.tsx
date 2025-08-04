@@ -312,7 +312,7 @@ const SelfInterviewStep: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => recordingState.isRecording ? stopRecording() : startRecording(question.id)}
-                      disabled={!isRecordingSupported || (currentRecordingQuestion && currentRecordingQuestion !== question.id)}
+                      disabled={!isRecordingSupported || (currentRecordingQuestion !== null && currentRecordingQuestion !== question.id)}
                       className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors ${
                         recordingState.isRecording
                           ? 'bg-red-500 text-white hover:bg-red-600'

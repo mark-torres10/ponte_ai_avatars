@@ -108,7 +108,7 @@ const TonePersonalityStep: React.FC = () => {
                 onChange={(e) => handleCustomToneChange(e.target.value)}
               />
               <p className="mt-1 text-xs text-foreground/60">
-                Optional: Add any specific details about your communication style that aren't covered above.
+                Optional: Add any specific details about your communication style that are not covered above.
               </p>
             </div>
           )}

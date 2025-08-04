@@ -143,10 +143,10 @@ export default function ReviewStep() {
           <div>
             <label className="text-sm font-medium text-foreground/60">Personality Traits</label>
             <div className="mt-2 space-y-2">
-              {formData.personality?.personalityTraits && Object.entries(formData.personality.personalityTraits).map(([trait, value]) => (
+              {formData.personality?.personalityTraits && Object.entries(formData.personality.personalityTraits).map(([trait, value]: [string, unknown]) => (
                 <div key={trait} className="flex justify-between items-center">
                   <span className="text-sm text-foreground/80 capitalize">{trait}</span>
-                  <span className="text-sm text-foreground/60">{value}/100</span>
+                  <span className="text-sm text-foreground/60">{String(value)}/100</span>
                 </div>
               ))}
             </div>
