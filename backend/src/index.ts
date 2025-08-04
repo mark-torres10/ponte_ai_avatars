@@ -25,7 +25,7 @@ const gracefulShutdown = (signal: string) => {
   
   server.close((err) => {
     if (err) {
-      logger.error('Error during server shutdown:', err);
+      logger.error('Error during server shutdown:', { error: err.message, stack: err.stack });
       process.exit(1);
     }
     
@@ -46,7 +46,7 @@ process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (error) => {
-  logger.error('Uncaught Exception:', error);
+  logger.error('Uncaught Exception:', { error: error.message, stack: error.stack });
   process.exit(1);
 });
 

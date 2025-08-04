@@ -56,7 +56,7 @@ router.post('/generate-persona', async (req: Request, res: Response): Promise<vo
 
     res.json(response);
   } catch (error) {
-    logger.error('Error generating persona:', error);
+    logger.error('Error generating persona:', { error: error instanceof Error ? error.message : String(error) });
     res.status(500).json({
       success: false,
       error: 'Internal server error',
@@ -84,7 +84,7 @@ router.post('/prompt', async (req: Request, res: Response): Promise<void> => {
 
     res.json(response);
   } catch (error) {
-    logger.error('Error processing OpenAI prompt:', error);
+    logger.error('Error processing OpenAI prompt:', { error: error instanceof Error ? error.message : String(error) });
     res.status(500).json({
       success: false,
       error: 'Internal server error',
@@ -108,7 +108,7 @@ async function generateMockPersona(request: OpenAIPersonaRequest): Promise<OpenA
       persona,
     };
   } catch (error) {
-    logger.error('Error generating mock persona:', error);
+    logger.error('Error generating mock persona:', { error: error instanceof Error ? error.message : String(error) });
     return {
       success: false,
       error: 'Failed to generate persona',
@@ -130,7 +130,7 @@ async function generateMockOpenAIResponse(request: OpenAIRequest): Promise<OpenA
       content,
     };
   } catch (error) {
-    logger.error('Error generating mock OpenAI response:', error);
+    logger.error('Error generating mock OpenAI response:', { error: error instanceof Error ? error.message : String(error) });
     return {
       success: false,
       error: 'Failed to generate response',
