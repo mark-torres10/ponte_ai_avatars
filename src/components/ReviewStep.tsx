@@ -3,6 +3,40 @@
 import React from 'react'
 import { useFormContext } from 'react-hook-form'
 
+// Predefined interview questions (same as in SelfInterviewStep)
+const INTERVIEW_QUESTIONS = [
+  {
+    id: 'background',
+    question: 'Tell us about your background and experience.',
+    placeholder: 'Share your professional background, education, and relevant experience...',
+    required: true,
+  },
+  {
+    id: 'interests',
+    question: 'What are your main interests and hobbies?',
+    placeholder: 'What do you enjoy doing in your free time? What are you passionate about?',
+    required: false,
+  },
+  {
+    id: 'communication_style',
+    question: 'How would you describe your communication style?',
+    placeholder: 'Are you more formal or casual? Do you prefer detailed explanations or brief summaries?',
+    required: true,
+  },
+  {
+    id: 'goals',
+    question: 'What are your goals for working with AI avatars?',
+    placeholder: 'What do you hope to achieve? What types of content would you like to create?',
+    required: true,
+  },
+  {
+    id: 'unique_qualities',
+    question: 'What makes you unique? What special qualities do you bring?',
+    placeholder: 'What sets you apart? What unique perspectives or experiences do you have?',
+    required: false,
+  },
+]
+
 export default function ReviewStep() {
   const { watch } = useFormContext()
   const formData = watch()
@@ -78,17 +112,84 @@ export default function ReviewStep() {
       {/* Tone & Personality Review */}
       <div className="card-ponte p-6 rounded-lg">
         <h4 className="text-lg font-semibold mb-4 text-primary">Tone & Personality</h4>
-        <p className="text-foreground/70">
-          Personality and tone selection will be available in the next step of development.
-        </p>
+        <div className="space-y-4">
+          {/* Tone Categories */}
+          <div>
+            <label className="text-sm font-medium text-foreground/60">Selected Tone Categories</label>
+            <div className="mt-2">
+              {formData.personality?.toneCategories && formData.personality.toneCategories.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {formData.personality.toneCategories.map((tone: string, index: number) => (
+                    <div key={index} className="text-sm text-foreground/80 bg-primary/10 px-3 py-1 rounded border border-primary/20">
+                      {tone.charAt(0).toUpperCase() + tone.slice(1)}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-foreground/60">No tone categories selected</p>
+              )}
+            </div>
+          </div>
+
+          {/* Custom Tone */}
+          {formData.personality?.customTone && (
+            <div>
+              <label className="text-sm font-medium text-foreground/60">Custom Tone Description</label>
+              <p className="text-foreground mt-1">{formData.personality.customTone}</p>
+            </div>
+          )}
+
+          {/* Personality Traits */}
+          <div>
+            <label className="text-sm font-medium text-foreground/60">Personality Traits</label>
+            <div className="mt-2 space-y-2">
+              {formData.personality?.personalityTraits && Object.entries(formData.personality.personalityTraits).map(([trait, value]: [string, unknown]) => (
+                <div key={trait} className="flex justify-between items-center">
+                  <span className="text-sm text-foreground/80 capitalize">{trait}</span>
+                  <span className="text-sm text-foreground/60">{String(value)}/100</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Self Interview Review */}
       <div className="card-ponte p-6 rounded-lg">
         <h4 className="text-lg font-semibold mb-4 text-primary">Self Interview</h4>
-        <p className="text-foreground/70">
-          Self interview questions will be available in the next step of development.
-        </p>
+        <div className="space-y-4">
+          {/* Predefined Answers */}
+          {formData.interview?.predefinedAnswers && Object.entries(formData.interview.predefinedAnswers).map(([questionId, answer]: [string, unknown]) => {
+            // Skip audio answers in the display
+            if (questionId.includes('_audio')) return null
+            
+            const question = INTERVIEW_QUESTIONS.find((q: { id: string; question: string }) => q.id === questionId)
+            if (!question || !answer) return null
+
+            return (
+              <div key={questionId}>
+                <label className="text-sm font-medium text-foreground/60">{question.question}</label>
+                <p className="text-foreground mt-1">{typeof answer === 'string' ? answer : String(answer)}</p>
+                {/* Show if audio recording exists */}
+                {formData.interview?.predefinedAnswers?.[`${questionId}_audio`] && (
+                  <div className="mt-2">
+                    <span className="text-xs text-primary bg-primary/10 px-2 py-1 rounded">
+                      🎤 Voice recording available
+                    </span>
+                  </div>
+                )}
+              </div>
+            )
+          })}
+
+          {/* Freeform Text */}
+          {formData.interview?.freeformText && (
+            <div>
+              <label className="text-sm font-medium text-foreground/60">Additional Information</label>
+              <p className="text-foreground mt-1">{formData.interview.freeformText}</p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Submission Notice */}
