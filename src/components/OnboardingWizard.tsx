@@ -4,13 +4,13 @@ import React, { useState } from 'react'
 import { useForm, FormProvider } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import Link from 'next/link'
 import ProgressIndicator from './ProgressIndicator'
 import BasicInfoStep from './BasicInfoStep'
 import MediaUploadStep from './MediaUploadStep'
 import TonePersonalityStep from './TonePersonalityStep'
 import SelfInterviewStep from './SelfInterviewStep'
 import ReviewStep from './ReviewStep'
+import MockDashboard from './MockDashboard'
 
 // Form schema for the entire onboarding process
 const onboardingSchema = z.object({
@@ -21,9 +21,9 @@ const onboardingSchema = z.object({
     location: z.string().optional(),
   }),
   media: z.object({
-    headshots: z.array(z.instanceof(File)).optional(),
-    videoSample: z.instanceof(File).optional(),
-  }),
+    headshots: z.array(z.any()).optional(),
+    videoSample: z.any().optional(),
+  }).optional(),
   personality: z.object({
     toneCategories: z.array(z.string()).optional(),
     personalityTraits: z.object({
@@ -54,6 +54,7 @@ const steps = [
 export default function OnboardingWizard() {
   const [currentStep, setCurrentStep] = useState(0)
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [showDashboard, setShowDashboard] = useState(false)
   
   const methods = useForm<OnboardingFormData>({
     resolver: zodResolver(onboardingSchema),
@@ -64,6 +65,10 @@ export default function OnboardingWizard() {
         phone: '',
         location: '',
       },
+      media: {
+        headshots: [],
+        videoSample: undefined,
+      },
       personality: {
         personalityTraits: {
           extroversion: 50,
@@ -72,15 +77,21 @@ export default function OnboardingWizard() {
           professionalism: 50,
         },
       },
+      interview: {
+        predefinedAnswers: {},
+        freeformText: '',
+        freeformAudio: '',
+      },
     },
     mode: 'onChange',
   })
 
-  const { handleSubmit, trigger } = methods
+  const { formState } = methods
 
   const goToNextStep = async () => {
-    // For now, just proceed to next step (validation can be added later)
-    if (currentStep < steps.length - 1) {
+    // Validate current step before proceeding
+    const isValid = await methods.trigger()
+    if (isValid && currentStep < steps.length - 1) {
       console.log('Moving to next step:', currentStep + 1)
       setCurrentStep(currentStep + 1)
     }
@@ -100,17 +111,59 @@ export default function OnboardingWizard() {
     console.log('isSubmitted should now be true')
   }
 
-  const handleSubmitClick = () => {
+  const handleSubmitClick = async () => {
     console.log('Submit button clicked!')
-    console.log('Current form data:', methods.getValues())
-    console.log('Form errors:', methods.formState.errors)
-    console.log('Form is valid:', methods.formState.isValid)
     
-    // Force submit the form
+    // Validate the entire form before submission
+    const isValid = await methods.trigger()
+    
+    if (!isValid) {
+      console.log('Form validation failed:', methods.formState.errors)
+      console.log('Current form data:', methods.getValues())
+      console.log('Form errors:', methods.formState.errors)
+      // Don't proceed with submission - errors will be displayed in UI
+      return
+    }
+    
+    console.log('Form is valid, proceeding with submission')
+    console.log('Current form data:', methods.getValues())
+    
+    // Submit the form
     methods.handleSubmit(onSubmit)()
   }
 
+  const handleViewDashboard = () => {
+    setShowDashboard(true)
+  }
+
+  const handleEditProfile = () => {
+    setShowDashboard(false)
+    setIsSubmitted(false)
+    setCurrentStep(0) // Go back to first step
+  }
+
+  const handleNavigateToStep = (stepIndex: number) => {
+    setCurrentStep(stepIndex)
+  }
+
   const CurrentStepComponent = steps[currentStep].component
+
+  // Show mock dashboard after submission
+  if (showDashboard) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="pt-24 pb-16">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-7xl mx-auto">
+              <FormProvider {...methods}>
+                <MockDashboard onEditProfile={handleEditProfile} />
+              </FormProvider>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   // Show success message after submission
   if (isSubmitted) {
@@ -126,58 +179,67 @@ export default function OnboardingWizard() {
                 </div>
                 <h1 className="text-3xl sm:text-4xl font-bold mb-4">
                   Application{" "}
-                  <span className="text-gradient">Submitted!</span>
+                  <span className="text-gradient-ponte">Submitted!</span>
                 </h1>
-                <p className="text-lg text-foreground/70">
-                  Thank you for your interest in joining Ponte AI as talent. We&apos;ll review your application and get back to you soon.
+                <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
+                  Thank you for your application! We&apos;ve received your information and will review it carefully.
                 </p>
               </div>
 
-              {/* Success Content */}
-              <div className="card-ponte p-8 rounded-lg text-center">
-                <div className="mb-6">
-                  <h2 className="text-2xl font-bold mb-4">What happens next?</h2>
-                  <div className="grid md:grid-cols-3 gap-6 mb-8">
-                    <div className="text-center">
-                      <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <span className="text-primary text-xl">📧</span>
+              {/* Success Details */}
+              <div className="card-ponte p-8 rounded-lg mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-3">What happens next?</h3>
+                    <ul className="space-y-2 text-sm text-foreground/70">
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-1">•</span>
+                        <span>Our team will review your application within 2-3 business days</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-1">•</span>
+                        <span>We&apos;ll contact you via email with next steps</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-1">•</span>
+                        <span>If approved, we&apos;ll help you create your first AI avatar</span>
+                      </li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-3">Application Details</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-foreground/60">Application ID:</span>
+                        <span className="font-mono text-primary">APP-{Date.now().toString().slice(-6)}</span>
                       </div>
-                      <h3 className="font-semibold mb-2">Review Process</h3>
-                      <p className="text-sm text-foreground/60">Our team will review your application within 2-3 business days</p>
-                    </div>
-                    
-                    <div className="text-center">
-                      <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <span className="text-primary text-xl">🎯</span>
+                      <div className="flex justify-between">
+                        <span className="text-foreground/60">Submitted:</span>
+                        <span>{new Date().toLocaleDateString()}</span>
                       </div>
-                      <h3 className="font-semibold mb-2">Approval</h3>
-                      <p className="text-sm text-foreground/60">Once approved, you&apos;ll receive access to your talent dashboard</p>
-                    </div>
-                    
-                    <div className="text-center">
-                      <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <span className="text-primary text-xl">💰</span>
+                      <div className="flex justify-between">
+                        <span className="text-foreground/60">Status:</span>
+                        <span className="text-yellow-500">Under Review</span>
                       </div>
-                      <h3 className="font-semibold mb-2">Start Earning</h3>
-                      <p className="text-sm text-foreground/60">Begin monetizing your likeness through AI avatar licensing</p>
                     </div>
                   </div>
                 </div>
+              </div>
 
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Link
-                    href="/"
-                    className="btn-primary-ponte text-base px-6 py-3 rounded-md font-medium"
-                  >
-                    Return to Home
-                  </Link>
-                  <Link
-                    href="/request-talent"
-                    className="btn-secondary-ponte text-base px-6 py-3 rounded-md font-medium"
-                  >
-                    Browse Avatars
-                  </Link>
-                </div>
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <button
+                  onClick={handleViewDashboard}
+                  className="btn-primary-ponte px-8 py-3 rounded-md font-medium"
+                >
+                  View Demo Dashboard
+                </button>
+                <button
+                  onClick={handleEditProfile}
+                  className="btn-secondary-ponte px-8 py-3 rounded-md font-medium"
+                >
+                  Edit Application
+                </button>
               </div>
             </div>
           </div>
@@ -191,71 +253,61 @@ export default function OnboardingWizard() {
       <div className="pt-24 pb-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
-            {/* Header */}
-            <div className="text-center mb-8">
-              <div className="w-20 h-20 bg-gradient-ponte rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-3xl text-white">👤</span>
-              </div>
-              <h1 className="text-3xl sm:text-4xl font-bold mb-4">
-                Join as{" "}
-                <span className="text-gradient">Talent</span>
-              </h1>
-              <p className="text-lg text-foreground/70">
-                Complete your profile to start monetizing your likeness through AI avatar licensing.
-              </p>
-            </div>
-
             {/* Progress Indicator */}
-            <div className="mb-8">
-              <ProgressIndicator 
-                currentStep={currentStep} 
-                totalSteps={steps.length}
-                stepTitles={steps.map(step => step.title)}
-              />
-            </div>
+            <ProgressIndicator
+              currentStep={currentStep}
+              totalSteps={steps.length}
+              stepTitles={steps.map(step => step.title)}
+            />
 
-            {/* Wizard Container */}
-            <div className="card-ponte p-8 rounded-lg">
-              <FormProvider {...methods}>
-                <form onSubmit={handleSubmit(onSubmit)}>
-                  <CurrentStepComponent />
+            {/* Form */}
+            <FormProvider {...methods}>
+              <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-8">
+                {/* Current Step Component */}
+                <div className="card-ponte p-8 rounded-lg">
+                  {currentStep === steps.length - 1 ? (
+                    <ReviewStep onNavigateToStep={handleNavigateToStep} />
+                  ) : (
+                    <CurrentStepComponent />
+                  )}
+                </div>
+
+                {/* Navigation Buttons */}
+                <div className="flex justify-between items-center mt-8 pt-6 border-t border-white/20">
+                  <button
+                    type="button"
+                    onClick={goToPreviousStep}
+                    disabled={currentStep === 0}
+                    className="btn-secondary-ponte px-6 py-3 rounded-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Previous
+                  </button>
                   
-                  {/* Navigation Buttons */}
-                  <div className="flex justify-between items-center mt-8 pt-6 border-t border-white/20">
+                  <div className="text-sm text-foreground/60">
+                    Step {currentStep + 1} of {steps.length}
+                  </div>
+                  
+                  {currentStep === steps.length - 1 ? (
                     <button
                       type="button"
-                      onClick={goToPreviousStep}
-                      disabled={currentStep === 0}
-                      className="btn-secondary-ponte px-6 py-3 rounded-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={handleSubmitClick}
+                      disabled={!formState.isValid || formState.isSubmitting}
+                      className="btn-primary-ponte px-6 py-3 rounded-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Previous
+                      {formState.isSubmitting ? 'Submitting...' : 'Submit Application'}
                     </button>
-                    
-                    <div className="text-sm text-foreground/60">
-                      Step {currentStep + 1} of {steps.length}
-                    </div>
-                    
-                    {currentStep === steps.length - 1 ? (
-                      <button
-                        type="button"
-                        onClick={handleSubmitClick}
-                        className="btn-primary-ponte px-6 py-3 rounded-md font-medium"
-                      >
-                        Submit Application
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={goToNextStep}
-                        className="btn-primary-ponte px-6 py-3 rounded-md font-medium"
-                      >
-                        Next
-                      </button>
-                    )}
-                  </div>
-                </form>
-              </FormProvider>
-            </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={goToNextStep}
+                      className="btn-primary-ponte px-6 py-3 rounded-md font-medium"
+                    >
+                      Next
+                    </button>
+                  )}
+                </div>
+              </form>
+            </FormProvider>
           </div>
         </div>
       </div>

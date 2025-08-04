@@ -408,10 +408,10 @@ const SelfInterviewStep: React.FC = () => {
       <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
         <div className="flex items-center justify-between text-sm">
           <span className="text-foreground/70">
-            Questions Answered: {Object.keys(predefinedAnswers).filter(key => !key.includes('_audio')).length}/{INTERVIEW_QUESTIONS.filter(q => q.required).length}
+            Questions Answered: {INTERVIEW_QUESTIONS.filter(q => q.required && predefinedAnswers[q.id]?.trim()).length}/{INTERVIEW_QUESTIONS.filter(q => q.required).length}
           </span>
           <span className="text-primary font-medium">
-            {Object.keys(predefinedAnswers).filter(key => !key.includes('_audio')).length >= INTERVIEW_QUESTIONS.filter(q => q.required).length 
+            {INTERVIEW_QUESTIONS.filter(q => q.required && predefinedAnswers[q.id]?.trim()).length >= INTERVIEW_QUESTIONS.filter(q => q.required).length 
               ? 'Great! You have completed the required questions.' 
               : 'Please answer the required questions marked with *.'}
           </span>
