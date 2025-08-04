@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request } from 'express';
 import healthRoutes from './health';
 import textRoutes from './text';
 import voiceRoutes from './voice';
@@ -11,9 +11,9 @@ const router = Router();
 router.use('/health', healthRoutes);
 
 // API versioning - v1 routes
-router.use('/api/v1', (req, _res, next) => {
+router.use('/api/v1', (req: Request & { apiVersion?: string }, _res, next) => {
   // Add API version to request for logging without modifying URL
-  (req as any).apiVersion = 'v1';
+  req.apiVersion = 'v1';
   next();
 });
 

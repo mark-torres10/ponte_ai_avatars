@@ -1,4 +1,5 @@
 module.exports = {
+  root: true, // This prevents ESLint from looking for configs in parent directories
   parser: '@typescript-eslint/parser',
   extends: [
     'eslint:recommended',
