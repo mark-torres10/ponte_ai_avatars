@@ -97,6 +97,16 @@ export default function OnboardingWizard() {
     console.log('isSubmitted should now be true')
   }
 
+  const handleSubmitClick = () => {
+    console.log('Submit button clicked!')
+    console.log('Current form data:', methods.getValues())
+    console.log('Form errors:', methods.formState.errors)
+    console.log('Form is valid:', methods.formState.isValid)
+    
+    // Force submit the form
+    methods.handleSubmit(onSubmit)()
+  }
+
   const CurrentStepComponent = steps[currentStep].component
 
   // Show success message after submission
@@ -224,7 +234,8 @@ export default function OnboardingWizard() {
                     
                     {currentStep === steps.length - 1 ? (
                       <button
-                        type="submit"
+                        type="button"
+                        onClick={handleSubmitClick}
                         className="btn-primary-ponte px-6 py-3 rounded-md font-medium"
                       >
                         Submit Application
