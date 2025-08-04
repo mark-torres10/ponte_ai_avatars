@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { apiClient } from '@/lib/api';
 import { Persona } from '@/lib/personas';
 import StorageErrorDisplay from './StorageErrorDisplay';
+import { useLocalTesting } from '@/lib/local-testing-context';
 
 interface VoiceGenerationProps {
   selectedPersona: Persona | null;
@@ -31,6 +32,7 @@ export default function VoiceGeneration({
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasPlayedAudio, setHasPlayedAudio] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const { isLocalMode } = useLocalTesting();
 
   const handleGenerateVoice = async () => {
     if (!selectedPersona) {
@@ -55,6 +57,18 @@ export default function VoiceGeneration({
     setHasPlayedAudio(false);
 
     try {
+      // Handle local testing mode
+      if (isLocalMode) {
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Use the local testing audio file
+        const localAudioUrl = "/local-test-audio.mp3";
+        setAudioUrl(localAudioUrl);
+        onVoiceGenerated(localAudioUrl);
+        return;
+      }
+
       const response = await apiClient.generateVoice(currentText, selectedPersona.id);
       
       if (response.success && response.data) {

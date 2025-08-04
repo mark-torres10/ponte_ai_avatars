@@ -16,6 +16,7 @@ import {
   getNextVersion,
   createPublicImageUrl
 } from '../services/storage';
+import { getSupabaseClient } from '../utils/supabase';
 
 const router = Router();
 
@@ -222,11 +223,51 @@ router.post('/generate', async (req: Request, res: Response) => {
         
         // Check if audioUrl is a base64 data URL or a Supabase storage URL
         if (audioUrl.startsWith('data:audio/')) {
-          // Handle base64 data URL - use it directly for D-ID
-          logger.info('Using base64 audio data directly for D-ID', { requestId });
-          signedAudioUrl = audioUrl;
-          // For base64 URLs, we'll use a placeholder for the file key since it's not stored in Supabase
-          audioFileKey = 'base64_audio_data';
+          // Handle base64 data URL - upload to Supabase first, then use HTTPS URL for D-ID
+          logger.info('Uploading base64 audio data to Supabase for D-ID', { requestId });
+          
+          // Convert base64 to buffer
+          const base64Data = audioUrl.split(',')[1];
+          if (!base64Data) {
+            throw new Error('Invalid base64 audio data format');
+          }
+          const audioBuffer = Buffer.from(base64Data, 'base64');
+          
+          // Generate a unique filename for the audio
+          const timestamp = generateTimestamp();
+          const audioFilename = `audio_${Date.now()}.mp3`;
+          audioFileKey = `temp_audio/${timestamp}/${audioFilename}`;
+          
+          // Upload audio to Supabase
+          const supabaseClient = getSupabaseClient();
+          const { error: uploadError } = await supabaseClient.storage
+            .from('test-bucket-ponteai')
+            .upload(audioFileKey, audioBuffer, {
+              contentType: 'audio/mpeg',
+              upsert: false
+            });
+          
+          if (uploadError) {
+            logger.error('Failed to upload base64 audio to Supabase', { 
+              requestId, 
+              error: uploadError.message 
+            });
+            throw new Error(`Failed to upload audio: ${uploadError.message}`);
+          }
+          
+          logger.info('Successfully uploaded base64 audio to Supabase', { 
+            requestId, 
+            audioFileKey,
+            size: audioBuffer.length 
+          });
+          
+          // Create signed URL for the uploaded audio
+          signedAudioUrl = await createPublicImageUrl(
+            audioFileKey,
+            'test-bucket-ponteai',
+            7200 // 2 hours expiry for D-ID processing
+          );
+          
         } else {
           // Handle Supabase storage URL
           const audioUrlMatch = audioUrl.match(/\/storage\/v1\/object\/public\/(.+)$/);

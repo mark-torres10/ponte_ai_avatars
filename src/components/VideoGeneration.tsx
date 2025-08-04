@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { apiClient } from '@/lib/api';
 import { Persona } from '@/lib/personas';
 import StorageErrorDisplay from './StorageErrorDisplay';
+import { useLocalTesting } from '@/lib/local-testing-context';
 
 interface VideoGenerationProps {
   selectedPersona: Persona | null;
@@ -24,10 +25,11 @@ export default function VideoGeneration({
   const [error, setError] = useState<string | null>(null);
   const [storageError, setStorageError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [useCachedAvatar, setUseCachedAvatar] = useState(false);
   const [generationProgress, setGenerationProgress] = useState<string>('');
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
+  const [showQualityFeedback, setShowQualityFeedback] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const { isLocalMode } = useLocalTesting();
 
   // Get available images for the selected persona
   const availableImages = selectedPersona?.images || [];
@@ -60,6 +62,21 @@ export default function VideoGeneration({
     setGenerationProgress('Initializing video generation...');
 
     try {
+      // Handle local testing mode
+      if (isLocalMode) {
+        setGenerationProgress('Using local testing mode...');
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Use the local video file from public directory
+        const localVideoUrl = "/local-test-video.mp4";
+        setVideoUrl(localVideoUrl);
+        onVideoGenerated(localVideoUrl);
+        setGenerationProgress('Local video loaded successfully!');
+        setShowQualityFeedback(true);
+        return;
+      }
+
       // Get the image URL (handle both string and AvatarImage object)
       const imageUrl = typeof selectedImage === 'string' ? selectedImage : selectedImage.url;
       
@@ -69,8 +86,7 @@ export default function VideoGeneration({
           text: currentText,
           personaId: selectedPersona.id,
           audioUrl: audioUrl ? '[REDACTED]' : null,
-          avatarImageUrl: imageUrl ? '[REDACTED]' : null,
-          useCachedAvatar: useCachedAvatar
+          avatarImageUrl: imageUrl ? '[REDACTED]' : null
         });
       }
       
@@ -78,14 +94,14 @@ export default function VideoGeneration({
         text: currentText,
         personaId: selectedPersona.id,
         audioUrl: audioUrl,
-        avatarImageUrl: imageUrl,
-        useCachedAvatar: useCachedAvatar
+        avatarImageUrl: imageUrl
       });
       
       if (response.success && response.data) {
         setVideoUrl(response.data.videoUrl);
         onVideoGenerated(response.data.videoUrl);
         setGenerationProgress('Video generated successfully!');
+        setShowQualityFeedback(true);
         
         // Check for storage errors in the response
         if (response.data.storageInfo === undefined) {
@@ -234,31 +250,7 @@ export default function VideoGeneration({
           </div>
         )}
 
-        {/* Caching Toggle for Local Testing */}
-        <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-medium text-blue-700 mb-1">Local Testing Mode</h3>
-              <p className="text-sm text-blue-600">
-                Use cached avatar recordings for quick testing without D-ID API calls
-              </p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={useCachedAvatar}
-                onChange={(e) => setUseCachedAvatar(e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
-          {useCachedAvatar && (
-            <div className="mt-2 p-2 bg-blue-50 rounded text-xs text-blue-700">
-              ⚡ Using cached recordings - no API calls will be made
-            </div>
-          )}
-        </div>
+
 
         {/* Generate Video Button */}
         <div className="flex flex-col sm:flex-row gap-3">
@@ -358,6 +350,104 @@ export default function VideoGeneration({
                 Avatar video generated successfully
               </span>
             </div>
+
+            {/* Quality Feedback */}
+            {showQualityFeedback && (
+              <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-muted/50">
+                <h3 className="font-medium text-center mb-3">How was the video?</h3>
+                
+                {/* Overall Quality */}
+                <div className="space-y-2">
+                  <p className="text-sm text-foreground/70 text-center">Overall quality:</p>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    <button 
+                      onClick={() => {
+                        console.log('Video quality feedback: Excellent');
+                        setShowQualityFeedback(false);
+                      }}
+                      className="px-3 py-2 text-xs bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 rounded-md transition-colors"
+                    >
+                      🎯 Excellent
+                    </button>
+                    <button 
+                      onClick={() => {
+                        console.log('Video quality feedback: Good');
+                        setShowQualityFeedback(false);
+                      }}
+                      className="px-3 py-2 text-xs bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-md transition-colors"
+                    >
+                      👍 Good
+                    </button>
+                    <button 
+                      onClick={() => {
+                        console.log('Video quality feedback: Fair');
+                        setShowQualityFeedback(false);
+                      }}
+                      className="px-3 py-2 text-xs bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/20 rounded-md transition-colors"
+                    >
+                      ⚠️ Fair
+                    </button>
+                    <button 
+                      onClick={() => {
+                        console.log('Video quality feedback: Poor');
+                        setShowQualityFeedback(false);
+                      }}
+                      className="px-3 py-2 text-xs bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-md transition-colors"
+                    >
+                      ❌ Poor
+                    </button>
+                  </div>
+                </div>
+
+                {/* Facial Expressions */}
+                <div className="space-y-2">
+                  <p className="text-sm text-foreground/70 text-center">Adjust facial expressions:</p>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    <button className="px-3 py-2 text-xs bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 rounded-md transition-colors">
+                      More Expressive
+                    </button>
+                    <button className="px-3 py-2 text-xs bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 rounded-md transition-colors">
+                      More Natural
+                    </button>
+                    <button className="px-3 py-2 text-xs bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 rounded-md transition-colors">
+                      More Subtle
+                    </button>
+                    <button className="px-3 py-2 text-xs bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 rounded-md transition-colors">
+                      More Dynamic
+                    </button>
+                  </div>
+                </div>
+
+                {/* Mood/Tone */}
+                <div className="space-y-2">
+                  <p className="text-sm text-foreground/70 text-center">Adjust mood/tone:</p>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    <button className="px-3 py-2 text-xs bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/20 rounded-md transition-colors">
+                      More Professional
+                    </button>
+                    <button className="px-3 py-2 text-xs bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/20 rounded-md transition-colors">
+                      More Friendly
+                    </button>
+                    <button className="px-3 py-2 text-xs bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/20 rounded-md transition-colors">
+                      More Energetic
+                    </button>
+                    <button className="px-3 py-2 text-xs bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/20 rounded-md transition-colors">
+                      More Calm
+                    </button>
+                  </div>
+                </div>
+
+                {/* Skip Button */}
+                <div className="text-center pt-2">
+                  <button
+                    onClick={() => setShowQualityFeedback(false)}
+                    className="px-4 py-2 text-xs bg-gray-500/10 hover:bg-gray-500/20 border border-gray-500/20 rounded-md transition-colors"
+                  >
+                    Skip Feedback
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

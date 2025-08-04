@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
+import { LocalTestingProvider } from "@/lib/local-testing-context"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -20,7 +21,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${inter.className} min-h-screen bg-background text-foreground antialiased`}>
-        {children}
+        <LocalTestingProvider>
+          {children}
+        </LocalTestingProvider>
       </body>
     </html>
   )
