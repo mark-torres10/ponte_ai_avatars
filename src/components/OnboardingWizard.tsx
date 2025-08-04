@@ -11,6 +11,7 @@ import MediaUploadStep from './MediaUploadStep'
 import TonePersonalityStep from './TonePersonalityStep'
 import SelfInterviewStep from './SelfInterviewStep'
 import ReviewStep from './ReviewStep'
+import MockDashboard from './MockDashboard'
 
 // Form schema for the entire onboarding process
 const onboardingSchema = z.object({
@@ -54,6 +55,7 @@ const steps = [
 export default function OnboardingWizard() {
   const [currentStep, setCurrentStep] = useState(0)
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [showDashboard, setShowDashboard] = useState(false)
   
   const methods = useForm<OnboardingFormData>({
     resolver: zodResolver(onboardingSchema),
@@ -76,7 +78,7 @@ export default function OnboardingWizard() {
     mode: 'onChange',
   })
 
-  const { handleSubmit, trigger } = methods
+  const { handleSubmit } = methods
 
   const goToNextStep = async () => {
     // For now, just proceed to next step (validation can be added later)
@@ -110,7 +112,34 @@ export default function OnboardingWizard() {
     methods.handleSubmit(onSubmit)()
   }
 
+  const handleViewDashboard = () => {
+    setShowDashboard(true)
+  }
+
+  const handleEditProfile = () => {
+    setShowDashboard(false)
+    setIsSubmitted(false)
+    setCurrentStep(0) // Go back to first step
+  }
+
   const CurrentStepComponent = steps[currentStep].component
+
+  // Show mock dashboard after submission
+  if (showDashboard) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="pt-24 pb-16">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-7xl mx-auto">
+              <FormProvider {...methods}>
+                <MockDashboard onEditProfile={handleEditProfile} />
+              </FormProvider>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   // Show success message after submission
   if (isSubmitted) {
@@ -165,9 +194,15 @@ export default function OnboardingWizard() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <button
+                    onClick={handleViewDashboard}
+                    className="btn-primary-ponte text-base px-6 py-3 rounded-md font-medium"
+                  >
+                    View Mock Dashboard
+                  </button>
                   <Link
                     href="/"
-                    className="btn-primary-ponte text-base px-6 py-3 rounded-md font-medium"
+                    className="btn-secondary-ponte text-base px-6 py-3 rounded-md font-medium"
                   >
                     Return to Home
                   </Link>

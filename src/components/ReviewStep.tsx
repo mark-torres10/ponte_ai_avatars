@@ -1,7 +1,8 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { useFormContext } from 'react-hook-form'
+import { Edit3, Check, X } from 'lucide-react'
 
 // Predefined interview questions (same as in SelfInterviewStep)
 const INTERVIEW_QUESTIONS = [
@@ -37,22 +38,87 @@ const INTERVIEW_QUESTIONS = [
   },
 ]
 
+interface ReviewSectionProps {
+  title: string
+  children: React.ReactNode
+  onEdit?: () => void
+  isEditing?: boolean
+  onSave?: () => void
+  onCancel?: () => void
+}
+
+function ReviewSection({ title, children, onEdit, isEditing, onSave, onCancel }: ReviewSectionProps) {
+  return (
+    <div className="card-ponte p-6 rounded-lg">
+      <div className="flex justify-between items-center mb-4">
+        <h4 className="text-lg font-semibold text-primary">{title}</h4>
+        {!isEditing && onEdit && (
+          <button
+            onClick={onEdit}
+            className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors"
+          >
+            <Edit3 size={16} />
+            Edit
+          </button>
+        )}
+        {isEditing && (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onSave}
+              className="flex items-center gap-1 text-sm text-green-500 hover:text-green-400 transition-colors"
+            >
+              <Check size={16} />
+              Save
+            </button>
+            <button
+              onClick={onCancel}
+              className="flex items-center gap-1 text-sm text-red-500 hover:text-red-400 transition-colors"
+            >
+              <X size={16} />
+              Cancel
+            </button>
+          </div>
+        )}
+      </div>
+      {children}
+    </div>
+  )
+}
+
 export default function ReviewStep() {
   const { watch } = useFormContext()
   const formData = watch()
+  const [editingSection, setEditingSection] = useState<string | null>(null)
+
+  const handleEdit = (section: string) => {
+    setEditingSection(section)
+  }
+
+  const handleSave = () => {
+    setEditingSection(null)
+  }
+
+  const handleCancel = () => {
+    setEditingSection(null)
+  }
 
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
         <h3 className="text-xl font-semibold mb-2">Review Your Application</h3>
         <p className="text-foreground/70">
-          Please review your information before submitting your application.
+          Please review your information before submitting your application. You can edit any section by clicking the edit button.
         </p>
       </div>
 
       {/* Basic Information Review */}
-      <div className="card-ponte p-6 rounded-lg">
-        <h4 className="text-lg font-semibold mb-4 text-primary">Basic Information</h4>
+      <ReviewSection
+        title="Basic Information"
+        onEdit={() => handleEdit('basic-info')}
+        isEditing={editingSection === 'basic-info'}
+        onSave={handleSave}
+        onCancel={handleCancel}
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="text-sm font-medium text-foreground/60">Full Name</label>
@@ -71,11 +137,16 @@ export default function ReviewStep() {
             <p className="text-foreground">{formData.basicInfo?.location || 'Not provided'}</p>
           </div>
         </div>
-      </div>
+      </ReviewSection>
 
       {/* Media Upload Review */}
-      <div className="card-ponte p-6 rounded-lg">
-        <h4 className="text-lg font-semibold mb-4 text-primary">Media Upload</h4>
+      <ReviewSection
+        title="Media Upload"
+        onEdit={() => handleEdit('media')}
+        isEditing={editingSection === 'media'}
+        onSave={handleSave}
+        onCancel={handleCancel}
+      >
         <div className="space-y-4">
           <div>
             <label className="text-sm font-medium text-foreground/60">Headshots</label>
@@ -107,11 +178,16 @@ export default function ReviewStep() {
             </div>
           </div>
         </div>
-      </div>
+      </ReviewSection>
 
       {/* Tone & Personality Review */}
-      <div className="card-ponte p-6 rounded-lg">
-        <h4 className="text-lg font-semibold mb-4 text-primary">Tone & Personality</h4>
+      <ReviewSection
+        title="Tone & Personality"
+        onEdit={() => handleEdit('personality')}
+        isEditing={editingSection === 'personality'}
+        onSave={handleSave}
+        onCancel={handleCancel}
+      >
         <div className="space-y-4">
           {/* Tone Categories */}
           <div>
@@ -152,11 +228,16 @@ export default function ReviewStep() {
             </div>
           </div>
         </div>
-      </div>
+      </ReviewSection>
 
       {/* Self Interview Review */}
-      <div className="card-ponte p-6 rounded-lg">
-        <h4 className="text-lg font-semibold mb-4 text-primary">Self Interview</h4>
+      <ReviewSection
+        title="Self Interview"
+        onEdit={() => handleEdit('interview')}
+        isEditing={editingSection === 'interview'}
+        onSave={handleSave}
+        onCancel={handleCancel}
+      >
         <div className="space-y-4">
           {/* Predefined Answers */}
           {formData.interview?.predefinedAnswers && Object.entries(formData.interview.predefinedAnswers).map(([questionId, answer]: [string, unknown]) => {
@@ -190,7 +271,7 @@ export default function ReviewStep() {
             </div>
           )}
         </div>
-      </div>
+      </ReviewSection>
 
       {/* Submission Notice */}
       <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
