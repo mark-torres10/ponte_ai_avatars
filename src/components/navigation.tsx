@@ -10,7 +10,7 @@ const Navigation = () => {
   const navItems = [
     { href: "/", label: "Home" },
     { href: "/request-talent", label: "Request Talent" },
-    { href: "/onboard-client", label: "Onboard Client" },
+    { href: "/onboard-client", label: "Onboard Talent" },
     { href: "/generate-avatar", label: "Generate Avatar" },
   ]
 
