@@ -6,13 +6,15 @@ const https = require('https');
 const { execSync } = require('child_process');
 
 // Configuration
+// ⚠️  SECURITY NOTE: Replace these placeholder URLs with your actual test file URLs
+// The original URLs contained sensitive JWT tokens and have been removed for security
 const TEST_FILES = {
   video: {
-    url: 'https://evfgjtpvrasitxpbftva.supabase.co/storage/v1/object/public/test-bucket-ponteai/test_user_id/will-howard/2025-08-04_17-57-08/video_v1.mp4',
+    url: 'https://example.com/placeholder-video.mp4', // Replace with your video URL
     localPath: 'public/local-test-video.mp4'
   },
   audio: {
-    url: 'https://evfgjtpvrasitxpbftva.supabase.co/storage/v1/object/public/test-bucket-ponteai/test_user_id/will-howard/2025-08-04_18-09-31/audio_v1.mp3',
+    url: 'https://example.com/placeholder-audio.mp3', // Replace with your audio URL
     localPath: 'public/local-test-audio.mp3'
   }
 };

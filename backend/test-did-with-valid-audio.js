@@ -29,7 +29,8 @@ async function testDIDWithValidAudio() {
       align_driver: true,
       align_expand_factor: 0.3
     },
-    source_url: 'https://evfgjtpvrasitxpbftva.supabase.co/storage/v1/object/sign/ponteai-assets/avatar_assets/voice_actor_b/static/pic1.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV83MmMwYjc1My1kMzE1LTRmYjMtOTU1OC02NjVlNGFlMTBmNzMiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwb250ZWFpLWFzc2V0cy9hdmF0YXJfYXNzZXRzL3ZvaWNlX2FjdG9yX2Ivc3RhdGljL3BpYzEuanBlZyIsImlhdCI6MTc1NDMyNzE2OSwiZXhwIjoxNzU0MzM0MzY5fQ.8FHkEShkIT_FigaSzGnTd0EED9KqMGjnxGE4DjxkMFU'
+    // ⚠️  SECURITY NOTE: Original URL contained sensitive JWT token - replaced with placeholder
+    source_url: 'https://example.com/placeholder-avatar-image.jpg'
   };
   
   console.log('🚀 Testing D-ID API with valid HTTPS audio URL...');
