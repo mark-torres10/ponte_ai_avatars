@@ -160,7 +160,7 @@ const TonePersonalityStep: React.FC = () => {
             Selected Tones: {selectedTones.length}
           </span>
           <span className="text-primary font-medium">
-            {selectedTones.length > 0 ? 'Great! You&apos;ve defined your tone.' : 'Please select at least one tone category.'}
+            {selectedTones.length > 0 ? 'Great! You have defined your tone.' : 'Please select at least one tone category.'}
           </span>
         </div>
       </div>
