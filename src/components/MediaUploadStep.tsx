@@ -28,7 +28,7 @@ const MediaUploadStep: React.FC = () => {
       headshots: [],
       videoSample: undefined,
     })
-      }, [setValue, getValues])
+  }, [setValue])
 
   // Cleanup object URLs on component unmount
   useEffect(() => {

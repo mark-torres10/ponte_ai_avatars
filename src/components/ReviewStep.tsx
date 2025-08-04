@@ -147,7 +147,13 @@ export default function ReviewStep({ onNavigateToStep }: ReviewStepProps) {
   const isBasicInfoComplete = formData.basicInfo?.name && formData.basicInfo?.email
   const isMediaComplete = formData.media?.headshots?.length > 0 || formData.media?.videoSample
   const isPersonalityComplete = formData.personality?.toneCategories?.length > 0 || formData.personality?.customTone
-  const isInterviewComplete = Object.keys(formData.interview?.predefinedAnswers || {}).filter(key => !key.includes('_audio')).length >= 3
+  
+  // Align interview completion logic with SelfInterviewStep - only count required questions with non-empty trimmed answers
+  const requiredQuestions = INTERVIEW_QUESTIONS.filter(q => q.required)
+  const answeredRequiredQuestions = requiredQuestions.filter(q => 
+    formData.interview?.predefinedAnswers?.[q.id]?.trim()
+  )
+  const isInterviewComplete = answeredRequiredQuestions.length >= requiredQuestions.length
 
   return (
     <div className="space-y-6">

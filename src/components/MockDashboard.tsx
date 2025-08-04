@@ -61,17 +61,23 @@ export default function MockDashboard({ onEditProfile }: MockDashboardProps) {
   const [aiPersona, setAiPersona] = useState<string>('')
   const [personaError, setPersonaError] = useState<string>('')
 
-  const generateDreamData = useCallback(() => {
-    // Generate aspirational dream earnings data based on user's profile
+  // Calculate base multiplier based on user's personality and tone
+  const calculateBaseMultiplier = useCallback(() => {
     const userPersonality = formData.personality?.personalityTraits
     const userTones = formData.personality?.toneCategories || []
     
-    // Base earnings potential based on personality and tone
     let baseMultiplier = 1
     if (userTones.includes('Professional')) baseMultiplier += 0.5
     if (userTones.includes('Educational')) baseMultiplier += 0.3
     if (userTones.includes('Motivational')) baseMultiplier += 0.4
     if (userPersonality?.professionalism && userPersonality.professionalism > 70) baseMultiplier += 0.3
+    
+    return baseMultiplier
+  }, [formData.personality?.personalityTraits, formData.personality?.toneCategories])
+
+  const generateDreamData = useCallback(() => {
+    // Generate aspirational dream earnings data based on user's profile
+    const baseMultiplier = calculateBaseMultiplier()
     
     // Generate dream earnings data
     const totalEarnings = Math.floor((Math.random() * 15000 + 8000) * baseMultiplier)
@@ -115,7 +121,7 @@ export default function MockDashboard({ onEditProfile }: MockDashboardProps) {
       topPerformingAvatar,
       recentActivity,
     })
-  }, [formData.basicInfo?.name, formData.personality])
+  }, [formData.basicInfo?.name, calculateBaseMultiplier])
 
   // Generate dream data on component mount
   useEffect(() => {
