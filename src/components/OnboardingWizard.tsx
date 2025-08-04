@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { useForm, FormProvider } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import Link from 'next/link'
 import ProgressIndicator from './ProgressIndicator'
 import BasicInfoStep from './BasicInfoStep'
 
@@ -48,6 +49,7 @@ const steps = [
 
 export default function OnboardingWizard() {
   const [currentStep, setCurrentStep] = useState(0)
+  const [isSubmitted, setIsSubmitted] = useState(false)
   
   const methods = useForm<OnboardingFormData>({
     resolver: zodResolver(onboardingSchema),
@@ -89,9 +91,84 @@ export default function OnboardingWizard() {
   const onSubmit = (data: OnboardingFormData) => {
     console.log('Form submitted:', data)
     // TODO: Handle form submission
+    setIsSubmitted(true)
   }
 
   const CurrentStepComponent = steps[currentStep].component
+
+  // Show success message after submission
+  if (isSubmitted) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="pt-24 pb-16">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-4xl mx-auto">
+              {/* Success Header */}
+              <div className="text-center mb-8">
+                <div className="w-20 h-20 bg-gradient-ponte rounded-full flex items-center justify-center mx-auto mb-6">
+                  <span className="text-3xl text-white">✅</span>
+                </div>
+                <h1 className="text-3xl sm:text-4xl font-bold mb-4">
+                  Application{" "}
+                  <span className="text-gradient">Submitted!</span>
+                </h1>
+                <p className="text-lg text-foreground/70">
+                  Thank you for your interest in joining Ponte AI as talent. We&apos;ll review your application and get back to you soon.
+                </p>
+              </div>
+
+              {/* Success Content */}
+              <div className="card-ponte p-8 rounded-lg text-center">
+                <div className="mb-6">
+                  <h2 className="text-2xl font-bold mb-4">What happens next?</h2>
+                  <div className="grid md:grid-cols-3 gap-6 mb-8">
+                    <div className="text-center">
+                      <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span className="text-primary text-xl">📧</span>
+                      </div>
+                      <h3 className="font-semibold mb-2">Review Process</h3>
+                      <p className="text-sm text-foreground/60">Our team will review your application within 2-3 business days</p>
+                    </div>
+                    
+                    <div className="text-center">
+                      <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span className="text-primary text-xl">🎯</span>
+                      </div>
+                      <h3 className="font-semibold mb-2">Approval</h3>
+                      <p className="text-sm text-foreground/60">Once approved, you&apos;ll receive access to your talent dashboard</p>
+                    </div>
+                    
+                    <div className="text-center">
+                      <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span className="text-primary text-xl">💰</span>
+                      </div>
+                      <h3 className="font-semibold mb-2">Start Earning</h3>
+                      <p className="text-sm text-foreground/60">Begin monetizing your likeness through AI avatar licensing</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Link
+                    href="/"
+                    className="btn-primary-ponte text-base px-6 py-3 rounded-md font-medium"
+                  >
+                    Return to Home
+                  </Link>
+                  <Link
+                    href="/request-talent"
+                    className="btn-secondary-ponte text-base px-6 py-3 rounded-md font-medium"
+                  >
+                    Browse Avatars
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-background">
