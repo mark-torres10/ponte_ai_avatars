@@ -14,7 +14,8 @@ import {
   XCircle,
   Play,
   Clock,
-  AlertTriangle
+  AlertTriangle,
+  Pause
 } from 'lucide-react'
 import { type TalentProfile, type TalentStatus } from '@/types/talent'
 
@@ -37,6 +38,7 @@ const statusConfig = {
   submitted: { label: 'Submitted', icon: AlertTriangle, color: 'text-yellow-600 bg-yellow-100 border-yellow-200' },
   approved: { label: 'Approved', icon: CheckCircle, color: 'text-green-600 bg-green-100 border-green-200' },
   active: { label: 'Active', icon: Play, color: 'text-blue-600 bg-blue-100 border-blue-200' },
+  inactive: { label: 'Inactive', icon: Pause, color: 'text-gray-600 bg-gray-100 border-gray-200' },
   rejected: { label: 'Rejected', icon: XCircle, color: 'text-red-600 bg-red-100 border-red-200' }
 }
 
@@ -61,6 +63,16 @@ export default function TalentTable({
   const [showRejectionDialog, setShowRejectionDialog] = useState(false)
   const [rejectionReason, setRejectionReason] = useState('')
   const [pendingOperation, setPendingOperation] = useState<{ type: string; talentIds: string[] } | null>(null)
+  
+  // Filter state management
+  const [dateRange, setDateRange] = useState({ start: '', end: '' })
+  const [locationFilter, setLocationFilter] = useState('')
+  const [toneCategoryFilter, setToneCategoryFilter] = useState('')
+  
+  // Status change modal state
+  const [showStatusModal, setShowStatusModal] = useState(false)
+  const [selectedTalentForStatus, setSelectedTalentForStatus] = useState<TalentProfile | null>(null)
+  const [newStatus, setNewStatus] = useState<TalentStatus>('submitted')
 
   // Pagination
   const totalPages = Math.ceil(data.length / ITEMS_PER_PAGE)
@@ -68,12 +80,23 @@ export default function TalentTable({
   const endIndex = startIndex + ITEMS_PER_PAGE
   const currentData = data.slice(startIndex, endIndex)
 
-  // Selection handlers
+  // Selection handlers - now using global selection state
   const handleSelectAll = () => {
-    if (selectedTalent.length === currentData.length) {
-      onSelectionChange([])
+    const currentPageIds = currentData.map(talent => talent.id)
+    const allSelected = currentPageIds.every(id => selectedTalent.includes(id))
+    
+    if (allSelected) {
+      // Remove all current page IDs from selection
+      onSelectionChange(selectedTalent.filter(id => !currentPageIds.includes(id)))
     } else {
-      onSelectionChange(currentData.map(talent => talent.id))
+      // Add all current page IDs to selection
+      const newSelection = [...selectedTalent]
+      currentPageIds.forEach(id => {
+        if (!newSelection.includes(id)) {
+          newSelection.push(id)
+        }
+      })
+      onSelectionChange(newSelection)
     }
   }
 
@@ -108,9 +131,81 @@ export default function TalentTable({
     }
   }
 
-  // const handleStatusChange = async (talentId: string, newStatus: TalentStatus) => {
-  //   await onBulkOperation(newStatus, [talentId])
-  // }
+  // Fixed handleStatusChange function
+  const handleStatusChange = async (talentId: string, newStatus: TalentStatus) => {
+    // Map status to operation string
+    const statusToOperation: Record<TalentStatus, string> = {
+      'approved': 'approve',
+      'rejected': 'reject',
+      'active': 'activate',
+      'inactive': 'deactivate',
+      'submitted': 'approve', // This might need adjustment based on business logic
+      'draft': 'approve' // This might need adjustment based on business logic
+    }
+    
+    const operation = statusToOperation[newStatus]
+    if (operation) {
+      await onBulkOperation(operation, [talentId])
+    }
+  }
+
+  // Action button handlers
+  const handleViewClick = (talent: TalentProfile) => {
+    if (onViewDetails) {
+      onViewDetails(talent)
+    } else {
+      alert('View details feature coming soon!')
+    }
+  }
+
+  const handleEditClick = (talent: TalentProfile) => {
+    if (onViewDetails) {
+      onViewDetails(talent)
+    } else {
+      alert('Edit feature coming soon!')
+    }
+  }
+
+  const handleStatusChangeClick = (talent: TalentProfile) => {
+    setSelectedTalentForStatus(talent)
+    setNewStatus(talent.status)
+    setShowStatusModal(true)
+  }
+
+  const handleStatusConfirm = async () => {
+    if (selectedTalentForStatus) {
+      await handleStatusChange(selectedTalentForStatus.id, newStatus)
+      setShowStatusModal(false)
+      setSelectedTalentForStatus(null)
+    }
+  }
+
+  // Truncated pagination helper
+  const getPaginationRange = () => {
+    const delta = 2
+    const range = []
+    const rangeWithDots = []
+
+    for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
+      range.push(i)
+    }
+
+    if (currentPage - delta > 2) {
+      rangeWithDots.push(1, '...')
+    } else {
+      rangeWithDots.push(1)
+    }
+
+    rangeWithDots.push(...range)
+
+    if (currentPage + delta < totalPages - 1) {
+      rangeWithDots.push('...', totalPages)
+    } else {
+      rangeWithDots.push(totalPages)
+    }
+
+    return rangeWithDots
+  }
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -173,11 +268,15 @@ export default function TalentTable({
                 <div className="flex gap-2">
                   <input
                     type="date"
+                    value={dateRange.start}
+                    onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md"
                     placeholder="Start date"
                   />
                   <input
                     type="date"
+                    value={dateRange.end}
+                    onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md"
                     placeholder="End date"
                   />
@@ -187,13 +286,19 @@ export default function TalentTable({
                 <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
                 <input
                   type="text"
+                  value={locationFilter}
+                  onChange={(e) => setLocationFilter(e.target.value)}
                   placeholder="Filter by location..."
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Tone Categories</label>
-                <select className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                <select 
+                  value={toneCategoryFilter}
+                  onChange={(e) => setToneCategoryFilter(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                >
                   <option value="">All Categories</option>
                   <option value="professional">Professional</option>
                   <option value="casual">Casual</option>
@@ -275,7 +380,7 @@ export default function TalentTable({
               <th className="px-6 py-3 text-left">
                 <input
                   type="checkbox"
-                  checked={selectedTalent.length === currentData.length && currentData.length > 0}
+                  checked={currentData.length > 0 && currentData.every(talent => selectedTalent.includes(talent.id))}
                   onChange={handleSelectAll}
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
@@ -355,7 +460,7 @@ export default function TalentTable({
                       )}
                       <div className="relative">
                         <button
-                          onClick={() => {/* Status dropdown */}}
+                          onClick={() => handleStatusChangeClick(talent)}
                           className="text-gray-600 hover:text-gray-900"
                           title="Change status"
                         >
@@ -386,14 +491,17 @@ export default function TalentTable({
               >
                 Previous
               </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              {getPaginationRange().map((page, index) => (
                 <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
+                  key={index}
+                  onClick={() => typeof page === 'number' ? setCurrentPage(page) : null}
+                  disabled={typeof page !== 'number'}
                   className={`px-3 py-1 text-sm border rounded-md ${
-                    currentPage === page
+                    typeof page === 'number' && currentPage === page
                       ? 'bg-blue-600 text-white border-blue-600'
-                      : 'border-gray-300 hover:bg-gray-50'
+                      : typeof page === 'number'
+                      ? 'border-gray-300 hover:bg-gray-50'
+                      : 'border-transparent cursor-default'
                   }`}
                 >
                   {page}
@@ -443,6 +551,44 @@ export default function TalentTable({
                 className="px-4 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
               >
                 Reject
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Status Change Modal */}
+      {showStatusModal && selectedTalentForStatus && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Change Status</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Change status for <strong>{selectedTalentForStatus.name}</strong>
+            </p>
+            <select
+              value={newStatus}
+              onChange={(e) => setNewStatus(e.target.value as TalentStatus)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-4"
+            >
+              {Object.entries(statusConfig).map(([key, config]) => (
+                <option key={key} value={key}>{config.label}</option>
+              ))}
+            </select>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowStatusModal(false)
+                  setSelectedTalentForStatus(null)
+                }}
+                className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleStatusConfirm}
+                className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                Update Status
               </button>
             </div>
           </div>

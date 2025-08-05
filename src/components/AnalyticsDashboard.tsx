@@ -13,7 +13,8 @@ import {
   Filter,
   ChevronDown,
   ChevronUp,
-  Save
+  Save,
+  Pause
 } from 'lucide-react'
 import { type TalentProfile, type TalentStatus } from '@/types/talent'
 
@@ -28,6 +29,7 @@ interface AnalyticsMetrics {
   submitted: number
   approved: number
   active: number
+  inactive: number
   rejected: number
   completionRate: number
   averageTimeToSubmit: number
@@ -57,6 +59,7 @@ const statusConfig = {
   submitted: { label: 'Submitted', icon: AlertTriangle, color: 'text-yellow-600 bg-yellow-100' },
   approved: { label: 'Approved', icon: CheckCircle, color: 'text-green-600 bg-green-100' },
   active: { label: 'Active', icon: Play, color: 'text-blue-600 bg-blue-100' },
+  inactive: { label: 'Inactive', icon: Pause, color: 'text-gray-600 bg-gray-100' },
   rejected: { label: 'Rejected', icon: XCircle, color: 'text-red-600 bg-red-100' }
 }
 
@@ -87,6 +90,7 @@ export default function AnalyticsDashboard({
       submitted: filteredData.filter(t => t.status === 'submitted').length,
       approved: filteredData.filter(t => t.status === 'approved').length,
       active: filteredData.filter(t => t.status === 'active').length,
+      inactive: filteredData.filter(t => t.status === 'inactive').length,
       rejected: filteredData.filter(t => t.status === 'rejected').length,
       completionRate: calculateCompletionRate(filteredData),
       averageTimeToSubmit: calculateAverageTimeToSubmit(filteredData),
@@ -198,6 +202,7 @@ export default function AnalyticsDashboard({
       submitted: 0,
       approved: 0,
       active: 0,
+      inactive: 0,
       rejected: 0
     }
 

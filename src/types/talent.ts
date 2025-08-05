@@ -1,4 +1,4 @@
-export type TalentStatus = 'draft' | 'submitted' | 'approved' | 'active' | 'rejected'
+export type TalentStatus = 'draft' | 'submitted' | 'approved' | 'active' | 'inactive' | 'rejected'
 
 export interface TalentProfile {
   id: string
@@ -19,11 +19,18 @@ export interface TalentProfile {
   
   // Personality & Tone
   toneCategories?: string[]
+  /**
+   * Personality traits with values ranging from 0-100
+   * @property {number} extroversion - Level of extroversion (0-100)
+   * @property {number} formality - Level of formality in communication (0-100)
+   * @property {number} energy - Energy level and enthusiasm (0-100)
+   * @property {number} professionalism - Professional demeanor (0-100)
+   */
   personalityTraits?: {
-    extroversion: number
-    formality: number
-    energy: number
-    professionalism: number
+    extroversion: number // 0-100
+    formality: number // 0-100
+    energy: number // 0-100
+    professionalism: number // 0-100
   }
   customTone?: string
   

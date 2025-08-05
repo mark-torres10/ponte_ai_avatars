@@ -1,120 +1,20 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Users, AlertTriangle, CheckCircle, Clock, XCircle, BarChart3 } from 'lucide-react'
+import { Users, AlertTriangle, CheckCircle, Clock, XCircle, BarChart3, Pause } from 'lucide-react'
 import TalentTable from './TalentTable'
 import TalentDetailView from './TalentDetailView'
 import TalentPreview from './TalentPreview'
 import AnalyticsDashboard from './AnalyticsDashboard'
 import { type TalentProfile, type TalentStatus } from '@/types/talent'
-
-// Mock data for development - replace with actual API calls
-const mockTalentData: TalentProfile[] = [
-  {
-    id: '1',
-    name: 'Sarah Johnson',
-    email: 'sarah.johnson@email.com',
-    phone: '+1-555-0123',
-    location: 'New York, NY',
-    status: 'submitted',
-    createdAt: '2024-01-15T10:30:00Z',
-    updatedAt: '2024-01-20T14:45:00Z',
-    submittedAt: '2024-01-20T14:45:00Z',
-    toneCategories: ['Professional', 'Friendly'],
-    personalityTraits: {
-      extroversion: 75,
-      formality: 60,
-      energy: 80,
-      professionalism: 85
-    },
-    customTone: 'Warm and approachable professional'
-  },
-  {
-    id: '2',
-    name: 'Michael Chen',
-    email: 'michael.chen@email.com',
-    phone: '+1-555-0456',
-    location: 'San Francisco, CA',
-    status: 'approved',
-    createdAt: '2024-01-10T09:15:00Z',
-    updatedAt: '2024-01-18T16:20:00Z',
-    submittedAt: '2024-01-15T11:30:00Z',
-    approvedAt: '2024-01-18T16:20:00Z',
-    toneCategories: ['Corporate', 'Technical'],
-    personalityTraits: {
-      extroversion: 45,
-      formality: 85,
-      energy: 60,
-      professionalism: 90
-    },
-    customTone: 'Clear and precise technical communicator'
-  },
-  {
-    id: '3',
-    name: 'Emily Rodriguez',
-    email: 'emily.rodriguez@email.com',
-    phone: '+1-555-0789',
-    location: 'Miami, FL',
-    status: 'active',
-    createdAt: '2024-01-05T08:00:00Z',
-    updatedAt: '2024-01-25T10:15:00Z',
-    submittedAt: '2024-01-08T13:45:00Z',
-    approvedAt: '2024-01-12T09:30:00Z',
-    activatedAt: '2024-01-25T10:15:00Z',
-    toneCategories: ['Casual', 'Energetic'],
-    personalityTraits: {
-      extroversion: 90,
-      formality: 30,
-      energy: 95,
-      professionalism: 70
-    },
-    customTone: 'High-energy and engaging presenter'
-  },
-  {
-    id: '4',
-    name: 'David Kim',
-    email: 'david.kim@email.com',
-    phone: '+1-555-0321',
-    location: 'Seattle, WA',
-    status: 'draft',
-    createdAt: '2024-01-22T15:20:00Z',
-    updatedAt: '2024-01-22T15:20:00Z',
-    toneCategories: ['Academic', 'Thoughtful'],
-    personalityTraits: {
-      extroversion: 35,
-      formality: 75,
-      energy: 50,
-      professionalism: 80
-    },
-    customTone: 'Thoughtful and analytical speaker'
-  },
-  {
-    id: '5',
-    name: 'Lisa Thompson',
-    email: 'lisa.thompson@email.com',
-    phone: '+1-555-0654',
-    location: 'Chicago, IL',
-    status: 'rejected',
-    createdAt: '2024-01-12T12:00:00Z',
-    updatedAt: '2024-01-19T17:30:00Z',
-    submittedAt: '2024-01-16T14:20:00Z',
-    rejectionReason: 'Incomplete media uploads and poor audio quality',
-    toneCategories: ['Conversational', 'Relatable'],
-    personalityTraits: {
-      extroversion: 65,
-      formality: 40,
-      energy: 70,
-      professionalism: 60
-    },
-    customTone: 'Relatable and conversational tone'
-  }
-]
+import { mockTalentData } from '@/lib/mockData'
 
 const statusConfig = {
   draft: { label: 'Draft', icon: Clock, color: 'text-gray-500 bg-gray-100' },
   submitted: { label: 'Submitted', icon: AlertTriangle, color: 'text-yellow-600 bg-yellow-100' },
   approved: { label: 'Approved', icon: CheckCircle, color: 'text-green-600 bg-green-100' },
   active: { label: 'Active', icon: Users, color: 'text-blue-600 bg-blue-100' },
+  inactive: { label: 'Inactive', icon: Pause, color: 'text-gray-600 bg-gray-100' },
   rejected: { label: 'Rejected', icon: XCircle, color: 'text-red-600 bg-red-100' }
 }
 
@@ -128,6 +28,9 @@ export default function AdminTalentReview() {
   const [selectedTalentForDetail, setSelectedTalentForDetail] = useState<TalentProfile | null>(null)
   const [selectedTalentForPreview, setSelectedTalentForPreview] = useState<TalentProfile | null>(null)
   const [showAnalytics, setShowAnalytics] = useState(false)
+  
+  // Error state management
+  const [operationError, setOperationError] = useState<string | null>(null)
 
   // Calculate statistics
   const stats = {
@@ -162,6 +65,7 @@ export default function AdminTalentReview() {
 
   const handleBulkOperation = async (operation: string, talentIds: string[], reason?: string) => {
     setIsLoading(true)
+    setOperationError(null) // Clear previous errors
     
     try {
       // Simulate API call
@@ -178,7 +82,7 @@ export default function AdminTalentReview() {
             case 'activate':
               return { ...talent, status: 'active', activatedAt: now, updatedAt: now }
             case 'deactivate':
-              return { ...talent, status: 'approved', updatedAt: now }
+              return { ...talent, status: 'inactive', updatedAt: now }
             case 'delete':
               return talent // Will be filtered out
             default:
@@ -196,6 +100,7 @@ export default function AdminTalentReview() {
       setSelectedTalent([])
     } catch (error) {
       console.error('Bulk operation failed:', error)
+      setOperationError(error instanceof Error ? error.message : 'An unexpected error occurred during the bulk operation.')
     } finally {
       setIsLoading(false)
     }
@@ -256,6 +161,33 @@ export default function AdminTalentReview() {
           </div>
         </div>
       </div>
+
+      {/* Error Display */}
+      {operationError && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="bg-red-50 border border-red-200 rounded-md p-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <AlertTriangle className="h-5 w-5 text-red-400" />
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-red-800">Operation Failed</h3>
+                <div className="mt-2 text-sm text-red-700">
+                  <p>{operationError}</p>
+                </div>
+                <div className="mt-4">
+                  <button
+                    onClick={() => setOperationError(null)}
+                    className="text-sm font-medium text-red-800 hover:text-red-900"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Statistics Cards */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

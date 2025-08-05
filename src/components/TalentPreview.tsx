@@ -29,6 +29,7 @@ const statusConfig = {
   submitted: { label: 'Submitted', icon: AlertTriangle, color: 'text-yellow-600 bg-yellow-100' },
   approved: { label: 'Approved', icon: CheckCircle, color: 'text-green-600 bg-green-100' },
   active: { label: 'Active', icon: Play, color: 'text-blue-600 bg-blue-100' },
+  inactive: { label: 'Inactive', icon: Clock, color: 'text-gray-600 bg-gray-100' },
   rejected: { label: 'Rejected', icon: XCircle, color: 'text-red-600 bg-red-100' }
 }
 
