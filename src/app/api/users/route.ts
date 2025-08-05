@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { userService } from '@/lib/supabase';
-import { CreateUserRequest, UpdateUserRequest, UserResponse, UsersListResponse } from '@/types/user';
+
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
 
 // GET /api/users - Get all users (admin only)
-export async function GET(request: NextRequest): Promise<NextResponse<UsersListResponse>> {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const { userId } = await auth();
     
@@ -18,15 +18,16 @@ export async function GET(request: NextRequest): Promise<NextResponse<UsersListR
       );
     }
     
-    // TODO: Add admin role check
-    // For now, allow all authenticated users to fetch all users for development
-    
-    const users = await userService.getAllUsers();
-    
-    return NextResponse.json({
-      success: true,
-      data: users,
+    const response = await fetch(`${BACKEND_URL}/api/users`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${userId}`, // Pass the user ID for backend auth
+      },
     });
+    
+    const data = await response.json();
+    return NextResponse.json(data, { status: response.status });
   } catch (error) {
     console.error('Error fetching users:', error);
     return NextResponse.json(
@@ -40,7 +41,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<UsersListR
 }
 
 // POST /api/users - Create a new user (for current authenticated user)
-export async function POST(request: NextRequest): Promise<NextResponse<UserResponse>> {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const { userId } = await auth();
     
@@ -54,7 +55,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<UserRespo
       );
     }
     
-    const body: CreateUserRequest = await request.json();
+    const body = await request.json();
     
     // Validate required fields
     if (!body.role) {
@@ -78,39 +79,17 @@ export async function POST(request: NextRequest): Promise<NextResponse<UserRespo
       );
     }
     
-    // Check if user already exists
-    const existingUser = await userService.getUserByClerkId(userId);
-    if (existingUser) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'User already exists',
-        },
-        { status: 409 }
-      );
-    }
-    
-    // Create user with authenticated user's ID
-    const user = await userService.createUser({
-      clerk_user_id: userId,
-      email: body.email || null,
-      role: body.role,
+    const response = await fetch(`${BACKEND_URL}/api/users`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${userId}`, // Pass the user ID for backend auth
+      },
+      body: JSON.stringify(body),
     });
     
-    if (!user) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Failed to create user',
-        },
-        { status: 500 }
-      );
-    }
-    
-    return NextResponse.json({
-      success: true,
-      data: user,
-    });
+    const data = await response.json();
+    return NextResponse.json(data, { status: response.status });
   } catch (error) {
     console.error('Error creating user:', error);
     return NextResponse.json(

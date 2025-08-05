@@ -1,31 +1,26 @@
-import { authMiddleware } from "@clerk/nextjs/server";
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
-export default authMiddleware({
-  // Public routes that don't require authentication
-  publicRoutes: [
-    "/login",
-    "/sign-up", 
-    "/auth-test",
-    "/api/webhooks(.*)",
-    "/_next(.*)",
-    "/favicon.ico",
-    "/api/health"
-  ],
+const isPublicRoute = createRouteMatcher([
+  "/login",
+  "/sign-up", 
+  "/auth-test",
+  "/api/webhooks(.*)",
+  "/_next(.*)",
+  "/favicon.ico",
+  "/api/health"
+]);
+
+export default clerkMiddleware(async (auth, req) => {
+  if (isPublicRoute(req)) {
+    return;
+  }
   
-  // Routes that can be accessed by both authenticated and unauthenticated users
-  ignoredRoutes: [
-    "/api/webhooks(.*)",
-    "/_next(.*)",
-    "/favicon.ico"
-  ],
+  const { userId } = await auth();
   
-  // Redirect unauthenticated users to login
-  afterAuth(auth, req) {
-    // Handle unauthenticated users
-    if (!auth.userId && !auth.isPublicRoute) {
-      const loginUrl = new URL('/login', req.url);
-      return Response.redirect(loginUrl);
-    }
+  // Handle unauthenticated users
+  if (!userId) {
+    const loginUrl = new URL('/login', req.url);
+    return Response.redirect(loginUrl);
   }
 });
 
