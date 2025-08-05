@@ -141,35 +141,18 @@ export default function OnboardingWizard() {
   }, [watch])
 
   // Auto-save on blur (when user finishes editing a field)
-  useEffect(() => {
+  const handleFormBlur = () => {
     if (!isLocalStorageSupported()) return
-
-    const handleBlur = () => {
-      if (formState.isDirty && hasUnsavedChanges) {
-        setIsSaving(true)
-        const formData = methods.getValues()
-        saveCurrentProgress(formData)
-        setLastSaved(Date.now())
-        setHasUnsavedChanges(false)
-        setTimeout(() => setIsSaving(false), 1000)
-      }
+    
+    if (formState.isDirty && hasUnsavedChanges) {
+      setIsSaving(true)
+      const formData = methods.getValues()
+      saveCurrentProgress(formData)
+      setLastSaved(Date.now())
+      setHasUnsavedChanges(false)
+      setTimeout(() => setIsSaving(false), 1000)
     }
-
-    // Add blur listeners to all form inputs
-    const form = document.querySelector('form')
-    if (form) {
-      const inputs = form.querySelectorAll('input, textarea, select')
-      inputs.forEach(input => {
-        input.addEventListener('blur', handleBlur)
-      })
-
-      return () => {
-        inputs.forEach(input => {
-          input.removeEventListener('blur', handleBlur)
-        })
-      }
-    }
-  }, [formState.isDirty, hasUnsavedChanges, saveCurrentProgress, methods])
+  }
 
   // Check for existing draft on mount
   useEffect(() => {
@@ -417,7 +400,7 @@ export default function OnboardingWizard() {
 
             {/* Form */}
             <FormProvider {...methods}>
-              <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-8">
+              <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-8" onBlur={handleFormBlur}>
                 {/* Current Step Component */}
                 <div className="card-ponte p-8 rounded-lg">
                   {currentStep === steps.length - 1 ? (

@@ -30,14 +30,20 @@ export function generateSessionId(): string {
 
 // Get current session ID or create a new one
 export function getSessionId(): string {
-  const existing = localStorage.getItem(STORAGE_KEYS.ONBOARDING_SESSION_ID)
-  if (existing) {
-    return existing
+  try {
+    const existing = localStorage.getItem(STORAGE_KEYS.ONBOARDING_SESSION_ID)
+    if (existing) {
+      return existing
+    }
+    
+    const newSessionId = generateSessionId()
+    localStorage.setItem(STORAGE_KEYS.ONBOARDING_SESSION_ID, newSessionId)
+    return newSessionId
+  } catch (error) {
+    console.error('Failed to access localStorage for session ID:', error)
+    // Return a fallback session ID if localStorage is unavailable
+    return generateSessionId()
   }
-  
-  const newSessionId = generateSessionId()
-  localStorage.setItem(STORAGE_KEYS.ONBOARDING_SESSION_ID, newSessionId)
-  return newSessionId
 }
 
 // Save draft data to local storage
@@ -173,6 +179,7 @@ export function getDraftAge(): number {
     const age = Date.now() - parseInt(timestamp)
     return Math.floor(age / (1000 * 60)) // Convert to minutes
   } catch (error) {
+    console.error('Failed to get draft age:', error)
     return 0
   }
 }
@@ -186,10 +193,10 @@ export function updateLastActivity(): void {
   }
 }
 
-// Check if user has been inactive for too long (30 minutes)
+// Check if user has been inactive for too long
 export function isUserInactive(): boolean {
   const lastActivity = getDraftAge()
-  return lastActivity > 30 // 30 minutes
+  return lastActivity > ONBOARDING_CONSTANTS.INACTIVITY_TIMEOUT
 }
 
 // Mark onboarding as complete
