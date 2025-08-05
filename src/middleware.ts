@@ -1,27 +1,20 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { clerkMiddleware } from "@clerk/nextjs/server";
 
-const isPublicRoute = createRouteMatcher([
-  "/login",
-  "/sign-up", 
-  "/auth-test",
-  "/api/webhooks(.*)",
-  "/_next(.*)",
-  "/favicon.ico",
-  "/api/health"
-]);
-
-export default clerkMiddleware(async (auth, req) => {
-  if (isPublicRoute(req)) {
-    return;
-  }
-  
-  const { userId } = await auth();
-  
-  // Handle unauthenticated users
-  if (!userId) {
-    const loginUrl = new URL('/login', req.url);
-    return Response.redirect(loginUrl);
-  }
+export default clerkMiddleware({
+  publicRoutes: [
+    "/login(.*)",
+    "/sign-up", 
+    "/auth-test",
+    "/api/webhooks(.*)",
+    "/_next(.*)",
+    "/favicon.ico",
+    "/api/health"
+  ],
+  ignoredRoutes: [
+    "/_next(.*)",
+    "/favicon.ico",
+    "/api/health"
+  ]
 });
 
 export const config = {

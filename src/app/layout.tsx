@@ -11,7 +11,11 @@ export const metadata: Metadata = {
   description: "Professional AI avatar booking platform for Ponte AI clients and investors",
   keywords: ["AI avatars", "celebrity licensing", "marketing campaigns", "Ponte AI"],
   authors: [{ name: "Ponte AI" }],
-  viewport: "width=device-width, initial-scale=1",
+}
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
 }
 
 export default function RootLayout({

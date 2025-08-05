@@ -3,11 +3,12 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { SignInButton, SignOutButton, useUser } from "@clerk/nextjs"
+import { SignInButton, SignOutButton, useUser, useClerk } from "@clerk/nextjs"
 
 const Navigation = () => {
   const pathname = usePathname()
   const { isSignedIn, user } = useUser()
+  const { signOut } = useClerk()
 
   const navItems = [
     { href: "/", label: "Home" },
@@ -67,11 +68,12 @@ const Navigation = () => {
                   <span className="text-sm text-foreground/80">
                     Welcome, {user?.firstName || user?.emailAddresses[0]?.emailAddress}
                   </span>
-                  <SignOutButton>
-                    <button className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                      Sign Out
-                    </button>
-                  </SignOutButton>
+                  <button 
+                    onClick={() => signOut({ redirectUrl: '/login' })}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Sign Out
+                  </button>
                 </div>
               </>
             ) : (
