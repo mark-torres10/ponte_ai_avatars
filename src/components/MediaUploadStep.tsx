@@ -154,7 +154,7 @@ const MediaUploadStep: React.FC = () => {
       headshots: updatedHeadshots.map(h => h.file)
     })
     setIsCompressing(false)
-      }, [headshots, setValue, getValues, validateFile, ALLOWED_IMAGE_TYPES, ALLOWED_VIDEO_TYPES, MAX_IMAGE_SIZE, MAX_VIDEO_SIZE])
+      }, [headshots, setValue, getValues, validateFile])
 
   // Handle video upload
   const onVideoDrop = useCallback(async (acceptedFiles: File[]) => {

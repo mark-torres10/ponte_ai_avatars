@@ -6,15 +6,11 @@ import {
   Users, 
   Clock, 
   CheckCircle, 
-  XCircle, 
-  Play, 
-  AlertTriangle,
   Download,
   Filter,
   ChevronDown,
   ChevronUp,
-  Save,
-  Pause
+  Save
 } from 'lucide-react'
 import { type TalentProfile, type TalentStatus } from '@/types/talent'
 import { STATUS_CONFIG } from '@/constants/talent'

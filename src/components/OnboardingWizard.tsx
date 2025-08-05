@@ -133,7 +133,7 @@ export default function OnboardingWizard() {
   useEffect(() => {
     if (!isLocalStorageSupported()) return
 
-    const subscription = watch((formData) => {
+    const subscription = watch((_formData) => {
       setHasUnsavedChanges(true)
     })
 
