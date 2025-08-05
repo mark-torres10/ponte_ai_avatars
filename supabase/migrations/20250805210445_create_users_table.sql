@@ -2,7 +2,11 @@
 -- This table stores user information synchronized with Clerk authentication
 
 -- Create enum for user roles
-CREATE TYPE user_role AS ENUM ('admin', 'client', 'talent');
+DO $$ BEGIN
+    CREATE TYPE user_role AS ENUM ('admin', 'client', 'talent');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- Create users table
 CREATE TABLE IF NOT EXISTS public.users (

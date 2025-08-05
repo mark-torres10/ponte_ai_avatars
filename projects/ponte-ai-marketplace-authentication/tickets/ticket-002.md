@@ -38,15 +38,141 @@ Reference: `spec.md` - Section 7 Technical Notes (Database Schema)
 - TypeScript types are generated for the database schema
 
 ## Test Plan
-- `test_table_creation`: Verify users table exists with correct schema → Table created with all required columns
-- `test_constraints`: Verify database constraints are enforced → Unique constraints prevent duplicate entries
-- `test_indexes`: Verify database indexes are created → Queries on clerk_user_id and email are fast
-- `test_connection`: Verify Supabase connection works → Can connect and perform basic operations
-- `test_migration`: Verify migration files are valid → Migrations can be applied and rolled back
-- `test_sync_triggers`: Verify user sync triggers work → User data is synchronized correctly
-- `test_typescript_types`: Verify TypeScript types are generated → Database types are available in code
 
-📁 Test file: `__tests__/supabase-integration.test.ts`
+### Prerequisites Setup
+- [ ] **Environment Variables**: Set up `.env.local` with Supabase credentials
+  - [ ] `NEXT_PUBLIC_SUPABASE_URL` configured
+  - [ ] `NEXT_PUBLIC_SUPABASE_ANON_KEY` configured
+  - [ ] Credentials obtained from Supabase dashboard
+
+- [ ] **Database Migration**: Run migration in Supabase SQL editor
+  - [ ] Copy contents of `supabase/migrations/001_create_users_table.sql`
+  - [ ] Execute migration successfully
+  - [ ] Verify table appears in Table Editor
+
+### Test 1: Database Schema Verification ✅
+- [x] **Table Structure**: Verify `users` table exists with correct columns
+  - [x] `id` (UUID, Primary Key, Default: gen_random_uuid())
+  - [x] `clerk_user_id` (Text, Unique, Not Null)
+  - [x] `email` (Text, Unique, Nullable)
+  - [x] `role` (Enum: admin, client, talent)
+  - [x] `created_at` (Timestamp, Default: NOW())
+  - [x] `updated_at` (Timestamp, Default: NOW())
+
+### Test 2: Database Indexes Verification ✅
+- [x] **Performance Indexes**: Verify all indexes are created
+  - [x] `idx_users_clerk_user_id` index exists
+  - [x] `idx_users_email` index exists
+  - [x] `idx_users_role` index exists
+  - [x] `idx_users_created_at` index exists
+  - [x] Run SQL query to verify indexes: `SELECT indexname, indexdef FROM pg_indexes WHERE tablename = 'users' AND schemaname = 'public';`
+
+### Test 3: Row Level Security (RLS) Verification ✅
+- [x] **Security Policies**: Verify RLS is enabled and policies exist
+  - [x] RLS enabled on `users` table
+  - [x] Policy "Users can view own data" exists
+  - [x] Policy "Users can update own data" exists
+  - [x] Policy "Users can insert own data" exists
+  - [x] Policy "Users can delete own data" exists
+
+### Test 4: API Endpoints Testing
+- [ ] **Create User (POST /api/users)**
+  - [ ] Start dev server: `npm run dev`
+  - [ ] Test valid user creation with curl
+  - [ ] Verify response status: 200
+  - [ ] Verify response contains user data with UUID
+  - [ ] Verify user appears in Supabase dashboard
+
+- [ ] **Get User (GET /api/users/[clerkUserId])**
+  - [ ] Test getting user by clerk_user_id
+  - [ ] Verify response status: 200
+  - [ ] Verify response contains correct user data
+
+- [ ] **Update User (PUT /api/users/[clerkUserId])**
+  - [ ] Test updating user email and role
+  - [ ] Verify response status: 200
+  - [ ] Verify data is updated in Supabase
+
+- [ ] **Get All Users (GET /api/users)**
+  - [ ] Test getting all users
+  - [ ] Verify response status: 200
+  - [ ] Verify response contains array of users
+
+- [ ] **Delete User (DELETE /api/users/[clerkUserId])**
+  - [ ] Test deleting user
+  - [ ] Verify response status: 200
+  - [ ] Verify user is removed from Supabase
+
+### Test 5: Error Handling Testing
+- [ ] **Missing Required Fields**
+  - [ ] Test creating user without `clerk_user_id`
+  - [ ] Verify response status: 400
+  - [ ] Verify error message mentions missing field
+
+- [ ] **Invalid Role**
+  - [ ] Test creating user with invalid role
+  - [ ] Verify response status: 400
+  - [ ] Verify error message mentions invalid role
+
+- [ ] **Duplicate User**
+  - [ ] Test creating duplicate user with same `clerk_user_id`
+  - [ ] Verify first request: status 200
+  - [ ] Verify second request: status 409
+  - [ ] Verify error message mentions user already exists
+
+### Test 6: TypeScript Types Testing
+- [ ] **Type Definitions**
+  - [ ] Verify Database interface in `src/lib/supabase.ts`
+  - [ ] Verify User, UserInsert, UserUpdate types exist
+  - [ ] Verify no TypeScript errors in the file
+  - [ ] Verify types match actual database schema
+
+### Test 7: Jest Tests Verification
+- [ ] **Automated Testing**
+  - [ ] Run: `npm test src/lib/__tests__/supabase.test.ts`
+  - [ ] Run: `npm test src/app/api/users/__tests__/route.test.ts`
+  - [ ] Verify all tests pass
+  - [ ] Verify no test failures
+  - [ ] Verify test coverage includes all user service methods
+
+### Test 8: Database Constraints Testing
+- [ ] **Data Integrity**
+  - [ ] Test inserting user without `clerk_user_id` (should fail)
+  - [ ] Test inserting user with invalid role (should fail)
+  - [ ] Test inserting duplicate `clerk_user_id` (should fail)
+  - [ ] Verify all invalid insertions fail with appropriate errors
+
+### Test 9: Auto-update Trigger Testing
+- [ ] **Updated At Timestamp**
+  - [ ] Update user email via SQL
+  - [ ] Check `updated_at` timestamp is automatically updated
+  - [ ] Verify `updated_at` is different from `created_at`
+
+### Test 10: Frontend Integration Testing
+- [ ] **Browser Testing**
+  - [ ] Start dev server: `npm run dev`
+  - [ ] Open browser to `http://localhost:3000`
+  - [ ] Open browser developer tools
+  - [ ] Test API calls from browser console
+  - [ ] Verify API calls work from browser
+  - [ ] Verify responses are properly formatted
+  - [ ] Verify no CORS errors
+
+### Final Verification Checklist
+- [ ] **Complete System Verification**
+  - [ ] All database tables and constraints created correctly
+  - [ ] All API endpoints respond as expected
+  - [ ] Error handling works for invalid requests
+  - [ ] TypeScript types properly defined
+  - [ ] Jest tests pass
+  - [ ] Database indexes created for performance
+  - [ ] RLS policies in place
+  - [ ] Auto-update triggers work
+  - [ ] Frontend can successfully call API endpoints
+
+📁 Test files: 
+- `src/lib/__tests__/supabase.test.ts`
+- `src/app/api/users/__tests__/route.test.ts`
 
 ## Dependencies
 - Requires: Supabase project setup
