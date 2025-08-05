@@ -2,17 +2,17 @@
 
 ## Week 1: Foundation & Setup
 
-### Ticket-001: Set up Clerk authentication integration
-- [ ] Install `@clerk/nextjs@latest` package
-- [ ] Create environment variables in `.env.local`
-- [ ] Create `middleware.ts` with `clerkMiddleware()`
-- [ ] Update `app/layout.tsx` to wrap with `<ClerkProvider>`
-- [ ] Configure OAuth providers (Google, Microsoft) in Clerk dashboard
-- [ ] Test basic signup/login flow
-- [ ] Verify TypeScript compilation passes
-- [ ] Write and run Jest tests
-- [ ] Ensure code follows Next.js App Router patterns
-- [ ] Verify no deprecated Clerk APIs are used
+### Ticket-001: Set up Clerk authentication integration (PON-48) ✅ COMPLETED
+- [x] Install `@clerk/nextjs@latest` package
+- [x] Create environment variables in `.env.local`
+- [x] Create `middleware.ts` with `clerkMiddleware()`
+- [x] Update `app/layout.tsx` to wrap with `<ClerkProvider>`
+- [x] Configure OAuth providers (Google, Microsoft) in Clerk dashboard
+- [x] Test basic signup/login flow
+- [x] Verify TypeScript compilation passes
+- [x] Write and run Jest tests
+- [x] Ensure code follows Next.js App Router patterns
+- [x] Verify no deprecated Clerk APIs are used
 
 ### Ticket-002: Create Supabase users table and database schema
 - [ ] Set up Supabase project and get connection details

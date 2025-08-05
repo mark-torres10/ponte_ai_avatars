@@ -12,10 +12,7 @@ import {
   Trash2,
   CheckCircle,
   XCircle,
-  Play,
-  Clock,
-  AlertTriangle,
-  Pause
+  Play
 } from 'lucide-react'
 import { type TalentProfile, type TalentStatus } from '@/types/talent'
 import { STATUS_CONFIG } from '@/constants/talent'
@@ -190,21 +187,7 @@ export default function TalentTable({
   }
 
   // Action button handlers
-  const handleViewClick = (talent: TalentProfile) => {
-    if (onViewDetails) {
-      onViewDetails(talent)
-    } else {
-      alert('View details feature coming soon!')
-    }
-  }
 
-  const handleEditClick = (talent: TalentProfile) => {
-    if (onViewDetails) {
-      onViewDetails(talent)
-    } else {
-      alert('Edit feature coming soon!')
-    }
-  }
 
   const handleStatusChangeClick = (talent: TalentProfile) => {
     setSelectedTalentForStatus(talent)
