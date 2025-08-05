@@ -1,37 +1,31 @@
+import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { ClerkProvider, SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
 
 // Mock Clerk components
 jest.mock('@clerk/nextjs', () => ({
   ClerkProvider: ({ children }: { children: React.ReactNode }) => {
-    const React = require('react');
     return React.createElement('div', { 'data-testid': 'clerk-provider' }, children);
   },
   SignInButton: ({ children }: { children: React.ReactNode }) => {
-    const React = require('react');
     return React.createElement('button', { 'data-testid': 'sign-in-button' }, children);
   },
   SignUpButton: ({ children }: { children: React.ReactNode }) => {
-    const React = require('react');
     return React.createElement('button', { 'data-testid': 'sign-up-button' }, children);
   },
   SignedIn: ({ children }: { children: React.ReactNode }) => {
-    const React = require('react');
     return React.createElement('div', { 'data-testid': 'signed-in' }, children);
   },
   SignedOut: ({ children }: { children: React.ReactNode }) => {
-    const React = require('react');
     return React.createElement('div', { 'data-testid': 'signed-out' }, children);
   },
   UserButton: () => {
-    const React = require('react');
     return React.createElement('button', { 'data-testid': 'user-button' }, 'User');
   },
 }));
 
 // Test component that uses Clerk
 const TestComponent = () => {
-  const React = require('react');
   return React.createElement(ClerkProvider, null,
     React.createElement('div', null,
       React.createElement('h1', null, 'Test Page'),
@@ -114,7 +108,6 @@ describe('Clerk Integration Tests', () => {
     it('should have proper TypeScript types for Clerk components', () => {
       // This test verifies that TypeScript compilation works with Clerk
       const TestComponentWithTypes: React.FC = () => {
-        const React = require('react');
         return React.createElement(ClerkProvider, null,
           React.createElement('div', null, 'Test')
         );

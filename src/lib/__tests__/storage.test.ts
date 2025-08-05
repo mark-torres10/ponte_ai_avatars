@@ -4,14 +4,10 @@ import {
   clearDraft,
   hasDraft,
   getDraftAge,
-  updateLastActivity,
-  markOnboardingComplete,
   getCompletionPercentage,
   markStepCompleted,
   isStepCompleted,
-  isLocalStorageSupported,
-  type OnboardingProgress,
-  type OnboardingDraft
+  isLocalStorageSupported
 } from '../storage'
 
 // Mock localStorage
