@@ -152,12 +152,6 @@ users table:
 4. **Components**: Use Clerk-provided components (`<SignInButton>`, `<SignUpButton>`, `<UserButton>`, `<SignedIn>`, `<SignedOut>`)
 
 ### Environment Variables:
-```bash
-# .env.local
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_ZmFuY3ktbGFkeWJpcmQtOTMuY2xlcmsuYWNjb3VudHMuZGV2JA
-CLERK_SECRET_KEY=sk_test_Thw6lj8UMU7HqrmPbj2ZbsNkZdaSdQnuby8BtsHbYF
-```
-
 ### Required Code Patterns:
 
 **middleware.ts**:
