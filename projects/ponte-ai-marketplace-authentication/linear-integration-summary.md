@@ -21,6 +21,8 @@
 - **Dependencies**: PON-48 (Clerk integration)
 - **URL**: https://linear.app/metresearch/issue/PON-49/create-supabase-users-table-and-database-schema
 - **Branch**: markptorres1/pon-49-create-supabase-users-table-and-database-schema
+- **PR**: https://github.com/mark-torres10/ponte_ai_avatars/pull/30
+- **Status**: ✅ Completed - PR Ready for Review
 
 ### 3. PON-50: Implement role-based routing and access control
 - **Priority**: High
