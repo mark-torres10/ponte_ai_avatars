@@ -4,7 +4,8 @@ import React, { useState, useCallback, useEffect } from 'react'
 import { useFormContext } from 'react-hook-form'
 import { useDropzone } from 'react-dropzone'
 import imageCompression from 'browser-image-compression'
-import { Upload, X, Image, Video, AlertCircle, CheckCircle } from 'lucide-react'
+import { Upload, X, Video, AlertCircle, CheckCircle, Image as ImageIcon } from 'lucide-react'
+import Image from 'next/image'
 
 interface UploadedFile {
   id: string
@@ -153,7 +154,7 @@ const MediaUploadStep: React.FC = () => {
       headshots: updatedHeadshots.map(h => h.file)
     })
     setIsCompressing(false)
-      }, [headshots, setValue, getValues, validateFile])
+      }, [headshots, setValue, getValues, validateFile, ALLOWED_IMAGE_TYPES, ALLOWED_VIDEO_TYPES, MAX_IMAGE_SIZE, MAX_VIDEO_SIZE])
 
   // Handle video upload
   const onVideoDrop = useCallback(async (acceptedFiles: File[]) => {
@@ -249,7 +250,7 @@ const MediaUploadStep: React.FC = () => {
       {/* Headshots Section */}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <Image className="w-5 h-5 text-primary" />
+          <ImageIcon className="w-5 h-5 text-primary" />
           <h3 className="text-lg font-semibold">Professional Headshots</h3>
           <span className="text-sm text-foreground/60">
             ({headshots.length}/{MAX_HEADSHOTS})
@@ -282,9 +283,11 @@ const MediaUploadStep: React.FC = () => {
             {headshots.map((headshot, index) => (
               <div key={headshot.id} className="relative group">
                 <div className="aspect-square rounded-lg overflow-hidden bg-white/5">
-                  <img
+                  <Image
                     src={headshot.preview}
                     alt={`Headshot preview ${index + 1}`}
+                    width={300}
+                    height={300}
                     className="w-full h-full object-cover"
                   />
                   {headshot.error && (

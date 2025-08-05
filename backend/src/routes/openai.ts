@@ -1,5 +1,4 @@
 import { Router, Request, Response } from 'express';
-import { config } from '../utils/config';
 import { logger } from '../utils/logger';
 
 const router = Router();
@@ -38,16 +37,17 @@ interface OpenAIResponse {
 }
 
 // Generate AI persona
-router.post('/generate-persona', async (req: Request, res: Response) => {
+router.post('/generate-persona', async (req: Request, res: Response): Promise<void> => {
   try {
     const request: OpenAIPersonaRequest = req.body;
 
     // Validate request
     if (!request.name || !request.toneCategories || !request.personalityTraits) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'Missing required fields: name, toneCategories, personalityTraits',
       });
+      return;
     }
 
     // For now, return a mock response since we don't have the actual API key
@@ -56,7 +56,7 @@ router.post('/generate-persona', async (req: Request, res: Response) => {
 
     res.json(response);
   } catch (error) {
-    logger.error('Error generating persona:', error);
+    logger.error('Error generating persona:', { error: error instanceof Error ? error.message : String(error) });
     res.status(500).json({
       success: false,
       error: 'Internal server error',
@@ -65,16 +65,17 @@ router.post('/generate-persona', async (req: Request, res: Response) => {
 });
 
 // Generic OpenAI prompt endpoint
-router.post('/prompt', async (req: Request, res: Response) => {
+router.post('/prompt', async (req: Request, res: Response): Promise<void> => {
   try {
     const request: OpenAIRequest = req.body;
 
     // Validate request
     if (!request.prompt) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'Missing required field: prompt',
       });
+      return;
     }
 
     // For now, return a mock response
@@ -83,7 +84,7 @@ router.post('/prompt', async (req: Request, res: Response) => {
 
     res.json(response);
   } catch (error) {
-    logger.error('Error processing OpenAI prompt:', error);
+    logger.error('Error processing OpenAI prompt:', { error: error instanceof Error ? error.message : String(error) });
     res.status(500).json({
       success: false,
       error: 'Internal server error',
@@ -107,7 +108,7 @@ async function generateMockPersona(request: OpenAIPersonaRequest): Promise<OpenA
       persona,
     };
   } catch (error) {
-    logger.error('Error generating mock persona:', error);
+    logger.error('Error generating mock persona:', { error: error instanceof Error ? error.message : String(error) });
     return {
       success: false,
       error: 'Failed to generate persona',
@@ -129,7 +130,7 @@ async function generateMockOpenAIResponse(request: OpenAIRequest): Promise<OpenA
       content,
     };
   } catch (error) {
-    logger.error('Error generating mock OpenAI response:', error);
+    logger.error('Error generating mock OpenAI response:', { error: error instanceof Error ? error.message : String(error) });
     return {
       success: false,
       error: 'Failed to generate response',
@@ -155,10 +156,10 @@ function buildPersonaFromData(
   };
 
   const personalityDescriptions = {
-    extroversion: personalityTraits.extroversion > 50 ? 'outgoing and engaging' : 'thoughtful and reflective',
-    formality: personalityTraits.formality > 50 ? 'polished and professional' : 'approachable and relatable',
-    energy: personalityTraits.energy > 50 ? 'dynamic and energetic' : 'measured and composed',
-    professionalism: personalityTraits.professionalism > 50 ? 'corporate-ready' : 'authentically human',
+    extroversion: (personalityTraits['extroversion'] ?? 50) > 50 ? 'outgoing and engaging' : 'thoughtful and reflective',
+    formality: (personalityTraits['formality'] ?? 50) > 50 ? 'polished and professional' : 'approachable and relatable',
+    energy: (personalityTraits['energy'] ?? 50) > 50 ? 'dynamic and energetic' : 'measured and composed',
+    professionalism: (personalityTraits['professionalism'] ?? 50) > 50 ? 'corporate-ready' : 'authentically human',
   };
 
   const selectedTones = toneCategories

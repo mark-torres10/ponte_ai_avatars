@@ -16,7 +16,7 @@ const logLevelMap: Record<string, LogLevel> = {
 
 const currentLogLevel = logLevelMap[config.LOG_LEVEL] || LogLevel.INFO;
 
-const formatMessage = (level: string, message: string, meta?: any): string => {
+const formatMessage = (level: string, message: string, meta?: Record<string, unknown>): string => {
   const timestamp = new Date().toISOString();
   const metaStr = meta ? ` ${JSON.stringify(meta)}` : '';
   return `[${timestamp}] ${level.toUpperCase()}: ${message}${metaStr}`;
@@ -27,26 +27,30 @@ const shouldLog = (level: LogLevel): boolean => {
 };
 
 export const logger = {
-  error: (message: string, meta?: any): void => {
+  error: (message: string, meta?: Record<string, unknown>): void => {
     if (shouldLog(LogLevel.ERROR)) {
+      // eslint-disable-next-line no-console
       console.error(formatMessage('error', message, meta));
     }
   },
 
-  warn: (message: string, meta?: any): void => {
+  warn: (message: string, meta?: Record<string, unknown>): void => {
     if (shouldLog(LogLevel.WARN)) {
+      // eslint-disable-next-line no-console
       console.warn(formatMessage('warn', message, meta));
     }
   },
 
-  info: (message: string, meta?: any): void => {
+  info: (message: string, meta?: Record<string, unknown>): void => {
     if (shouldLog(LogLevel.INFO)) {
+      // eslint-disable-next-line no-console
       console.info(formatMessage('info', message, meta));
     }
   },
 
-  debug: (message: string, meta?: any): void => {
+  debug: (message: string, meta?: Record<string, unknown>): void => {
     if (shouldLog(LogLevel.DEBUG)) {
+      // eslint-disable-next-line no-console
       console.debug(formatMessage('debug', message, meta));
     }
   },

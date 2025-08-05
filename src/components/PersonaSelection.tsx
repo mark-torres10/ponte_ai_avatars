@@ -77,7 +77,7 @@ export default function PersonaSelection({ onPersonaSelect }: PersonaSelectionPr
     };
 
     loadImages();
-  }, []); // Empty dependency array - only run once on mount
+  }, []); // Empty dependency array - run only once on mount. DO NOT CHANGE THIS. THIS ADDS AN INFINITE RE-RENDER LOOP.
 
   return (
     <div className="space-y-8">

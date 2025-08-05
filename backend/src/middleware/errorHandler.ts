@@ -72,7 +72,10 @@ export const notFoundHandler = (req: Request, res: Response): void => {
   errorHandler(error, req, res, () => {});
 };
 
-export const asyncHandler = (fn: Function) => {
+// Define a proper function type for async handlers
+type AsyncHandlerFunction = (req: Request, res: Response, next: NextFunction) => Promise<void> | void;
+
+export const asyncHandler = (fn: AsyncHandlerFunction) => {
   return (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };

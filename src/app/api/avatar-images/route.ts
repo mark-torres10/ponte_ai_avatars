@@ -2,28 +2,20 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { AvatarImage, PersonaImages } from '@/types/avatar-images';
 
-// Validate required environment variables
-if (!process.env.SUPABASE_URL) {
-  throw new Error('SUPABASE_URL environment variable is required');
-}
-if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-  throw new Error('SUPABASE_SERVICE_ROLE_KEY environment variable is required');
-}
-
 // Initialize Supabase client with server-side environment variables
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const prodStorageBucket = process.env.PROD_STORAGE_BUCKET || 'ponteai-assets';
 
-// Use service role key for server-side operations to bypass RLS
-const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
-  }
-});
-
-
+// Only create Supabase client if environment variables are available
+const supabase = supabaseUrl && supabaseServiceKey 
+  ? createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    })
+  : null;
 
 /**
  * Load avatar images from Supabase storage
@@ -33,8 +25,14 @@ async function loadAvatarImages(): Promise<PersonaImages> {
     const personaImages: PersonaImages = {};
     
     console.log('Backend: Starting to load avatar images from Supabase...');
-    console.log('Backend: Supabase URL:', supabaseUrl);
+    console.log('Backend: Supabase URL:', supabaseUrl ? 'Available' : 'Not available');
     console.log('Backend: Production bucket:', prodStorageBucket);
+    
+    // If Supabase is not configured, return fallback images
+    if (!supabase) {
+      console.log('Backend: Supabase not configured, using fallback images');
+      return getFallbackImages();
+    }
     
     // Define the persona configurations
     const personas = [
@@ -113,6 +111,17 @@ function getFallbackImages(): PersonaImages {
 export async function GET() {
   try {
     console.log('Backend: API route called for avatar images');
+    
+    // During build time, environment variables might not be available
+    // Always return fallback images to prevent build failures
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.log('Backend: Environment variables not available, returning fallback images');
+      const fallbackImages = getFallbackImages();
+      return NextResponse.json({
+        success: true,
+        data: fallbackImages
+      });
+    }
     
     const avatarImages = await loadAvatarImages();
     

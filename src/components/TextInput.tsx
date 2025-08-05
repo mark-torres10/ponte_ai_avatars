@@ -19,7 +19,7 @@ export default function TextInput({ selectedPersona, onTextChange }: TextInputPr
   // Initialize with placeholder text
   useEffect(() => {
     onTextChange(originalText, false, originalText, '');
-  }, []);
+  }, [onTextChange, originalText]);
 
   const handleTextChange = (text: string) => {
     setOriginalText(text);
