@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import { useEffect, useRef } from 'react'
 import { 
   X, 
   User, 
@@ -27,12 +27,80 @@ export default function TalentPreview({
   onClose,
   onViewDetails
 }: TalentPreviewProps) {
+  const modalRef = useRef<HTMLDivElement>(null)
+  const closeButtonRef = useRef<HTMLButtonElement>(null)
+  const previousFocusRef = useRef<HTMLElement | null>(null)
+
+  // Focus management
+  useEffect(() => {
+    // Store the previously focused element
+    previousFocusRef.current = document.activeElement as HTMLElement
+    
+    // Focus the modal
+    if (modalRef.current) {
+      modalRef.current.focus()
+    }
+
+    // Cleanup function to restore focus
+    return () => {
+      if (previousFocusRef.current) {
+        previousFocusRef.current.focus()
+      }
+    }
+  }, [])
+
+  // Keyboard event handlers
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose()
+      }
+      
+      // Trap focus within modal
+      if (event.key === 'Tab') {
+        const focusableElements = modalRef.current?.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        )
+        
+        if (focusableElements && focusableElements.length > 0) {
+          const firstElement = focusableElements[0] as HTMLElement
+          const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement
+          
+          if (event.shiftKey) {
+            if (document.activeElement === firstElement) {
+              event.preventDefault()
+              lastElement.focus()
+            }
+          } else {
+            if (document.activeElement === lastElement) {
+              event.preventDefault()
+              firstElement.focus()
+            }
+          }
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [onClose])
+
   const status = STATUS_CONFIG[talent.status]
   const StatusIcon = status.icon
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="talent-preview-title"
+      aria-describedby="talent-preview-content"
+    >
+      <div 
+        ref={modalRef}
+        className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+        tabIndex={-1}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center space-x-4">
@@ -40,7 +108,7 @@ export default function TalentPreview({
               <User className="h-5 w-5 text-blue-600" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">{talent.name}</h2>
+              <h2 id="talent-preview-title" className="text-xl font-bold text-gray-900">{talent.name}</h2>
               <p className="text-sm text-gray-500">{talent.email}</p>
             </div>
           </div>
@@ -53,15 +121,17 @@ export default function TalentPreview({
               View Details
             </button>
             <button
+              ref={closeButtonRef}
               onClick={onClose}
               className="p-2 text-gray-400 hover:text-gray-600"
+              aria-label="Close preview"
             >
               <X className="h-5 w-5" />
             </button>
           </div>
         </div>
 
-        <div className="p-6">
+        <div id="talent-preview-content" className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Basic Information */}
             <div className="space-y-4">

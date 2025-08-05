@@ -40,7 +40,11 @@ export default function TalentDetailView({
   const handleSave = async () => {
     setIsSaving(true)
     try {
-      const updatedTalent = { ...talent, adminNotes }
+      const updatedTalent = { 
+        ...talent, 
+        adminNotes,
+        updatedAt: new Date().toISOString()
+      }
       await onUpdate(updatedTalent)
       setIsEditing(false)
     } catch (error) {

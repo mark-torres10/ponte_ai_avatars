@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useMemo } from 'react'
 import { 
   TrendingUp, 
   Users, 
@@ -59,7 +59,6 @@ export default function AnalyticsDashboard({
   talentData,
   onExport
 }: AnalyticsDashboardProps) {
-  const [metrics, setMetrics] = useState<AnalyticsMetrics | null>(null)
   const [timeRange, setTimeRange] = useState('30d')
   const [showFilters, setShowFilters] = useState(false)
   const [savedFilters, setSavedFilters] = useState<Array<{
@@ -74,13 +73,13 @@ export default function AnalyticsDashboard({
   const [showSaveFilterModal, setShowSaveFilterModal] = useState(false)
   const [filterName, setFilterName] = useState('')
 
-  // Calculate analytics metrics
-  useEffect(() => {
-    if (!talentData.length) return
+  // Calculate analytics metrics with memoization
+  const metrics = useMemo(() => {
+    if (!talentData.length) return null
 
     const filteredData = filterDataByTimeRange(talentData, timeRange)
     
-    const metrics: AnalyticsMetrics = {
+    const calculatedMetrics: AnalyticsMetrics = {
       total: filteredData.length,
       draft: filteredData.filter(t => t.status === 'draft').length,
       submitted: filteredData.filter(t => t.status === 'submitted').length,
@@ -98,7 +97,7 @@ export default function AnalyticsDashboard({
       toneCategoryDistribution: calculateToneCategoryDistribution(filteredData)
     }
 
-    setMetrics(metrics)
+    return calculatedMetrics
   }, [talentData, timeRange])
 
   const filterDataByTimeRange = (data: TalentProfile[], range: string): TalentProfile[] => {

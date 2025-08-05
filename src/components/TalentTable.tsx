@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { 
   Search, 
   Filter, 
@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import { type TalentProfile, type TalentStatus } from '@/types/talent'
 import { STATUS_CONFIG } from '@/constants/talent'
+import { formatDate } from '@/utils/date'
 
 interface TalentTableProps {
   data: TalentProfile[]
@@ -70,7 +71,54 @@ export default function TalentTable({
   const totalPages = Math.ceil(data.length / ITEMS_PER_PAGE)
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
   const endIndex = startIndex + ITEMS_PER_PAGE
-  const currentData = data.slice(startIndex, endIndex)
+  
+  // Apply additional filters to the data
+  const filteredData = useMemo(() => {
+    let filtered = data
+
+    // Apply date range filter
+    if (dateRange.start || dateRange.end) {
+      filtered = filtered.filter(talent => {
+        const talentDate = new Date(talent.createdAt)
+        const startDate = dateRange.start ? new Date(dateRange.start) : null
+        const endDate = dateRange.end ? new Date(dateRange.end) : null
+        
+        if (startDate && endDate) {
+          return talentDate >= startDate && talentDate <= endDate
+        } else if (startDate) {
+          return talentDate >= startDate
+        } else if (endDate) {
+          return talentDate <= endDate
+        }
+        return true
+      })
+    }
+
+    // Apply location filter
+    if (locationFilter.trim()) {
+      filtered = filtered.filter(talent => 
+        talent.location?.toLowerCase().includes(locationFilter.toLowerCase())
+      )
+    }
+
+    // Apply tone category filter
+    if (toneCategoryFilter) {
+      filtered = filtered.filter(talent => 
+        talent.toneCategories?.includes(toneCategoryFilter)
+      )
+    }
+
+    return filtered
+  }, [data, dateRange, locationFilter, toneCategoryFilter])
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [dateRange, locationFilter, toneCategoryFilter])
+
+  // Update pagination based on filtered data
+  const totalFilteredPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE)
+  const currentData = filteredData.slice(startIndex, endIndex)
 
   // Selection handlers - now using global selection state
   const handleSelectAll = () => {
@@ -199,14 +247,6 @@ export default function TalentTable({
     return rangeWithDots
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
-  }
-
   return (
     <div className="bg-white rounded-lg shadow">
       {/* Search and Filters */}
@@ -254,6 +294,12 @@ export default function TalentTable({
         {/* Additional Filters */}
         {showFilters && (
           <div className="mt-4 pt-4 border-t border-gray-200">
+            <div className="mb-3">
+              <div className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                <span className="mr-1">🔄</span>
+                Filters are now functional
+              </div>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
@@ -469,11 +515,11 @@ export default function TalentTable({
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
+      {totalFilteredPages > 1 && (
         <div className="px-6 py-3 bg-gray-50 border-t border-gray-200">
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-700">
-              Showing {startIndex + 1} to {Math.min(endIndex, data.length)} of {data.length} results
+              Showing {startIndex + 1} to {Math.min(endIndex, filteredData.length)} of {filteredData.length} results
             </div>
             <div className="flex items-center space-x-2">
               <button
@@ -501,7 +547,7 @@ export default function TalentTable({
               ))}
               <button
                 onClick={() => setCurrentPage(currentPage + 1)}
-                disabled={currentPage === totalPages}
+                disabled={currentPage === totalFilteredPages}
                 className="px-3 py-1 text-sm border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
               >
                 Next
