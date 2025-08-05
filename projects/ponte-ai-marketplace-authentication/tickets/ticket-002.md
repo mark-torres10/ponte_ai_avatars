@@ -76,12 +76,20 @@ Reference: `spec.md` - Section 7 Technical Notes (Database Schema)
   - [x] Policy "Users can delete own data" exists
 
 ### Test 4: API Endpoints Testing
-- [ ] **Create User (POST /api/users)**
+- [ ] **Prerequisites Setup**
   - [ ] Start dev server: `npm run dev`
-  - [ ] Test valid user creation with curl
-  - [ ] Verify response status: 200
+  - [ ] Open browser to `http://localhost:3000`
+  - [ ] Sign in with Clerk (Google/Microsoft/Email)
+  - [ ] Get Clerk session token from browser dev tools
+  - [ ] Verify Clerk authentication is working
+
+- [ ] **Create User (POST /api/users)**
+  - [ ] Run: `node projects/ponte-ai-marketplace-authentication/ticket-002_tests.js --test 4 --clerk-session-token <your_token>`
+  - [ ] Verify response status: 200 for authenticated requests
   - [ ] Verify response contains user data with UUID
   - [ ] Verify user appears in Supabase dashboard
+  - [ ] Test without token: `node projects/ponte-ai-marketplace-authentication/ticket-002_tests.js --test 4`
+  - [ ] Verify response status: 401 for unauthenticated requests
 
 - [ ] **Get User (GET /api/users/[clerkUserId])**
   - [ ] Test getting user by clerk_user_id
@@ -105,7 +113,8 @@ Reference: `spec.md` - Section 7 Technical Notes (Database Schema)
 
 ### Test 5: Error Handling Testing
 - [ ] **Missing Required Fields**
-  - [ ] Test creating user without `clerk_user_id`
+  - [ ] Run: `node projects/ponte-ai-marketplace-authentication/ticket-002_tests.js --test 5 --clerk-session-token <your_token>`
+  - [ ] Test creating user without `role` field
   - [ ] Verify response status: 400
   - [ ] Verify error message mentions missing field
 
@@ -119,6 +128,11 @@ Reference: `spec.md` - Section 7 Technical Notes (Database Schema)
   - [ ] Verify first request: status 200
   - [ ] Verify second request: status 409
   - [ ] Verify error message mentions user already exists
+
+- [ ] **Unauthenticated Requests**
+  - [ ] Run: `node projects/ponte-ai-marketplace-authentication/ticket-002_tests.js --test 5`
+  - [ ] Verify all requests return 401 status
+  - [ ] Verify error message mentions "Unauthorized"
 
 ### Test 6: TypeScript Types Testing
 - [ ] **Type Definitions**
@@ -213,6 +227,85 @@ Reference: `spec.md` - Section 7 Technical Notes (Database Schema)
 - [ ] Database connection tested and working
 - [ ] Jest tests written and passing
 - [ ] Database operations validated
+
+## Complete Testing Workflow
+
+### Step 1: Environment Setup
+1. **Start Development Server**
+   ```bash
+   npm run dev
+   ```
+
+2. **Verify Clerk Integration**
+   - Open browser to `http://localhost:3000`
+   - Navigate to `/auth-test` page
+   - Verify Clerk components are loading
+   - Test sign-in/sign-up flow
+
+### Step 2: Get Clerk Session Token
+1. **Sign In Through Browser**
+   - Go to `http://localhost:3000`
+   - Click "Sign In" and complete authentication
+   - Use Google, Microsoft, or email authentication
+
+2. **Extract Session Token**
+   - Open browser Developer Tools (F12)
+   - Go to Application/Storage tab
+   - Look for Clerk session storage
+   - Find the session token (JWT format)
+   - Copy the full token
+
+### Step 3: Run API Tests
+1. **Test Without Authentication (Should Return 401)**
+   ```bash
+   node projects/ponte-ai-marketplace-authentication/ticket-002_tests.js --test 4
+   ```
+
+2. **Test With Authentication (Should Return 200)**
+   ```bash
+   node projects/ponte-ai-marketplace-authentication/ticket-002_tests.js --test 4 --clerk-session-token <your_token>
+   ```
+
+3. **Run All Test Suites**
+   ```bash
+   # Test 4: API Endpoints
+   node projects/ponte-ai-marketplace-authentication/ticket-002_tests.js --test 4 --clerk-session-token <your_token>
+   
+   # Test 5: Error Handling
+   node projects/ponte-ai-marketplace-authentication/ticket-002_tests.js --test 5 --clerk-session-token <your_token>
+   
+   # Test 6: TypeScript Types
+   node projects/ponte-ai-marketplace-authentication/ticket-002_tests.js --test 6
+   
+   # Test 7: Jest Tests
+   node projects/ponte-ai-marketplace-authentication/ticket-002_tests.js --test 7
+   
+   # Test 8: Database Constraints
+   node projects/ponte-ai-marketplace-authentication/ticket-002_tests.js --test 8 --clerk-session-token <your_token>
+   
+   # Test 9: Auto-update Triggers
+   node projects/ponte-ai-marketplace-authentication/ticket-002_tests.js --test 9 --clerk-session-token <your_token>
+   
+   # Test 10: Frontend Integration
+   node projects/ponte-ai-marketplace-authentication/ticket-002_tests.js --test 10 --clerk-session-token <your_token>
+   ```
+
+### Step 4: Verify Database Changes
+1. **Check Supabase Dashboard**
+   - Go to your Supabase project dashboard
+   - Navigate to Table Editor
+   - Verify `users` table has new records
+   - Check that `updated_at` timestamps are updating
+
+2. **Verify RLS Policies**
+   - Check that users can only access their own data
+   - Verify admin policies are working correctly
+
+### Expected Test Results
+- **Without Token**: All API calls should return 401 Unauthorized
+- **With Token**: API calls should return 200/201 for successful operations
+- **Error Cases**: Should return appropriate 400/409 status codes
+- **Database**: Users should be created/updated/deleted in Supabase
 
 ## Links & References
 - Specification: `spec.md`

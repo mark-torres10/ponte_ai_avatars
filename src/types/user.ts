@@ -33,7 +33,6 @@ export interface UserUpdate {
 
 // User creation request interface for API calls
 export interface CreateUserRequest {
-  clerk_user_id: string;
   email?: string;
   role: UserRole;
 }

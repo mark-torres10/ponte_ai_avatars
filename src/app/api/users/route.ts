@@ -1,12 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import { userService } from '@/lib/supabase';
 import { CreateUserRequest, UpdateUserRequest, UserResponse, UsersListResponse } from '@/types/user';
 
 // GET /api/users - Get all users (admin only)
 export async function GET(request: NextRequest): Promise<NextResponse<UsersListResponse>> {
   try {
-    // TODO: Add admin role check when Clerk is integrated
-    // For now, allow all requests for development
+    const { userId } = await auth();
+    
+    if (!userId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Unauthorized - User not authenticated',
+        },
+        { status: 401 }
+      );
+    }
+    
+    // TODO: Add admin role check
+    // For now, allow all authenticated users to fetch all users for development
     
     const users = await userService.getAllUsers();
     
@@ -26,22 +39,24 @@ export async function GET(request: NextRequest): Promise<NextResponse<UsersListR
   }
 }
 
-// POST /api/users - Create a new user
+// POST /api/users - Create a new user (for current authenticated user)
 export async function POST(request: NextRequest): Promise<NextResponse<UserResponse>> {
   try {
-    const body: CreateUserRequest = await request.json();
+    const { userId } = await auth();
     
-    // Validate required fields
-    if (!body.clerk_user_id) {
+    if (!userId) {
       return NextResponse.json(
         {
           success: false,
-          error: 'clerk_user_id is required',
+          error: 'Unauthorized - User not authenticated',
         },
-        { status: 400 }
+        { status: 401 }
       );
     }
     
+    const body: CreateUserRequest = await request.json();
+    
+    // Validate required fields
     if (!body.role) {
       return NextResponse.json(
         {
@@ -64,7 +79,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<UserRespo
     }
     
     // Check if user already exists
-    const existingUser = await userService.getUserByClerkId(body.clerk_user_id);
+    const existingUser = await userService.getUserByClerkId(userId);
     if (existingUser) {
       return NextResponse.json(
         {
@@ -75,9 +90,9 @@ export async function POST(request: NextRequest): Promise<NextResponse<UserRespo
       );
     }
     
-    // Create user
+    // Create user with authenticated user's ID
     const user = await userService.createUser({
-      clerk_user_id: body.clerk_user_id,
+      clerk_user_id: userId,
       email: body.email || null,
       role: body.role,
     });

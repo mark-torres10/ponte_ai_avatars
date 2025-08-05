@@ -33,6 +33,7 @@ export interface Database {
           email: string | null;
           role: 'admin' | 'client' | 'talent';
           created_at: string;
+          updated_at: string;
         };
         Insert: {
           id?: string;
@@ -47,6 +48,7 @@ export interface Database {
           email?: string | null;
           role?: 'admin' | 'client' | 'talent';
           created_at?: string;
+          updated_at?: string;
         };
       };
     };

@@ -9,9 +9,16 @@ const args = process.argv.slice(2);
 const testIndex = args.indexOf('--test');
 const testNumber = testIndex !== -1 ? parseInt(args[testIndex + 1]) : null;
 
+const clerkTokenIndex = args.indexOf('--clerk-session-token');
+const clerkSessionToken = clerkTokenIndex !== -1 ? args[clerkTokenIndex + 1] : '';
+
 if (!testNumber) {
-    console.error('Usage: node ticket-002_tests.js --test <test_number>');
+    console.error('Usage: node ticket-002_tests.js --test <test_number> [--clerk-session-token <token>]');
     console.error('Available tests: 4, 5, 6, 7, 8, 9, 10');
+    console.error('');
+    console.error('Examples:');
+    console.error('  node ticket-002_tests.js --test 4');
+    console.error('  node ticket-002_tests.js --test 4 --clerk-session-token eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...');
     process.exit(1);
 }
 
@@ -19,9 +26,17 @@ if (!testNumber) {
 const BASE_URL = 'http://localhost:3000';
 const API_BASE = `${BASE_URL}/api/users`;
 
+// Note: For testing with Clerk authentication, you need to:
+// 1. Start the dev server: npm run dev
+// 2. Sign in through the browser at http://localhost:3000
+// 3. Get the session token from browser dev tools
+// 4. Use that token with --clerk-session-token flag
+
+// Use the provided Clerk session token or empty string for unauthenticated tests
+const AUTH_HEADER = clerkSessionToken;
+
 // Test data
 const testUser = {
-    clerk_user_id: 'test_user_123',
     email: 'test@example.com',
     role: 'client'
 };
@@ -73,6 +88,7 @@ const tests = {
         console.log('\n📋 4a. Create User (POST /api/users)');
         const createCommand = `curl -X POST ${API_BASE} \\
   -H "Content-Type: application/json" \\
+  ${AUTH_HEADER ? `-H "Authorization: Bearer ${AUTH_HEADER}" \\` : ''} \\
   -d "${formatJson(testUser)}" \\
   -w "\\nHTTP Status: %{http_code}\\n"`;
         
@@ -80,16 +96,18 @@ const tests = {
         
         // Test 4b: Get User (GET /api/users/[clerkUserId])
         console.log('\n📋 4b. Get User (GET /api/users/[clerkUserId])');
-        const getCommand = `curl -X GET ${API_BASE}/${testUser.clerk_user_id} \\
+        const getCommand = `curl -X GET ${API_BASE}/test_user_123 \\
   -H "Content-Type: application/json" \\
+  ${AUTH_HEADER ? `-H "Authorization: Bearer ${AUTH_HEADER}" \\` : ''} \\
   -w "\\nHTTP Status: %{http_code}\\n"`;
         
         const getResult = runCurlCommand(getCommand, 'Getting test user');
         
         // Test 4c: Update User (PUT /api/users/[clerkUserId])
         console.log('\n📋 4c. Update User (PUT /api/users/[clerkUserId])');
-        const updateCommand = `curl -X PUT ${API_BASE}/${testUser.clerk_user_id} \\
+        const updateCommand = `curl -X PUT ${API_BASE}/test_user_123 \\
   -H "Content-Type: application/json" \\
+  ${AUTH_HEADER ? `-H "Authorization: Bearer ${AUTH_HEADER}" \\` : ''} \\
   -d "${formatJson(updatedUser)}" \\
   -w "\\nHTTP Status: %{http_code}\\n"`;
         
@@ -99,14 +117,16 @@ const tests = {
         console.log('\n📋 4d. Get All Users (GET /api/users)');
         const getAllCommand = `curl -X GET ${API_BASE} \\
   -H "Content-Type: application/json" \\
+  ${AUTH_HEADER ? `-H "Authorization: Bearer ${AUTH_HEADER}" \\` : ''} \\
   -w "\\nHTTP Status: %{http_code}\\n"`;
         
         const getAllResult = runCurlCommand(getAllCommand, 'Getting all users');
         
         // Test 4e: Delete User (DELETE /api/users/[clerkUserId])
         console.log('\n📋 4e. Delete User (DELETE /api/users/[clerkUserId])');
-        const deleteCommand = `curl -X DELETE ${API_BASE}/${testUser.clerk_user_id} \\
+        const deleteCommand = `curl -X DELETE ${API_BASE}/test_user_123 \\
   -H "Content-Type: application/json" \\
+  ${AUTH_HEADER ? `-H "Authorization: Bearer ${AUTH_HEADER}" \\` : ''} \\
   -w "\\nHTTP Status: %{http_code}\\n"`;
         
         const deleteResult = runCurlCommand(deleteCommand, 'Deleting test user');
@@ -128,15 +148,17 @@ const tests = {
         console.log('\n📋 5a. Missing Required Fields');
         const missingFieldsCommand = `curl -X POST ${API_BASE} \\
   -H "Content-Type: application/json" \\
+  ${AUTH_HEADER ? `-H "Authorization: Bearer ${AUTH_HEADER}" \\` : ''} \\
   -d "${formatJson({ email: 'test@example.com' })}" \\
   -w "\\nHTTP Status: %{http_code}\\n"`;
         
-        const missingFieldsResult = runCurlCommand(missingFieldsCommand, 'Creating user without clerk_user_id');
+        const missingFieldsResult = runCurlCommand(missingFieldsCommand, 'Creating user without role (should fail)');
         
         // Test 5b: Invalid Role
         console.log('\n📋 5b. Invalid Role');
         const invalidRoleCommand = `curl -X POST ${API_BASE} \\
   -H "Content-Type: application/json" \\
+  ${AUTH_HEADER ? `-H "Authorization: Bearer ${AUTH_HEADER}" \\` : ''} \\
   -d "${formatJson({ ...testUser, role: 'invalid_role' })}" \\
   -w "\\nHTTP Status: %{http_code}\\n"`;
         
@@ -146,6 +168,7 @@ const tests = {
         console.log('\n📋 5c. Duplicate User');
         const duplicateCommand = `curl -X POST ${API_BASE} \\
   -H "Content-Type: application/json" \\
+  ${AUTH_HEADER ? `-H "Authorization: Bearer ${AUTH_HEADER}" \\` : ''} \\
   -d "${formatJson(testUser)}" \\
   -w "\\nHTTP Status: %{http_code}\\n"`;
         
@@ -394,6 +417,7 @@ async function main() {
     console.log(`🚀 Running Ticket-002 Test ${testNumber}`);
     console.log(`📍 Base URL: ${BASE_URL}`);
     console.log(`📍 API Base: ${API_BASE}`);
+    console.log(`🔐 Authentication: ${AUTH_HEADER ? 'Using Clerk session token' : 'No authentication (will get 401 responses)'}`);
     
     if (!tests[testNumber]) {
         console.error(`❌ Test ${testNumber} not found. Available tests: ${Object.keys(tests).join(', ')}`);

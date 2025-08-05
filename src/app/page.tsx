@@ -1,5 +1,7 @@
 import Link from "next/link"
 import Navigation from "@/components/navigation"
+import { auth } from "@clerk/nextjs/server"
+import { redirect } from "next/navigation"
 
 // Sample avatar data for the carousel
 const sampleAvatars = [
@@ -55,7 +57,14 @@ const sampleAvatars = [
   }
 ]
 
-export default function HomePage() {
+export default async function HomePage() {
+  const { userId } = await auth();
+  
+  // If user is not authenticated, redirect to login
+  if (!userId) {
+    redirect('/login');
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
