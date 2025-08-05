@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { OnboardingDraft } from '@/lib/storage'
+import { ONBOARDING_CONSTANTS } from '@/lib/constants'
 
 interface DraftRecoveryModalProps {
   draft: OnboardingDraft
@@ -36,7 +37,7 @@ export default function DraftRecoveryModal({
 
   const getProgressSummary = () => {
     const { completedSteps } = draft.progress
-    const totalSteps = 5 // Assuming 5 steps in onboarding
+    const totalSteps = ONBOARDING_CONSTANTS.TOTAL_STEPS
     
     if (completedSteps.length === 0) {
       return 'You started the onboarding process'
@@ -78,14 +79,14 @@ export default function DraftRecoveryModal({
             <div 
               className="h-full bg-gradient-ponte transition-all duration-300"
               style={{ 
-                width: `${((draft.progress.completedSteps.length + 1) / 5) * 100}%` 
+                width: `${((draft.progress.completedSteps.length + 1) / ONBOARDING_CONSTANTS.TOTAL_STEPS) * 100}%` 
               }}
             />
           </div>
           
           <div className="flex justify-between text-xs text-foreground/60 mt-2">
-            <span>Step {draft.progress.currentStep + 1} of 5</span>
-            <span>{Math.round(((draft.progress.completedSteps.length + 1) / 5) * 100)}% complete</span>
+            <span>Step {draft.progress.currentStep + 1} of {ONBOARDING_CONSTANTS.TOTAL_STEPS}</span>
+            <span>{Math.round(((draft.progress.completedSteps.length + 1) / ONBOARDING_CONSTANTS.TOTAL_STEPS) * 100)}% complete</span>
           </div>
         </div>
 

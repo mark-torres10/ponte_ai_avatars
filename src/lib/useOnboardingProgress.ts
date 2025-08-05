@@ -54,8 +54,9 @@ export function useOnboardingProgress({
   const [draftAge, setDraftAge] = useState(0)
   const [isResuming, setIsResuming] = useState(false)
   
-  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
-  const inactivityCheckRef = useRef<NodeJS.Timeout | undefined>(undefined)
+  const autoSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const inactivityCheckRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined)
+  const resumingTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const lastActivityRef = useRef<number>(Date.now())
 
   // Check for existing draft on mount
@@ -82,9 +83,13 @@ export function useOnboardingProgress({
       clearTimeout(autoSaveTimeoutRef.current)
     }
 
+    // Capture current values immediately to avoid stale closure
+    const currentStepValue = currentStep
+    const completedStepsValue = completedSteps
+
     // Set new timeout for auto-save
     autoSaveTimeoutRef.current = setTimeout(() => {
-      saveDraft(formData, currentStep, completedSteps)
+      saveDraft(formData, currentStepValue, completedStepsValue)
       updateLastActivity()
       lastActivityRef.current = Date.now()
     }, autoSaveInterval)
@@ -119,6 +124,9 @@ export function useOnboardingProgress({
       }
       if (inactivityCheckRef.current) {
         clearInterval(inactivityCheckRef.current)
+      }
+      if (resumingTimeoutRef.current) {
+        clearTimeout(resumingTimeoutRef.current)
       }
     }
   }, [])
@@ -157,7 +165,7 @@ export function useOnboardingProgress({
     setDraftAge(getDraftAge())
     
     // Reset resuming flag after a short delay
-    setTimeout(() => setIsResuming(false), 1000)
+    resumingTimeoutRef.current = setTimeout(() => setIsResuming(false), 1000)
     
     return true
   }, [])
@@ -190,8 +198,9 @@ export function useOnboardingProgress({
     // Can always go to completed steps
     if (isStepCompleted(stepIndex, completedSteps)) return true
     
-    // Can go to next available step
-    const nextAvailableStep = completedSteps.length
+    // Can go to next available step (highest completed step + 1)
+    const highestCompletedStep = completedSteps.length > 0 ? Math.max(...completedSteps) : -1
+    const nextAvailableStep = highestCompletedStep + 1
     return stepIndex <= nextAvailableStep
   }, [completedSteps, totalSteps])
 

@@ -6,24 +6,53 @@ interface AutoSaveIndicatorProps {
   lastSaved?: number
   isSaving?: boolean
   hasChanges?: boolean
+  onManualSave?: () => void
 }
 
 export default function AutoSaveIndicator({ 
   lastSaved, 
   isSaving = false, 
-  hasChanges = false 
+  hasChanges = false,
+  onManualSave
 }: AutoSaveIndicatorProps) {
   const [showStatus, setShowStatus] = useState(false)
+  const [showSaved, setShowSaved] = useState(false)
 
+  // Handle Ctrl+S keyboard shortcut
   useEffect(() => {
-    if (isSaving || hasChanges) {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+        event.preventDefault()
+        if (onManualSave && hasChanges) {
+          onManualSave()
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [onManualSave, hasChanges])
+
+  // Show status when saving or when there are changes
+  useEffect(() => {
+    if (isSaving) {
       setShowStatus(true)
-      const timer = setTimeout(() => setShowStatus(false), 3000)
+      setShowSaved(false)
+    } else if (hasChanges) {
+      setShowStatus(true)
+      setShowSaved(false)
+    } else if (showStatus && !isSaving) {
+      // Show "Saved" briefly when saving completes
+      setShowSaved(true)
+      const timer = setTimeout(() => {
+        setShowStatus(false)
+        setShowSaved(false)
+      }, 2000)
       return () => clearTimeout(timer)
     }
-  }, [isSaving, hasChanges])
+  }, [isSaving, hasChanges, showStatus])
 
-  if (!showStatus && !isSaving) {
+  if (!showStatus && !isSaving && !showSaved) {
     return null
   }
 
@@ -53,10 +82,17 @@ export default function AutoSaveIndicator({
               <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
               <span className="text-xs text-foreground/70">Saving...</span>
             </>
+          ) : showSaved ? (
+            <>
+              <div className="w-2 h-2 bg-green-400 rounded-full" />
+              <span className="text-xs text-foreground/70">Saved</span>
+            </>
           ) : hasChanges ? (
             <>
               <div className="w-2 h-2 bg-blue-400 rounded-full" />
-              <span className="text-xs text-foreground/70">Changes detected</span>
+              <span className="text-xs text-foreground/70">
+                Press Ctrl+S to save
+              </span>
             </>
           ) : (
             <>

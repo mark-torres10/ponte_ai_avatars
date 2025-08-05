@@ -15,6 +15,7 @@ import DraftRecoveryModal from './DraftRecoveryModal'
 import AutoSaveIndicator from './AutoSaveIndicator'
 import { useOnboardingProgress } from '@/lib/useOnboardingProgress'
 import { isLocalStorageSupported, type OnboardingDraft } from '@/lib/storage'
+import { ONBOARDING_CONSTANTS } from '@/lib/constants'
 
 // Form schema for the entire onboarding process
 const onboardingSchema = z.object({
@@ -62,6 +63,7 @@ export default function OnboardingWizard() {
   const [draftData, setDraftData] = useState<OnboardingDraft | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState<number>(Date.now())
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   
   // Progress management hook
   const {
@@ -78,9 +80,9 @@ export default function OnboardingWizard() {
     resumeFromDraft,
     canNavigateToStep,
   } = useOnboardingProgress({
-    totalSteps: 5,
-    autoSaveInterval: 3000, // Save every 3 seconds
-    inactivityTimeout: 30, // 30 minutes
+    totalSteps: ONBOARDING_CONSTANTS.TOTAL_STEPS,
+    autoSaveInterval: ONBOARDING_CONSTANTS.AUTO_SAVE_INTERVAL,
+    inactivityTimeout: ONBOARDING_CONSTANTS.INACTIVITY_TIMEOUT,
   })
   
   const methods = useForm<OnboardingFormData>({
@@ -115,30 +117,70 @@ export default function OnboardingWizard() {
 
   const { formState, watch } = methods
 
-  // Auto-save form data when it changes
+  // Manual save function
+  const handleManualSave = () => {
+    if (!isLocalStorageSupported() || !formState.isDirty) return
+    
+    setIsSaving(true)
+    const formData = methods.getValues()
+    saveCurrentProgress(formData)
+    setLastSaved(Date.now())
+    setHasUnsavedChanges(false)
+    setTimeout(() => setIsSaving(false), 1000)
+  }
+
+  // Track form changes for manual save
   useEffect(() => {
     if (!isLocalStorageSupported()) return
 
     const subscription = watch((formData) => {
-      setIsSaving(true)
-      saveCurrentProgress(formData)
-      setLastSaved(Date.now())
-      setTimeout(() => setIsSaving(false), 1000)
+      setHasUnsavedChanges(true)
     })
 
     return () => subscription.unsubscribe()
-  }, [watch, saveCurrentProgress])
+  }, [watch])
+
+  // Auto-save on blur (when user finishes editing a field)
+  useEffect(() => {
+    if (!isLocalStorageSupported()) return
+
+    const handleBlur = () => {
+      if (formState.isDirty && hasUnsavedChanges) {
+        setIsSaving(true)
+        const formData = methods.getValues()
+        saveCurrentProgress(formData)
+        setLastSaved(Date.now())
+        setHasUnsavedChanges(false)
+        setTimeout(() => setIsSaving(false), 1000)
+      }
+    }
+
+    // Add blur listeners to all form inputs
+    const form = document.querySelector('form')
+    if (form) {
+      const inputs = form.querySelectorAll('input, textarea, select')
+      inputs.forEach(input => {
+        input.addEventListener('blur', handleBlur)
+      })
+
+      return () => {
+        inputs.forEach(input => {
+          input.removeEventListener('blur', handleBlur)
+        })
+      }
+    }
+  }, [formState.isDirty, hasUnsavedChanges, saveCurrentProgress, methods])
 
   // Check for existing draft on mount
   useEffect(() => {
-    if (hasExistingDraft && !showDraftModal) {
+    if (hasExistingDraft) {
       const draft = loadExistingDraft()
       if (draft) {
         setDraftData(draft)
         setShowDraftModal(true)
       }
     }
-  }, [hasExistingDraft, loadExistingDraft, showDraftModal])
+  }, [hasExistingDraft, loadExistingDraft])
 
   const goToNextStep = async () => {
     // Validate current step before proceeding
@@ -256,7 +298,8 @@ export default function OnboardingWizard() {
       <AutoSaveIndicator
         lastSaved={lastSaved}
         isSaving={isSaving}
-        hasChanges={formState.isDirty}
+        hasChanges={hasUnsavedChanges}
+        onManualSave={handleManualSave}
       />
     </div>
   )
@@ -428,7 +471,8 @@ export default function OnboardingWizard() {
       <AutoSaveIndicator
         lastSaved={lastSaved}
         isSaving={isSaving}
-        hasChanges={formState.isDirty}
+        hasChanges={hasUnsavedChanges}
+        onManualSave={handleManualSave}
       />
     </div>
   )

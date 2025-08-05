@@ -7,24 +7,50 @@ import { Persona } from '@/lib/personas';
 interface TextInputProps {
   selectedPersona: Persona | null;
   onTextChange: (text: string, isPersonalized?: boolean, original?: string, personalized?: string) => void;
+  onManualSave?: () => void;
 }
 
-export default function TextInput({ selectedPersona, onTextChange }: TextInputProps) {
+export default function TextInput({ selectedPersona, onTextChange, onManualSave }: TextInputProps) {
   const [originalText, setOriginalText] = useState('Hey there! I want to tell you about this amazing new product that will revolutionize your daily routine. It\'s packed with incredible features that will make your life so much easier.');
   const [personalizedText, setPersonalizedText] = useState('');
   const [isPersonalizing, setIsPersonalizing] = useState(false);
   const [showPersonalized, setShowPersonalized] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // Initialize with placeholder text
   useEffect(() => {
     onTextChange(originalText, false, originalText, '');
   }, [onTextChange, originalText]);
 
+  // Handle Ctrl+S keyboard shortcut
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+        event.preventDefault()
+        if (onManualSave && hasUnsavedChanges) {
+          onManualSave()
+          setHasUnsavedChanges(false)
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [onManualSave, hasUnsavedChanges])
+
   const handleTextChange = (text: string) => {
     setOriginalText(text);
     setError(null);
+    setHasUnsavedChanges(true);
     onTextChange(text, showPersonalized, text, personalizedText);
+  };
+
+  const handleBlur = () => {
+    if (hasUnsavedChanges && onManualSave) {
+      onManualSave()
+      setHasUnsavedChanges(false)
+    }
   };
 
   const handlePersonalize = async () => {
@@ -88,6 +114,7 @@ export default function TextInput({ selectedPersona, onTextChange }: TextInputPr
           <textarea
             value={currentText}
             onChange={(e) => handleTextChange(e.target.value)}
+            onBlur={handleBlur}
             placeholder="Enter your script here... (max 1000 characters)"
             className="w-full h-32 p-4 border border-border rounded-lg bg-background text-foreground placeholder:text-foreground/50 resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
             maxLength={1000}

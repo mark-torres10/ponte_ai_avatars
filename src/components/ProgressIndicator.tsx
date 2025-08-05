@@ -81,7 +81,7 @@ export default function ProgressIndicator({
     }
   }
 
-  const completionPercentage = totalSteps > 0 ? Math.round(((completedSteps.length + 1) / totalSteps) * 100) : 0
+  const completionPercentage = totalSteps > 0 ? Math.round((completedSteps.length / totalSteps) * 100) : 0
 
   return (
     <div className="w-full">

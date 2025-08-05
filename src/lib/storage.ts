@@ -1,4 +1,5 @@
 // Local storage utilities for draft saving and progress management
+import { ONBOARDING_CONSTANTS } from './constants'
 
 const STORAGE_KEYS = {
   ONBOARDING_DRAFT: 'ponte_ai_onboarding_draft',
@@ -80,16 +81,42 @@ export function loadDraft(): OnboardingDraft | null {
     
     const draft: OnboardingDraft = JSON.parse(draftData)
     
-    // Validate draft data
+    // Validate draft data structure and types
     if (!draft.formData || !draft.progress || !draft.timestamp) {
       console.warn('Invalid draft data found, clearing...')
       clearDraft()
       return null
     }
     
-    // Check if draft is too old (7 days)
-    const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000)
-    if (draft.timestamp < sevenDaysAgo) {
+    // Validate progress structure
+    if (typeof draft.progress !== 'object' || 
+        typeof draft.progress.currentStep !== 'number' ||
+        !Array.isArray(draft.progress.completedSteps) ||
+        typeof draft.progress.lastActivity !== 'number' ||
+        typeof draft.progress.sessionId !== 'string' ||
+        typeof draft.progress.isComplete !== 'boolean') {
+      console.warn('Invalid progress structure found, clearing...')
+      clearDraft()
+      return null
+    }
+    
+    // Validate formData is an object
+    if (typeof draft.formData !== 'object' || draft.formData === null) {
+      console.warn('Invalid formData found, clearing...')
+      clearDraft()
+      return null
+    }
+    
+    // Validate timestamp is a number
+    if (typeof draft.timestamp !== 'number' || isNaN(draft.timestamp)) {
+      console.warn('Invalid timestamp found, clearing...')
+      clearDraft()
+      return null
+    }
+    
+    // Check if draft is too old
+    const expiryTime = Date.now() - (ONBOARDING_CONSTANTS.DRAFT_EXPIRY_DAYS * 24 * 60 * 60 * 1000)
+    if (draft.timestamp < expiryTime) {
       console.log('Draft is too old, clearing...')
       clearDraft()
       return null
