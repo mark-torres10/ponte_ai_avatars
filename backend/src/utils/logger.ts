@@ -29,24 +29,28 @@ const shouldLog = (level: LogLevel): boolean => {
 export const logger = {
   error: (message: string, meta?: Record<string, unknown>): void => {
     if (shouldLog(LogLevel.ERROR)) {
+      // eslint-disable-next-line no-console
       console.error(formatMessage('error', message, meta));
     }
   },
 
   warn: (message: string, meta?: Record<string, unknown>): void => {
     if (shouldLog(LogLevel.WARN)) {
+      // eslint-disable-next-line no-console
       console.warn(formatMessage('warn', message, meta));
     }
   },
 
   info: (message: string, meta?: Record<string, unknown>): void => {
     if (shouldLog(LogLevel.INFO)) {
+      // eslint-disable-next-line no-console
       console.info(formatMessage('info', message, meta));
     }
   },
 
   debug: (message: string, meta?: Record<string, unknown>): void => {
     if (shouldLog(LogLevel.DEBUG)) {
+      // eslint-disable-next-line no-console
       console.debug(formatMessage('debug', message, meta));
     }
   },

@@ -160,23 +160,23 @@ router.post('/generate', async (req: Request, res: Response) => {
     });
 
     // Prepare response data
-    const responseData: any = {
+    const responseData: GenerateVoiceResponse['data'] = {
       audioUrl: `data:audio/mpeg;base64,${audioBase64}`,
       audioData: audioBase64,
       personaId,
       text,
+      ...(storageResult.success && storageResult.fileKey && storageResult.version && {
+        storageInfo: {
+          fileKey: storageResult.fileKey,
+          publicUrl: getPublicUrl(storageResult.fileKey),
+          version: storageResult.version,
+          ...(storageResult.metadataKey && { metadataKey: storageResult.metadataKey })
+        }
+      })
     };
 
-    // Add storage information if successful
-    if (storageResult.success) {
-      responseData.storageInfo = {
-        fileKey: storageResult.fileKey,
-        publicUrl: storageResult.fileKey ? getPublicUrl(storageResult.fileKey) : undefined,
-        version: storageResult.version,
-        metadataKey: storageResult.metadataKey
-      };
-    } else {
-      // Log storage failure but don't fail the entire request
+    // Log storage failure if it occurred
+    if (!storageResult.success) {
       logger.warn('Storage upload failed, but voice generation succeeded', {
         requestId,
         storageError: storageResult.error

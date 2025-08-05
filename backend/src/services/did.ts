@@ -97,7 +97,7 @@ export interface VideoGenerationResult {
 }
 
 class DidService {
-  private client: any;
+  private client: ReturnType<typeof axios.create>;
   private apiKey: string;
   private baseUrl: string;
 
@@ -125,7 +125,7 @@ class DidService {
    */
   async testConnection(): Promise<{
     valid: boolean;
-    accountStatus?: any;
+    accountStatus?: Record<string, unknown>;
     error?: string;
   }> {
     const requestId = `did-test-${Date.now()}`;
@@ -135,7 +135,7 @@ class DidService {
 
       // Test with a simple endpoint - get talks
       const response = await this.client.get('/talks');
-      const data = response.data as any;
+      const data = response.data as Record<string, unknown>;
       const talksCount = Array.isArray(data) ? data.length : 0;
       
       logger.info('D-ID API test successful', { requestId, talksCount });
@@ -147,17 +147,18 @@ class DidService {
           apiKeyValid: true
         }
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { status?: number; statusText?: string }; message?: string };
       logger.error('D-ID API test error', { 
         requestId, 
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        error: error.message 
+        status: axiosError.response?.status,
+        statusText: axiosError.response?.statusText,
+        error: axiosError.message 
       });
       
       return {
         valid: false,
-        error: `D-ID API test failed: ${error.response?.status} ${error.response?.statusText} - ${error.message}`
+        error: `D-ID API test failed: ${axiosError.response?.status} ${axiosError.response?.statusText} - ${axiosError.message}`
       };
     }
   }
@@ -223,12 +224,13 @@ class DidService {
       });
       
       return data;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { status?: number; statusText?: string }; message?: string };
       logger.error('Failed to upload image to D-ID', { 
         requestId, 
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        error: error.message 
+        status: axiosError.response?.status,
+        statusText: axiosError.response?.statusText,
+        error: axiosError.message 
       });
       throw error;
     }
@@ -255,30 +257,23 @@ class DidService {
         scriptLength: params.scriptText.length 
       });
       
-      const requestData: any = {
+      const requestData = {
         script: {
-          type: 'audio',
+          type: 'audio' as const,
           audio_url: params.audioUrl,
           reduce_noise: true
         },
         config: {
-          result_format: 'mp4',
+          result_format: 'mp4' as const,
           fluent: true,
           pad_audio: 0.0,
           stitch: true,
           align_driver: true,
           align_expand_factor: 0.3
-        }
+        },
+        source_url: params.imageUrl || params.sourceUrl || VOICE_ACTOR_CONFIG.voiceActorA.imageUrl,
+        ...(params.sourceImageId && { source_image_id: params.sourceImageId })
       };
-
-      // Add source (either URL or image ID)
-      if (params.sourceImageId) {
-        requestData.source_image_id = params.sourceImageId;
-      } else if (params.imageUrl) {
-        requestData.source_url = params.imageUrl;
-      } else {
-        requestData.source_url = params.sourceUrl || VOICE_ACTOR_CONFIG.voiceActorA.imageUrl;
-      }
 
 
 
@@ -288,8 +283,8 @@ class DidService {
         scriptLength: params.scriptText.length,
         requestData: {
           source_url: requestData.source_url,
-          source_image_id: requestData.source_image_id,
-          audio_url: requestData.script.audio_url?.substring(0, 50) + '...'
+          source_image_id: (requestData as any).source_image_id,
+          audio_url: (requestData.script as any).audio_url?.substring(0, 50) + '...'
         }
       });
 
@@ -306,13 +301,14 @@ class DidService {
 
       return data;
       
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { status?: number; statusText?: string; data?: unknown }; message?: string };
       logger.error('Error creating D-ID talk request:', {
         requestId,
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
-        message: error.message
+        status: axiosError.response?.status,
+        statusText: axiosError.response?.statusText,
+        data: axiosError.response?.data,
+        message: axiosError.message
       });
       
       throw this.handleDidApiError(error, 'createTalkRequest');

@@ -19,7 +19,7 @@ const mockValidateBucket = validateBucket as jest.MockedFunction<typeof validate
 describe('Storage Service', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockGetSupabaseClient.mockReturnValue(mockSupabaseClient as any);
+    mockGetSupabaseClient.mockReturnValue(mockSupabaseClient as unknown as ReturnType<typeof import('@supabase/supabase-js').createClient>);
   });
 
   describe('generateFilePath', () => {

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // Test environment setup
 process.env['NODE_ENV'] = 'test';
 process.env['PORT'] = '3002';
@@ -29,13 +30,19 @@ const originalConsoleInfo = console.info;
 const originalConsoleWarn = console.warn;
 
 beforeAll(() => {
+  // eslint-disable-next-line no-console
   console.log = jest.fn();
+  // eslint-disable-next-line no-console
   console.info = jest.fn();
+  // eslint-disable-next-line no-console
   console.warn = jest.fn();
 });
 
 afterAll(() => {
+  // eslint-disable-next-line no-console
   console.log = originalConsoleLog;
+  // eslint-disable-next-line no-console
   console.info = originalConsoleInfo;
+  // eslint-disable-next-line no-console
   console.warn = originalConsoleWarn;
 }); 

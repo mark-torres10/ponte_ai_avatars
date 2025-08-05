@@ -29,7 +29,7 @@ describe('Supabase Utils', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockCreateClient.mockReturnValue(mockSupabaseClient as any);
+    mockCreateClient.mockReturnValue(mockSupabaseClient as unknown as ReturnType<typeof import('@supabase/supabase-js').createClient>);
     // Reset the module to clear the singleton client
     jest.resetModules();
   });

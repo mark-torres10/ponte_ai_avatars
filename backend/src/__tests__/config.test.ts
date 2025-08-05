@@ -42,27 +42,32 @@ describe('Configuration', () => {
       process.env = originalEnv;
     });
 
-    it('should use default values for optional configuration', () => {
+    it('should use default values for optional configuration', async () => {
       // Clear module cache to ensure fresh config
       jest.resetModules();
       
-      // Ensure we're in test environment
-      process.env['NODE_ENV'] = 'test';
+      // Set environment variables for test
+      const originalEnv = process.env;
+      process.env = { ...originalEnv, NODE_ENV: 'test' };
       delete process.env['RATE_LIMIT_WINDOW_MS'];
       delete process.env['RATE_LIMIT_MAX_REQUESTS'];
       delete process.env['LOG_LEVEL'];
 
       // Import the config module fresh
-      const configModule = require('../utils/config');
+      const configModule = await import('../utils/config');
       
       expect(configModule.config.RATE_LIMIT_WINDOW_MS).toBe(900000);
       expect(configModule.config.RATE_LIMIT_MAX_REQUESTS).toBe(100);
       expect(configModule.config.LOG_LEVEL).toBe('error'); // In test environment, defaults to error
+      
+      // Restore original environment
+      process.env = originalEnv;
     });
 
     it('should handle test environment configuration', () => {
       // Set NODE_ENV to test to trigger test configuration
-      process.env['NODE_ENV'] = 'test';
+      const originalEnv = process.env;
+      process.env = { ...originalEnv, NODE_ENV: 'test' };
       
       const { config: testConfig } = jest.requireActual('../utils/config');
       
@@ -73,15 +78,22 @@ describe('Configuration', () => {
       expect(testConfig.SUPABASE_URL).toBeTruthy();
       expect(testConfig.STORAGE_BUCKET).toBeTruthy();
       expect(testConfig.DEFAULT_REQUESTER_ID).toBeTruthy();
+      
+      // Restore original environment
+      process.env = originalEnv;
     });
 
     it('should handle production environment validation', () => {
       // Set NODE_ENV to production to test strict validation
-      process.env['NODE_ENV'] = 'production';
-      process.env['PORT'] = '3001';
-      process.env['CORS_ORIGIN'] = 'http://localhost:3000';
-      process.env['STORAGE_BUCKET'] = 'test-bucket';
-      process.env['DEFAULT_REQUESTER_ID'] = 'test-user';
+      const originalEnv = process.env;
+      process.env = { 
+        ...originalEnv, 
+        NODE_ENV: 'production',
+        PORT: '3001',
+        CORS_ORIGIN: 'http://localhost:3000',
+        STORAGE_BUCKET: 'test-bucket',
+        DEFAULT_REQUESTER_ID: 'test-user'
+      };
       
       const { config: prodConfig } = jest.requireActual('../utils/config');
       
@@ -90,6 +102,9 @@ describe('Configuration', () => {
       expect(prodConfig.CORS_ORIGIN).toBe('http://localhost:3000');
       expect(prodConfig.STORAGE_BUCKET).toBe('test-bucket');
       expect(prodConfig.DEFAULT_REQUESTER_ID).toBe('test-user');
+      
+      // Restore original environment
+      process.env = originalEnv;
     });
 
     it('should throw error for missing required environment variables in production', () => {
@@ -97,7 +112,8 @@ describe('Configuration', () => {
       jest.resetModules();
       
       // Set NODE_ENV to production but don't set required vars
-      process.env['NODE_ENV'] = 'production';
+      const originalEnv = process.env;
+      process.env = { ...originalEnv, NODE_ENV: 'production' };
       delete process.env['PORT'];
       delete process.env['CORS_ORIGIN'];
       delete process.env['STORAGE_BUCKET'];
@@ -106,14 +122,21 @@ describe('Configuration', () => {
       expect(() => {
         jest.requireActual('../utils/config');
       }).toThrow('Missing required environment variables: NODE_ENV, PORT, CORS_ORIGIN');
+      
+      // Restore original environment
+      process.env = originalEnv;
     });
 
     it('should throw error for invalid PORT values in production', () => {
       // Set up production environment
-      process.env['NODE_ENV'] = 'production';
-      process.env['CORS_ORIGIN'] = 'http://localhost:3000';
-      process.env['STORAGE_BUCKET'] = 'test-bucket';
-      process.env['DEFAULT_REQUESTER_ID'] = 'test-user';
+      const originalEnv = process.env;
+      process.env = { 
+        ...originalEnv, 
+        NODE_ENV: 'production',
+        CORS_ORIGIN: 'http://localhost:3000',
+        STORAGE_BUCKET: 'test-bucket',
+        DEFAULT_REQUESTER_ID: 'test-user'
+      };
       
       // Test non-numeric PORT
       process.env['PORT'] = 'invalid';
@@ -132,15 +155,22 @@ describe('Configuration', () => {
       expect(() => {
         jest.requireActual('../utils/config');
       }).toThrow('Invalid PORT value: 70000. Must be a number between 1 and 65535.');
+      
+      // Restore original environment
+      process.env = originalEnv;
     });
 
     it('should throw error for invalid rate limiting values in production', () => {
       // Set up production environment
-      process.env['NODE_ENV'] = 'production';
-      process.env['PORT'] = '3001';
-      process.env['CORS_ORIGIN'] = 'http://localhost:3000';
-      process.env['STORAGE_BUCKET'] = 'test-bucket';
-      process.env['DEFAULT_REQUESTER_ID'] = 'test-user';
+      const originalEnv = process.env;
+      process.env = { 
+        ...originalEnv, 
+        NODE_ENV: 'production',
+        PORT: '3001',
+        CORS_ORIGIN: 'http://localhost:3000',
+        STORAGE_BUCKET: 'test-bucket',
+        DEFAULT_REQUESTER_ID: 'test-user'
+      };
       
       // Test invalid window MS
       process.env['RATE_LIMIT_WINDOW_MS'] = 'invalid';
