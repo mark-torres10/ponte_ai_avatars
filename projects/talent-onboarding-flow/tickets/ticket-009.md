@@ -1034,4 +1034,319 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 4. **Real-Time Security**:
    - RLS policies apply to real-time subscriptions
    - Channel filtering prevents unauthorized access
-   - Subscription limits prevent abuse 
+   - Subscription limits prevent abuse
+
+## Supabase Ingress/Egress Touch Points Analysis
+
+### Overview of Data Flow Touch Points
+
+This section identifies all points in the talent onboarding flow where data enters (ingress) or exits (egress) the Supabase system, including database operations, file storage, and real-time interactions.
+
+### 1. Basic Information Step (PON-39)
+
+#### **Ingress Touch Points:**
+- **Draft Auto-Save**: Form data automatically saved to `onboarding_progress` table
+  - Trigger: User input changes, form blur events
+  - Data: `basicInfo` object (name, email, phone, location)
+  - Table: `onboarding_progress.formData` (JSONB)
+  - RLS: Session-based access control
+
+- **Session Management**: Session ID creation and tracking
+  - Trigger: Component mount, draft recovery
+  - Data: `session_id`, `last_activity` timestamp
+  - Table: `onboarding_progress`
+  - RLS: Session-based access control
+
+#### **Egress Touch Points:**
+- **Draft Recovery**: Loading existing draft data
+  - Trigger: Component mount, draft modal
+  - Data: Complete form state from `onboarding_progress`
+  - Table: `onboarding_progress`
+  - RLS: Session-based access control
+
+### 2. Media Upload Step (PON-40)
+
+#### **Ingress Touch Points:**
+- **File Upload to Supabase Storage**:
+  - **Headshots**: Multiple image files uploaded to `talent-media` bucket
+    - Trigger: File selection/drop
+    - Storage: `talent-media/headshots/{session_id}/{filename}`
+    - Metadata: File size, type, compression status
+    - RLS: Session-based bucket policies
+
+  - **Video Sample**: Single video file uploaded to `talent-media` bucket
+    - Trigger: File selection/drop
+    - Storage: `talent-media/videos/{session_id}/{filename}`
+    - Metadata: File size, type, duration
+    - RLS: Session-based bucket policies
+
+- **Media Metadata Storage**: File URLs and metadata stored in database
+  - Trigger: Successful file upload
+  - Data: `headshot_urls[]`, `video_sample_url`
+  - Table: `talent_profiles` (draft status)
+  - RLS: Session-based access control
+
+#### **Egress Touch Points:**
+- **File Preview**: Loading uploaded files for preview
+  - Trigger: Component mount, file upload completion
+  - Storage: Signed URLs from `talent-media` bucket
+  - RLS: Session-based bucket access
+
+- **File Validation**: Checking file types and sizes
+  - Trigger: File selection
+  - Storage: File metadata from bucket
+  - RLS: Session-based bucket access
+
+### 3. Tone & Personality Step (PON-41)
+
+#### **Ingress Touch Points:**
+- **Personality Data Storage**: Personality traits and tone categories
+  - Trigger: Slider changes, tone selection
+  - Data: `personalityTraits` (JSONB), `toneCategories[]`, `customTone`
+  - Table: `talent_profiles` (draft status)
+  - RLS: Session-based access control
+
+- **Auto-Save**: Real-time saving of personality selections
+  - Trigger: Slider movement, tone toggle
+  - Data: Updated personality object
+  - Table: `talent_profiles`
+  - RLS: Session-based access control
+
+#### **Egress Touch Points:**
+- **Form State Recovery**: Loading saved personality data
+  - Trigger: Component mount, step navigation
+  - Data: Personality traits and tone selections
+  - Table: `talent_profiles`
+  - RLS: Session-based access control
+
+### 4. Self-Interview Step (PON-41)
+
+#### **Ingress Touch Points:**
+- **Text Responses Storage**: Interview question answers
+  - Trigger: Text input changes
+  - Data: `predefinedAnswers` (JSONB), `freeformText`
+  - Table: `talent_profiles` (draft status)
+  - RLS: Session-based access control
+
+- **Audio Recording Storage**: Voice recordings for interview questions
+  - Trigger: Audio recording completion
+  - Storage: `talent-media/audio/{session_id}/{question_id}.webm`
+  - Data: `freeformAudio` URL
+  - Table: `talent_profiles`
+  - RLS: Session-based bucket access
+
+- **Audio Metadata**: Recording duration and quality metrics
+  - Trigger: Audio recording completion
+  - Data: Duration, file size, format
+  - Table: `talent_profiles` (metadata)
+  - RLS: Session-based access control
+
+#### **Egress Touch Points:**
+- **Audio Playback**: Loading recorded audio for playback
+  - Trigger: Play button click
+  - Storage: Signed URLs from `talent-media/audio` bucket
+  - RLS: Session-based bucket access
+
+- **Interview Data Recovery**: Loading saved interview responses
+  - Trigger: Component mount, step navigation
+  - Data: Text and audio responses
+  - Table: `talent_profiles`
+  - RLS: Session-based access control
+
+### 5. Review & Submit Step (PON-42)
+
+#### **Ingress Touch Points:**
+- **Final Submission**: Complete talent profile creation
+  - Trigger: Submit button click
+  - Data: Complete `talent_profiles` record
+  - Table: `talent_profiles` (status: 'submitted')
+  - RLS: Session-based access control
+
+- **Submission Timestamp**: Recording submission time
+  - Trigger: Final submission
+  - Data: `submitted_at` timestamp
+  - Table: `talent_profiles`
+  - RLS: Session-based access control
+
+- **Email Notification Trigger**: Sending welcome email
+  - Trigger: Successful submission
+  - Data: Email template data
+  - Table: `email_notifications`
+  - RLS: Admin access control
+
+#### **Egress Touch Points:**
+- **Review Data Loading**: Loading all form data for review
+  - Trigger: Component mount
+  - Data: Complete talent profile
+  - Table: `talent_profiles`
+  - RLS: Session-based access control
+
+- **Media Preview**: Loading all uploaded media for review
+  - Trigger: Component mount
+  - Storage: Signed URLs for all media files
+  - RLS: Session-based bucket access
+
+### 6. Admin Review Dashboard (PON-44, PON-45)
+
+#### **Ingress Touch Points:**
+- **Admin Authentication**: Admin user login and session
+  - Trigger: Admin login
+  - Data: Admin user credentials and role
+  - Table: `admin_users` (future table)
+  - RLS: Admin authentication
+
+- **Status Updates**: Changing talent profile status
+  - Trigger: Admin approval/rejection actions
+  - Data: `status`, `approved_at`, `rejection_reason`
+  - Table: `talent_profiles`
+  - RLS: Admin access control
+
+- **Admin Actions Logging**: Recording admin decisions
+  - Trigger: Status change actions
+  - Data: `action_type`, `action_reason`, `admin_user_id`
+  - Table: `admin_actions`
+  - RLS: Admin access control
+
+- **Admin Notes**: Adding admin comments
+  - Trigger: Admin note input
+  - Data: `admin_notes`
+  - Table: `talent_profiles`
+  - RLS: Admin access control
+
+- **Email Notifications**: Sending status change emails
+  - Trigger: Status change actions
+  - Data: Email template data
+  - Table: `email_notifications`
+  - RLS: Admin access control
+
+#### **Egress Touch Points:**
+- **Talent List Loading**: Loading all talent profiles for admin review
+  - Trigger: Dashboard mount, filter changes
+  - Data: Talent profiles with filters
+  - Table: `talent_profiles`
+  - RLS: Admin access control
+
+- **Talent Detail Loading**: Loading specific talent profile details
+  - Trigger: Talent row click
+  - Data: Complete talent profile with media
+  - Table: `talent_profiles`
+  - RLS: Admin access control
+
+- **Media Access**: Loading talent media files for review
+  - Trigger: Media preview requests
+  - Storage: Signed URLs for headshots, videos, audio
+  - RLS: Admin bucket access
+
+- **Analytics Data**: Loading dashboard analytics
+  - Trigger: Dashboard mount, date range changes
+  - Data: Aggregated statistics
+  - Tables: `talent_profiles`, `admin_actions`, `email_notifications`
+  - RLS: Admin access control
+
+### 7. Real-Time Interactions
+
+#### **Ingress Touch Points:**
+- **Real-Time Subscriptions**: Establishing live data connections
+  - Trigger: Component mount
+  - Data: Subscription configuration
+  - Tables: `talent_profiles`, `admin_actions`, `email_notifications`
+  - RLS: Real-time policies
+
+- **Status Change Notifications**: Broadcasting status updates
+  - Trigger: Admin status changes
+  - Data: Status change events
+  - Channels: `talent_profiles_changes`, `admin_actions_changes`
+  - RLS: Real-time policies
+
+#### **Egress Touch Points:**
+- **Real-Time Updates**: Receiving live data updates
+  - Trigger: Database changes
+  - Data: Updated records
+  - Channels: Various real-time channels
+  - RLS: Real-time policies
+
+- **Admin Notifications**: Receiving admin action notifications
+  - Trigger: Admin actions
+  - Data: Action notifications
+  - Channels: `admin_notifications`
+  - RLS: Admin real-time policies
+
+### 8. Draft Management & Progress Tracking
+
+#### **Ingress Touch Points:**
+- **Progress Tracking**: Recording step completion
+  - Trigger: Step navigation
+  - Data: `current_step`, `completed_steps[]`
+  - Table: `onboarding_progress`
+  - RLS: Session-based access control
+
+- **Activity Monitoring**: Tracking user activity
+  - Trigger: User interactions
+  - Data: `last_activity` timestamp
+  - Table: `onboarding_progress`
+  - RLS: Session-based access control
+
+#### **Egress Touch Points:**
+- **Progress Recovery**: Loading saved progress
+  - Trigger: Component mount, draft recovery
+  - Data: Progress state
+  - Table: `onboarding_progress`
+  - RLS: Session-based access control
+
+### 9. Error Handling & Validation
+
+#### **Ingress Touch Points:**
+- **Error Logging**: Recording validation and processing errors
+  - Trigger: Error conditions
+  - Data: Error details and context
+  - Table: `error_logs` (future table)
+  - RLS: System access control
+
+#### **Egress Touch Points:**
+- **Validation Rules**: Loading field validation rules
+  - Trigger: Form validation
+  - Data: Validation schemas
+  - Table: `validation_rules` (future table)
+  - RLS: Public access control
+
+### 10. Performance & Monitoring
+
+#### **Ingress Touch Points:**
+- **Usage Analytics**: Tracking feature usage
+  - Trigger: User actions
+  - Data: Usage metrics
+  - Table: `usage_analytics` (future table)
+  - RLS: System access control
+
+- **Performance Metrics**: Recording response times
+  - Trigger: API calls
+  - Data: Performance data
+  - Table: `performance_metrics` (future table)
+  - RLS: System access control
+
+#### **Egress Touch Points:**
+- **Health Checks**: Monitoring system health
+  - Trigger: Health check requests
+  - Data: System status
+  - Tables: Various system tables
+  - RLS: System access control
+
+## Data Flow Summary
+
+### **High-Frequency Operations:**
+1. **Auto-Save**: Every 3-5 seconds during form interaction
+2. **Real-Time Updates**: Continuous for admin dashboard
+3. **File Uploads**: On-demand during media step
+4. **Progress Tracking**: On every step navigation
+
+### **Critical Path Operations:**
+1. **Final Submission**: Single critical operation
+2. **Admin Status Changes**: Critical for workflow
+3. **Email Notifications**: Critical for user communication
+4. **Media Storage**: Critical for file persistence
+
+### **Security Considerations:**
+- All ingress/egress points protected by RLS policies
+- File storage uses signed URLs with expiration
+- Real-time subscriptions filtered by user permissions
+- Admin operations require authentication and authorization 
