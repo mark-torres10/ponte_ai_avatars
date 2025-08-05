@@ -1,8 +1,11 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Search, Filter, Users, AlertTriangle, CheckCircle, Clock, XCircle } from 'lucide-react'
+import { Users, AlertTriangle, CheckCircle, Clock, XCircle, BarChart3 } from 'lucide-react'
 import TalentTable from './TalentTable'
+import TalentDetailView from './TalentDetailView'
+import TalentPreview from './TalentPreview'
+import AnalyticsDashboard from './AnalyticsDashboard'
 import { type TalentProfile, type TalentStatus } from '@/types/talent'
 
 // Mock data for development - replace with actual API calls
@@ -122,6 +125,9 @@ export default function AdminTalentReview() {
   const [statusFilter, setStatusFilter] = useState<TalentStatus | 'all'>('all')
   const [selectedTalent, setSelectedTalent] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [selectedTalentForDetail, setSelectedTalentForDetail] = useState<TalentProfile | null>(null)
+  const [selectedTalentForPreview, setSelectedTalentForPreview] = useState<TalentProfile | null>(null)
+  const [showAnalytics, setShowAnalytics] = useState(false)
 
   // Calculate statistics
   const stats = {
@@ -195,6 +201,33 @@ export default function AdminTalentReview() {
     }
   }
 
+  const handleTalentUpdate = async (updatedTalent: TalentProfile) => {
+    setTalentData(prev => prev.map(talent => 
+      talent.id === updatedTalent.id ? updatedTalent : talent
+    ))
+  }
+
+  const handleStatusChange = async (talentId: string, status: TalentStatus, reason?: string) => {
+    const now = new Date().toISOString()
+    setTalentData(prev => prev.map(talent => {
+      if (talent.id === talentId) {
+        const updates: Partial<TalentProfile> = { status, updatedAt: now }
+        if (status === 'approved') updates.approvedAt = now
+        if (status === 'active') updates.activatedAt = now
+        if (status === 'rejected' && reason) updates.rejectionReason = reason
+        return { ...talent, ...updates }
+      }
+      return talent
+    }))
+  }
+
+  const handleExport = async (format: 'csv' | 'json', filters: Record<string, unknown>) => {
+    // Simulate export functionality
+    console.log(`Exporting ${format} with filters:`, filters)
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    alert(`${format.toUpperCase()} export completed!`)
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -208,6 +241,13 @@ export default function AdminTalentReview() {
               </p>
             </div>
             <div className="flex items-center space-x-4">
+              <button
+                onClick={() => setShowAnalytics(!showAnalytics)}
+                className="flex items-center px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                <BarChart3 className="h-4 w-4 mr-2" />
+                {showAnalytics ? 'Hide Analytics' : 'Show Analytics'}
+              </button>
               <div className="text-right">
                 <p className="text-sm font-medium text-gray-900">{stats.total} Total Applications</p>
                 <p className="text-xs text-gray-500">Last updated: {new Date().toLocaleString()}</p>
@@ -242,6 +282,16 @@ export default function AdminTalentReview() {
         </div>
       </div>
 
+      {/* Analytics Dashboard */}
+      {showAnalytics && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <AnalyticsDashboard
+            talentData={talentData}
+            onExport={handleExport}
+          />
+        </div>
+      )}
+
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <TalentTable
@@ -254,8 +304,32 @@ export default function AdminTalentReview() {
           onSearchChange={setSearchTerm}
           statusFilter={statusFilter}
           onStatusFilterChange={setStatusFilter}
+          onViewDetails={(talent) => setSelectedTalentForDetail(talent)}
+          onViewPreview={(talent) => setSelectedTalentForPreview(talent)}
         />
       </div>
+
+      {/* Talent Detail View Modal */}
+      {selectedTalentForDetail && (
+        <TalentDetailView
+          talent={selectedTalentForDetail}
+          onClose={() => setSelectedTalentForDetail(null)}
+          onUpdate={handleTalentUpdate}
+          onStatusChange={handleStatusChange}
+        />
+      )}
+
+      {/* Talent Preview Modal */}
+      {selectedTalentForPreview && (
+        <TalentPreview
+          talent={selectedTalentForPreview}
+          onClose={() => setSelectedTalentForPreview(null)}
+          onViewDetails={() => {
+            setSelectedTalentForPreview(null)
+            setSelectedTalentForDetail(selectedTalentForPreview)
+          }}
+        />
+      )}
     </div>
   )
 } 

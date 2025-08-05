@@ -6,8 +6,6 @@ import {
   Filter, 
   ChevronDown, 
   ChevronUp, 
-  Check, 
-  X, 
   MoreHorizontal,
   Eye,
   Edit,
@@ -15,7 +13,6 @@ import {
   CheckCircle,
   XCircle,
   Play,
-  Pause,
   Clock,
   AlertTriangle
 } from 'lucide-react'
@@ -31,6 +28,8 @@ interface TalentTableProps {
   onSearchChange: (term: string) => void
   statusFilter: TalentStatus | 'all'
   onStatusFilterChange: (status: TalentStatus | 'all') => void
+  onViewDetails?: (talent: TalentProfile) => void
+  onViewPreview?: (talent: TalentProfile) => void
 }
 
 const statusConfig = {
@@ -52,7 +51,9 @@ export default function TalentTable({
   searchTerm,
   onSearchChange,
   statusFilter,
-  onStatusFilterChange
+  onStatusFilterChange,
+  onViewDetails,
+  onViewPreview
 }: TalentTableProps) {
   const [currentPage, setCurrentPage] = useState(1)
   const [showFilters, setShowFilters] = useState(false)
@@ -107,9 +108,9 @@ export default function TalentTable({
     }
   }
 
-  const handleStatusChange = async (talentId: string, newStatus: TalentStatus) => {
-    await onBulkOperation(newStatus, [talentId])
-  }
+  // const handleStatusChange = async (talentId: string, newStatus: TalentStatus) => {
+  //   await onBulkOperation(newStatus, [talentId])
+  // }
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -334,20 +335,24 @@ export default function TalentTable({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => {/* View details */}}
-                        className="text-blue-600 hover:text-blue-900"
-                        title="View details"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => {/* Edit */}}
-                        className="text-gray-600 hover:text-gray-900"
-                        title="Edit"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </button>
+                      {onViewPreview && (
+                        <button
+                          onClick={() => onViewPreview(talent)}
+                          className="text-blue-600 hover:text-blue-900"
+                          title="Quick preview"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </button>
+                      )}
+                      {onViewDetails && (
+                        <button
+                          onClick={() => onViewDetails(talent)}
+                          className="text-gray-600 hover:text-gray-900"
+                          title="View full details"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                      )}
                       <div className="relative">
                         <button
                           onClick={() => {/* Status dropdown */}}
