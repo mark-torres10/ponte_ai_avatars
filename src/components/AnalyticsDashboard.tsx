@@ -17,6 +17,7 @@ import {
   Pause
 } from 'lucide-react'
 import { type TalentProfile, type TalentStatus } from '@/types/talent'
+import { STATUS_CONFIG } from '@/constants/talent'
 
 interface AnalyticsDashboardProps {
   talentData: TalentProfile[]
@@ -54,15 +55,6 @@ interface AnalyticsMetrics {
   }
 }
 
-const statusConfig = {
-  draft: { label: 'Draft', icon: Clock, color: 'text-gray-500 bg-gray-100' },
-  submitted: { label: 'Submitted', icon: AlertTriangle, color: 'text-yellow-600 bg-yellow-100' },
-  approved: { label: 'Approved', icon: CheckCircle, color: 'text-green-600 bg-green-100' },
-  active: { label: 'Active', icon: Play, color: 'text-blue-600 bg-blue-100' },
-  inactive: { label: 'Inactive', icon: Pause, color: 'text-gray-600 bg-gray-100' },
-  rejected: { label: 'Rejected', icon: XCircle, color: 'text-red-600 bg-red-100' }
-}
-
 export default function AnalyticsDashboard({
   talentData,
   onExport
@@ -77,6 +69,10 @@ export default function AnalyticsDashboard({
     createdAt: string
   }>>([])
   const [isExporting, setIsExporting] = useState(false)
+  
+  // Save filter modal state
+  const [showSaveFilterModal, setShowSaveFilterModal] = useState(false)
+  const [filterName, setFilterName] = useState('')
 
   // Calculate analytics metrics
   useEffect(() => {
@@ -250,17 +246,34 @@ export default function AnalyticsDashboard({
     }
   }
 
+  const handleSavedFilterChange = (filterId: string) => {
+    const filter = savedFilters.find(f => f.id.toString() === filterId)
+    if (filter) {
+      setTimeRange(filter.timeRange)
+    }
+  }
+
   const saveFilter = () => {
-    const filterName = prompt('Enter a name for this filter:')
-    if (filterName) {
+    setShowSaveFilterModal(true)
+  }
+
+  const handleSaveFilterConfirm = () => {
+    if (filterName.trim()) {
       const newFilter = {
         id: Date.now(),
-        name: filterName,
+        name: filterName.trim(),
         timeRange,
         createdAt: new Date().toISOString()
       }
       setSavedFilters([...savedFilters, newFilter])
+      setFilterName('')
+      setShowSaveFilterModal(false)
     }
+  }
+
+  const handleSaveFilterCancel = () => {
+    setFilterName('')
+    setShowSaveFilterModal(false)
   }
 
   if (!metrics) {
@@ -331,7 +344,11 @@ export default function AnalyticsDashboard({
             {savedFilters.length > 0 && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Saved Filters</label>
-                <select className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                <select
+                  value={savedFilters.find(f => f.timeRange === timeRange)?.id.toString()}
+                  onChange={(e) => handleSavedFilterChange(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                >
                   <option value="">Select a saved filter</option>
                   {savedFilters.map((filter) => (
                     <option key={filter.id} value={filter.id}>
@@ -402,7 +419,7 @@ export default function AnalyticsDashboard({
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Status Distribution</h3>
           <div className="space-y-3">
             {Object.entries(metrics.statusDistribution).map(([status, count]) => {
-              const config = statusConfig[status as TalentStatus]
+              const config = STATUS_CONFIG[status as TalentStatus]
               const percentage = metrics.total > 0 ? Math.round((count / metrics.total) * 100) : 0
               const Icon = config.icon
               
@@ -501,6 +518,55 @@ export default function AnalyticsDashboard({
           </table>
         </div>
       </div>
+
+      {/* Save Filter Modal */}
+      {showSaveFilterModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50">
+          <div className="relative p-8 border w-full max-w-md max-h-full">
+            <div className="relative bg-white rounded-lg shadow dark:bg-gray-700">
+              <div className="flex justify-between items-start p-4 rounded-t dark:border-gray-600">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  Save Filter
+                </h3>
+                <button
+                  type="button"
+                  className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                  onClick={handleSaveFilterCancel}
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"></path></svg>
+                </button>
+              </div>
+              <div className="p-6 space-y-6">
+                <div>
+                  <label htmlFor="filter-name" className="block text-sm font-medium text-gray-700">Filter Name</label>
+                  <input
+                    type="text"
+                    id="filter-name"
+                    value={filterName}
+                    onChange={(e) => setFilterName(e.target.value)}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    placeholder="e.g., Current Month Applications"
+                  />
+                </div>
+              </div>
+              <div className="flex items-center p-6 space-x-2 rounded-b dark:border-gray-600">
+                <button
+                  onClick={handleSaveFilterConfirm}
+                  className="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                >
+                  Save Filter
+                </button>
+                <button
+                  onClick={handleSaveFilterCancel}
+                  className="text-gray-500 bg-gray-200 hover:bg-gray-300 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 } 

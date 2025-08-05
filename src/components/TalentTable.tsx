@@ -18,6 +18,7 @@ import {
   Pause
 } from 'lucide-react'
 import { type TalentProfile, type TalentStatus } from '@/types/talent'
+import { STATUS_CONFIG } from '@/constants/talent'
 
 interface TalentTableProps {
   data: TalentProfile[]
@@ -31,15 +32,6 @@ interface TalentTableProps {
   onStatusFilterChange: (status: TalentStatus | 'all') => void
   onViewDetails?: (talent: TalentProfile) => void
   onViewPreview?: (talent: TalentProfile) => void
-}
-
-const statusConfig = {
-  draft: { label: 'Draft', icon: Clock, color: 'text-gray-500 bg-gray-100 border-gray-200' },
-  submitted: { label: 'Submitted', icon: AlertTriangle, color: 'text-yellow-600 bg-yellow-100 border-yellow-200' },
-  approved: { label: 'Approved', icon: CheckCircle, color: 'text-green-600 bg-green-100 border-green-200' },
-  active: { label: 'Active', icon: Play, color: 'text-blue-600 bg-blue-100 border-blue-200' },
-  inactive: { label: 'Inactive', icon: Pause, color: 'text-gray-600 bg-gray-100 border-gray-200' },
-  rejected: { label: 'Rejected', icon: XCircle, color: 'text-red-600 bg-red-100 border-red-200' }
 }
 
 const ITEMS_PER_PAGE = 10
@@ -139,8 +131,8 @@ export default function TalentTable({
       'rejected': 'reject',
       'active': 'activate',
       'inactive': 'deactivate',
-      'submitted': 'approve', // This might need adjustment based on business logic
-      'draft': 'approve' // This might need adjustment based on business logic
+      'submitted': 'submit', // Changed from 'approve' to 'submit'
+      'draft': 'submit' // Changed from 'approve' to 'submit'
     }
     
     const operation = statusToOperation[newStatus]
@@ -242,7 +234,7 @@ export default function TalentTable({
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="all">All Statuses</option>
-              {Object.entries(statusConfig).map(([key, config]) => (
+              {Object.entries(STATUS_CONFIG).map(([key, config]) => (
                 <option key={key} value={key}>{config.label}</option>
               ))}
             </select>
@@ -404,7 +396,7 @@ export default function TalentTable({
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {currentData.map((talent) => {
-              const status = statusConfig[talent.status]
+              const status = STATUS_CONFIG[talent.status]
               const Icon = status.icon
               
               return (
@@ -570,7 +562,7 @@ export default function TalentTable({
               onChange={(e) => setNewStatus(e.target.value as TalentStatus)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-4"
             >
-              {Object.entries(statusConfig).map(([key, config]) => (
+              {Object.entries(STATUS_CONFIG).map(([key, config]) => (
                 <option key={key} value={key}>{config.label}</option>
               ))}
             </select>

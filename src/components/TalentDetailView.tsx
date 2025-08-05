@@ -5,11 +5,6 @@ import {
   X, 
   Edit, 
   Save, 
-  CheckCircle, 
-  XCircle, 
-  Play, 
-  Clock, 
-  AlertTriangle,
   User,
   Mail,
   Phone,
@@ -20,21 +15,14 @@ import {
   MessageSquare
 } from 'lucide-react'
 import { type TalentProfile, type TalentStatus } from '@/types/talent'
+import { STATUS_CONFIG } from '@/constants/talent'
+import { formatDateTime } from '@/utils/date'
 
 interface TalentDetailViewProps {
   talent: TalentProfile
   onClose: () => void
   onUpdate: (talent: TalentProfile) => Promise<void>
   onStatusChange: (talentId: string, status: TalentStatus, reason?: string) => Promise<void>
-}
-
-const statusConfig = {
-  draft: { label: 'Draft', icon: Clock, color: 'text-gray-500 bg-gray-100' },
-  submitted: { label: 'Submitted', icon: AlertTriangle, color: 'text-yellow-600 bg-yellow-100' },
-  approved: { label: 'Approved', icon: CheckCircle, color: 'text-green-600 bg-green-100' },
-  active: { label: 'Active', icon: Play, color: 'text-blue-600 bg-blue-100' },
-  inactive: { label: 'Inactive', icon: Clock, color: 'text-gray-600 bg-gray-100' },
-  rejected: { label: 'Rejected', icon: XCircle, color: 'text-red-600 bg-red-100' }
 }
 
 export default function TalentDetailView({
@@ -44,7 +32,6 @@ export default function TalentDetailView({
   onStatusChange
 }: TalentDetailViewProps) {
   const [isEditing, setIsEditing] = useState(false)
-  const [editedTalent] = useState<TalentProfile>(talent)
   const [adminNotes, setAdminNotes] = useState(talent.adminNotes || '')
   const [isSaving, setIsSaving] = useState(false)
   const [showRejectionDialog, setShowRejectionDialog] = useState(false)
@@ -53,7 +40,7 @@ export default function TalentDetailView({
   const handleSave = async () => {
     setIsSaving(true)
     try {
-      const updatedTalent = { ...editedTalent, adminNotes }
+      const updatedTalent = { ...talent, adminNotes }
       await onUpdate(updatedTalent)
       setIsEditing(false)
     } catch (error) {
@@ -77,16 +64,6 @@ export default function TalentDetailView({
     setRejectionReason('')
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
-
   const getStatusActions = () => {
     const currentStatus = talent.status
     const actions = []
@@ -104,16 +81,22 @@ export default function TalentDetailView({
       case 'approved':
         actions.push(
           { label: 'Activate', status: 'active' as TalentStatus },
-          { label: 'Mark as Draft', status: 'draft' as TalentStatus }
+          { label: 'Reject', status: 'rejected' as TalentStatus }
         )
         break
       case 'active':
-        actions.push({ label: 'Deactivate', status: 'approved' as TalentStatus })
+        actions.push({ label: 'Deactivate', status: 'inactive' as TalentStatus })
         break
       case 'rejected':
         actions.push(
-          { label: 'Re-approve', status: 'approved' as TalentStatus },
+          { label: 'Approve', status: 'approved' as TalentStatus },
           { label: 'Mark as Draft', status: 'draft' as TalentStatus }
+        )
+        break
+      case 'inactive':
+        actions.push(
+          { label: 'Activate', status: 'active' as TalentStatus },
+          { label: 'Reject', status: 'rejected' as TalentStatus }
         )
         break
     }
@@ -199,7 +182,7 @@ export default function TalentDetailView({
                     <Calendar className="h-4 w-4 text-gray-400" />
                     <div>
                       <p className="text-sm font-medium text-gray-500">Created</p>
-                      <p className="text-sm text-gray-900">{formatDate(talent.createdAt)}</p>
+                      <p className="text-sm text-gray-900">{formatDateTime(talent.createdAt)}</p>
                     </div>
                   </div>
                 </div>
@@ -316,7 +299,7 @@ export default function TalentDetailView({
                 <div className="mb-4">
                   <p className="text-sm font-medium text-gray-500 mb-2">Current Status</p>
                   {(() => {
-                    const status = statusConfig[talent.status]
+                    const status = STATUS_CONFIG[talent.status]
                     const Icon = status.icon
                     return (
                       <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${status.color}`}>
@@ -348,7 +331,7 @@ export default function TalentDetailView({
                     <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
                     <div>
                       <p className="text-sm font-medium text-gray-900">Profile Created</p>
-                      <p className="text-xs text-gray-500">{formatDate(talent.createdAt)}</p>
+                      <p className="text-xs text-gray-500">{formatDateTime(talent.createdAt)}</p>
                     </div>
                   </div>
                   
@@ -357,7 +340,7 @@ export default function TalentDetailView({
                       <div className="w-2 h-2 bg-yellow-600 rounded-full mt-2"></div>
                       <div>
                         <p className="text-sm font-medium text-gray-900">Submitted for Review</p>
-                        <p className="text-xs text-gray-500">{formatDate(talent.submittedAt)}</p>
+                        <p className="text-xs text-gray-500">{formatDateTime(talent.submittedAt)}</p>
                       </div>
                     </div>
                   )}
@@ -367,7 +350,7 @@ export default function TalentDetailView({
                       <div className="w-2 h-2 bg-green-600 rounded-full mt-2"></div>
                       <div>
                         <p className="text-sm font-medium text-gray-900">Approved</p>
-                        <p className="text-xs text-gray-500">{formatDate(talent.approvedAt)}</p>
+                        <p className="text-xs text-gray-500">{formatDateTime(talent.approvedAt)}</p>
                       </div>
                     </div>
                   )}
@@ -377,7 +360,7 @@ export default function TalentDetailView({
                       <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
                       <div>
                         <p className="text-sm font-medium text-gray-900">Activated</p>
-                        <p className="text-xs text-gray-500">{formatDate(talent.activatedAt)}</p>
+                        <p className="text-xs text-gray-500">{formatDateTime(talent.activatedAt)}</p>
                       </div>
                     </div>
                   )}

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Users, AlertTriangle, CheckCircle, Clock, XCircle, BarChart3, Pause } from 'lucide-react'
 import TalentTable from './TalentTable'
 import TalentDetailView from './TalentDetailView'
@@ -32,15 +32,16 @@ export default function AdminTalentReview() {
   // Error state management
   const [operationError, setOperationError] = useState<string | null>(null)
 
-  // Calculate statistics
-  const stats = {
+  // Calculate statistics with useMemo for performance
+  const stats = useMemo(() => ({
     total: talentData.length,
     draft: talentData.filter(t => t.status === 'draft').length,
     submitted: talentData.filter(t => t.status === 'submitted').length,
     approved: talentData.filter(t => t.status === 'approved').length,
     active: talentData.filter(t => t.status === 'active').length,
+    inactive: talentData.filter(t => t.status === 'inactive').length,
     rejected: talentData.filter(t => t.status === 'rejected').length
-  }
+  }), [talentData])
 
   // Filter data based on search and status
   useEffect(() => {
@@ -127,10 +128,58 @@ export default function AdminTalentReview() {
   }
 
   const handleExport = async (format: 'csv' | 'json', filters: Record<string, unknown>) => {
-    // Simulate export functionality
-    console.log(`Exporting ${format} with filters:`, filters)
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    alert(`${format.toUpperCase()} export completed!`)
+    try {
+      // Get the data to export (filtered data or all data)
+      const dataToExport = filteredData.length > 0 ? filteredData : talentData
+      
+      if (format === 'csv') {
+        // Convert to CSV format
+        const headers = ['ID', 'Name', 'Email', 'Phone', 'Location', 'Status', 'Created At', 'Submitted At', 'Approved At', 'Activated At']
+        const csvContent = [
+          headers.join(','),
+          ...dataToExport.map(talent => [
+            talent.id,
+            `"${talent.name}"`,
+            `"${talent.email}"`,
+            talent.phone ? `"${talent.phone}"` : '',
+            talent.location ? `"${talent.location}"` : '',
+            talent.status,
+            talent.createdAt,
+            talent.submittedAt || '',
+            talent.approvedAt || '',
+            talent.activatedAt || ''
+          ].join(','))
+        ].join('\n')
+        
+        // Create and download CSV file
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+        const link = document.createElement('a')
+        const url = URL.createObjectURL(blob)
+        link.setAttribute('href', url)
+        link.setAttribute('download', `talent_data_${new Date().toISOString().split('T')[0]}.csv`)
+        link.style.visibility = 'hidden'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+      } else if (format === 'json') {
+        // Convert to JSON format
+        const jsonContent = JSON.stringify(dataToExport, null, 2)
+        
+        // Create and download JSON file
+        const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' })
+        const link = document.createElement('a')
+        const url = URL.createObjectURL(blob)
+        link.setAttribute('href', url)
+        link.setAttribute('download', `talent_data_${new Date().toISOString().split('T')[0]}.json`)
+        link.style.visibility = 'hidden'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+      }
+    } catch (error) {
+      console.error('Export failed:', error)
+      setOperationError('Export failed. Please try again.')
+    }
   }
 
   return (
