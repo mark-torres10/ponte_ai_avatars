@@ -10,6 +10,12 @@ const Navigation = () => {
   const { isSignedIn, user } = useUser()
   const { signOut } = useClerk()
 
+  // Local testing only - log user ID to console
+  // TODO: Remove this once Clerk is fully integrated
+  if (user?.id && typeof window !== 'undefined') {
+    console.log('🔐 Clerk User ID for testing:', user.id)
+  }
+
   const navItems = [
     { href: "/", label: "Home" },
     { href: "/request-talent", label: "Request Talent" },

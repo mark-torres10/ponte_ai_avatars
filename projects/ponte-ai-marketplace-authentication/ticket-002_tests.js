@@ -24,7 +24,9 @@ if (!testNumber) {
 
 // Configuration
 const BASE_URL = 'http://localhost:3000';
+const BACKEND_URL = 'http://localhost:3001';
 const API_BASE = `${BASE_URL}/api/users`;
+const BACKEND_API_BASE = `${BACKEND_URL}/api/users`;
 
 // Note: For testing with Clerk authentication, you need to:
 // 1. Start the dev server: npm run dev
@@ -88,7 +90,7 @@ const tests = {
         console.log('\n📋 4a. Create User (POST /api/users)');
         const createCommand = `curl -X POST ${API_BASE} \\
   -H "Content-Type: application/json" \\
-  ${AUTH_HEADER ? `-H "Authorization: Bearer ${AUTH_HEADER}" \\` : ''} \\
+  ${AUTH_HEADER ? `-H "Authorization: Bearer ${AUTH_HEADER}"` : ''} \\
   -d "${formatJson(testUser)}" \\
   -w "\\nHTTP Status: %{http_code}\\n"`;
         
@@ -96,18 +98,18 @@ const tests = {
         
         // Test 4b: Get User (GET /api/users/[clerkUserId])
         console.log('\n📋 4b. Get User (GET /api/users/[clerkUserId])');
-        const getCommand = `curl -X GET ${API_BASE}/test_user_123 \\
+        const getCommand = `curl -X GET ${API_BASE}/${AUTH_HEADER} \\
   -H "Content-Type: application/json" \\
-  ${AUTH_HEADER ? `-H "Authorization: Bearer ${AUTH_HEADER}" \\` : ''} \\
+  ${AUTH_HEADER ? `-H "Authorization: Bearer ${AUTH_HEADER}"` : ''} \\
   -w "\\nHTTP Status: %{http_code}\\n"`;
         
         const getResult = runCurlCommand(getCommand, 'Getting test user');
         
         // Test 4c: Update User (PUT /api/users/[clerkUserId])
         console.log('\n📋 4c. Update User (PUT /api/users/[clerkUserId])');
-        const updateCommand = `curl -X PUT ${API_BASE}/test_user_123 \\
+        const updateCommand = `curl -X PUT ${API_BASE}/${AUTH_HEADER} \\
   -H "Content-Type: application/json" \\
-  ${AUTH_HEADER ? `-H "Authorization: Bearer ${AUTH_HEADER}" \\` : ''} \\
+  ${AUTH_HEADER ? `-H "Authorization: Bearer ${AUTH_HEADER}"` : ''} \\
   -d "${formatJson(updatedUser)}" \\
   -w "\\nHTTP Status: %{http_code}\\n"`;
         
@@ -117,16 +119,16 @@ const tests = {
         console.log('\n📋 4d. Get All Users (GET /api/users)');
         const getAllCommand = `curl -X GET ${API_BASE} \\
   -H "Content-Type: application/json" \\
-  ${AUTH_HEADER ? `-H "Authorization: Bearer ${AUTH_HEADER}" \\` : ''} \\
+  ${AUTH_HEADER ? `-H "Authorization: Bearer ${AUTH_HEADER}"` : ''} \\
   -w "\\nHTTP Status: %{http_code}\\n"`;
         
         const getAllResult = runCurlCommand(getAllCommand, 'Getting all users');
         
         // Test 4e: Delete User (DELETE /api/users/[clerkUserId])
         console.log('\n📋 4e. Delete User (DELETE /api/users/[clerkUserId])');
-        const deleteCommand = `curl -X DELETE ${API_BASE}/test_user_123 \\
+        const deleteCommand = `curl -X DELETE ${API_BASE}/${AUTH_HEADER} \\
   -H "Content-Type: application/json" \\
-  ${AUTH_HEADER ? `-H "Authorization: Bearer ${AUTH_HEADER}" \\` : ''} \\
+  ${AUTH_HEADER ? `-H "Authorization: Bearer ${AUTH_HEADER}"` : ''} \\
   -w "\\nHTTP Status: %{http_code}\\n"`;
         
         const deleteResult = runCurlCommand(deleteCommand, 'Deleting test user');
@@ -148,7 +150,7 @@ const tests = {
         console.log('\n📋 5a. Missing Required Fields');
         const missingFieldsCommand = `curl -X POST ${API_BASE} \\
   -H "Content-Type: application/json" \\
-  ${AUTH_HEADER ? `-H "Authorization: Bearer ${AUTH_HEADER}" \\` : ''} \\
+  ${AUTH_HEADER ? `-H "Authorization: Bearer ${AUTH_HEADER}"` : ''} \\
   -d "${formatJson({ email: 'test@example.com' })}" \\
   -w "\\nHTTP Status: %{http_code}\\n"`;
         
@@ -158,7 +160,7 @@ const tests = {
         console.log('\n📋 5b. Invalid Role');
         const invalidRoleCommand = `curl -X POST ${API_BASE} \\
   -H "Content-Type: application/json" \\
-  ${AUTH_HEADER ? `-H "Authorization: Bearer ${AUTH_HEADER}" \\` : ''} \\
+  ${AUTH_HEADER ? `-H "Authorization: Bearer ${AUTH_HEADER}"` : ''} \\
   -d "${formatJson({ ...testUser, role: 'invalid_role' })}" \\
   -w "\\nHTTP Status: %{http_code}\\n"`;
         
@@ -168,7 +170,7 @@ const tests = {
         console.log('\n📋 5c. Duplicate User');
         const duplicateCommand = `curl -X POST ${API_BASE} \\
   -H "Content-Type: application/json" \\
-  ${AUTH_HEADER ? `-H "Authorization: Bearer ${AUTH_HEADER}" \\` : ''} \\
+  ${AUTH_HEADER ? `-H "Authorization: Bearer ${AUTH_HEADER}"` : ''} \\
   -d "${formatJson(testUser)}" \\
   -w "\\nHTTP Status: %{http_code}\\n"`;
         
@@ -321,6 +323,7 @@ const tests = {
         console.log('\n📋 9a. Creating test user for trigger testing');
         const createCommand = `curl -X POST ${API_BASE} \\
   -H "Content-Type: application/json" \\
+  ${AUTH_HEADER ? `-H "Authorization: Bearer ${AUTH_HEADER}"` : ''} \\
   -d "${formatJson({ clerk_user_id: 'trigger_test_user', email: 'trigger@example.com', role: 'client' })}" \\
   -w "\\nHTTP Status: %{http_code}\\n"`;
         
@@ -331,6 +334,7 @@ const tests = {
             console.log('\n📋 9b. Updating test user to trigger updated_at');
             const updateCommand = `curl -X PUT ${API_BASE}/trigger_test_user \\
   -H "Content-Type: application/json" \\
+  ${AUTH_HEADER ? `-H "Authorization: Bearer ${AUTH_HEADER}"` : ''} \\
   -d "${formatJson({ email: 'updated_trigger@example.com' })}" \\
   -w "\\nHTTP Status: %{http_code}\\n"`;
             
@@ -340,6 +344,7 @@ const tests = {
             console.log('\n📋 9c. Getting updated user to verify timestamp');
             const getCommand = `curl -X GET ${API_BASE}/trigger_test_user \\
   -H "Content-Type: application/json" \\
+  ${AUTH_HEADER ? `-H "Authorization: Bearer ${AUTH_HEADER}"` : ''} \\
   -w "\\nHTTP Status: %{http_code}\\n"`;
             
             runCurlCommand(getCommand, 'Getting updated user');
@@ -348,6 +353,7 @@ const tests = {
             console.log('\n📋 9d. Cleaning up test user');
             const deleteCommand = `curl -X DELETE ${API_BASE}/trigger_test_user \\
   -H "Content-Type: application/json" \\
+  ${AUTH_HEADER ? `-H "Authorization: Bearer ${AUTH_HEADER}"` : ''} \\
   -w "\\nHTTP Status: %{http_code}\\n"`;
             
             runCurlCommand(deleteCommand, 'Deleting test user');
@@ -408,6 +414,58 @@ const tests = {
   -w "\\nHTTP Status: %{http_code}\\n"`;
             
             runCurlCommand(deleteCommand, 'Deleting browser test user');
+        }
+    },
+    
+    11: async function() {
+        console.log('\n🧪 Test 11: Backend Direct Testing');
+        console.log('='.repeat(80));
+        
+        console.log('📋 Testing backend API directly (bypassing frontend authentication)');
+        
+        // Test 11a: Create user directly on backend
+        console.log('\n📋 11a. Create user directly on backend');
+        const createCommand = `curl -X POST ${BACKEND_API_BASE} \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer ${AUTH_HEADER}" \\
+  -d "${formatJson({ email: 'backend_test@example.com', role: 'client' })}" \\
+  -w "\\nHTTP Status: %{http_code}\\n"`;
+        
+        const createResult = runCurlCommand(createCommand, 'Creating user directly on backend');
+        
+        if (createResult.success) {
+            // Test 11b: Get user directly from backend
+            console.log('\n📋 11b. Get user directly from backend');
+            const getCommand = `curl -X GET ${BACKEND_API_BASE}/${AUTH_HEADER} \\
+  -H "Content-Type: application/json" \\
+  -w "\\nHTTP Status: %{http_code}\\n"`;
+            
+            runCurlCommand(getCommand, 'Getting user directly from backend');
+            
+            // Test 11c: Update user directly on backend
+            console.log('\n📋 11c. Update user directly on backend');
+            const updateCommand = `curl -X PUT ${BACKEND_API_BASE}/${AUTH_HEADER} \\
+  -H "Content-Type: application/json" \\
+  -d "${formatJson({ role: 'talent' })}" \\
+  -w "\\nHTTP Status: %{http_code}\\n"`;
+            
+            runCurlCommand(updateCommand, 'Updating user directly on backend');
+            
+            // Test 11d: Get all users directly from backend
+            console.log('\n📋 11d. Get all users directly from backend');
+            const getAllCommand = `curl -X GET ${BACKEND_API_BASE} \\
+  -H "Content-Type: application/json" \\
+  -w "\\nHTTP Status: %{http_code}\\n"`;
+            
+            runCurlCommand(getAllCommand, 'Getting all users directly from backend');
+            
+            // Test 11e: Delete user directly from backend
+            console.log('\n📋 11e. Delete user directly from backend');
+            const deleteCommand = `curl -X DELETE ${BACKEND_API_BASE}/${AUTH_HEADER} \\
+  -H "Content-Type: application/json" \\
+  -w "\\nHTTP Status: %{http_code}\\n"`;
+            
+            runCurlCommand(deleteCommand, 'Deleting user directly from backend');
         }
     }
 };

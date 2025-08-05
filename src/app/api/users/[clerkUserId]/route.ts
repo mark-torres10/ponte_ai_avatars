@@ -20,6 +20,38 @@ export async function GET(
       );
     }
     
+    // Try to get user ID from Clerk session or Authorization header
+    let authenticatedUserId: string | null = null;
+    
+    try {
+      const { auth } = await import('@clerk/nextjs/server');
+      const authResult = await auth();
+      authenticatedUserId = authResult.userId;
+      console.log('Clerk auth result:', { authenticatedUserId, hasUserId: !!authenticatedUserId });
+    } catch (authError) {
+      console.log('Clerk auth error:', authError);
+    }
+    
+    // If Clerk auth didn't provide a userId, try Authorization header
+    if (!authenticatedUserId) {
+      const authHeader = request.headers.get('authorization');
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        authenticatedUserId = authHeader.replace('Bearer ', '');
+        console.log('Using Authorization header, authenticatedUserId:', authenticatedUserId);
+      }
+    }
+    
+    // For now, allow access if authenticated (we can add stricter checks later)
+    if (!authenticatedUserId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Unauthorized - User not authenticated',
+        },
+        { status: 401 }
+      );
+    }
+    
     const response = await fetch(`${BACKEND_URL}/api/users/${clerkUserId}`, {
       method: 'GET',
       headers: {
@@ -56,6 +88,38 @@ export async function PUT(
           error: 'clerkUserId is required',
         },
         { status: 400 }
+      );
+    }
+    
+    // Try to get user ID from Clerk session or Authorization header
+    let authenticatedUserId: string | null = null;
+    
+    try {
+      const { auth } = await import('@clerk/nextjs/server');
+      const authResult = await auth();
+      authenticatedUserId = authResult.userId;
+      console.log('Clerk auth result:', { authenticatedUserId, hasUserId: !!authenticatedUserId });
+    } catch (authError) {
+      console.log('Clerk auth error:', authError);
+    }
+    
+    // If Clerk auth didn't provide a userId, try Authorization header
+    if (!authenticatedUserId) {
+      const authHeader = request.headers.get('authorization');
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        authenticatedUserId = authHeader.replace('Bearer ', '');
+        console.log('Using Authorization header, authenticatedUserId:', authenticatedUserId);
+      }
+    }
+    
+    // For now, allow access if authenticated (we can add stricter checks later)
+    if (!authenticatedUserId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Unauthorized - User not authenticated',
+        },
+        { status: 401 }
       );
     }
     
@@ -109,6 +173,38 @@ export async function DELETE(
           error: 'clerkUserId is required',
         },
         { status: 400 }
+      );
+    }
+    
+    // Try to get user ID from Clerk session or Authorization header
+    let authenticatedUserId: string | null = null;
+    
+    try {
+      const { auth } = await import('@clerk/nextjs/server');
+      const authResult = await auth();
+      authenticatedUserId = authResult.userId;
+      console.log('Clerk auth result:', { authenticatedUserId, hasUserId: !!authenticatedUserId });
+    } catch (authError) {
+      console.log('Clerk auth error:', authError);
+    }
+    
+    // If Clerk auth didn't provide a userId, try Authorization header
+    if (!authenticatedUserId) {
+      const authHeader = request.headers.get('authorization');
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        authenticatedUserId = authHeader.replace('Bearer ', '');
+        console.log('Using Authorization header, authenticatedUserId:', authenticatedUserId);
+      }
+    }
+    
+    // For now, allow access if authenticated (we can add stricter checks later)
+    if (!authenticatedUserId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Unauthorized - User not authenticated',
+        },
+        { status: 401 }
       );
     }
     

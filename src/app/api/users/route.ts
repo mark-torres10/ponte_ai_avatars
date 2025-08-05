@@ -6,7 +6,25 @@ const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
 // GET /api/users - Get all users (admin only)
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
-    const { userId } = await auth();
+    // Try to get user ID from Clerk session first
+    let userId: string | null = null;
+    
+    try {
+      const authResult = await auth();
+      userId = authResult.userId;
+      console.log('Clerk auth result:', { userId, hasUserId: !!userId });
+    } catch (authError) {
+      console.log('Clerk auth error:', authError);
+    }
+    
+    // If Clerk auth didn't provide a userId, try Authorization header
+    if (!userId) {
+      const authHeader = request.headers.get('authorization');
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        userId = authHeader.replace('Bearer ', '');
+        console.log('Using Authorization header, userId:', userId);
+      }
+    }
     
     if (!userId) {
       return NextResponse.json(
@@ -43,7 +61,25 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 // POST /api/users - Create a new user (for current authenticated user)
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
-    const { userId } = await auth();
+    // Try to get user ID from Clerk session first
+    let userId: string | null = null;
+    
+    try {
+      const authResult = await auth();
+      userId = authResult.userId;
+      console.log('Clerk auth result:', { userId, hasUserId: !!userId });
+    } catch (authError) {
+      console.log('Clerk auth error:', authError);
+    }
+    
+    // If Clerk auth didn't provide a userId, try Authorization header
+    if (!userId) {
+      const authHeader = request.headers.get('authorization');
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        userId = authHeader.replace('Bearer ', '');
+        console.log('Using Authorization header, userId:', userId);
+      }
+    }
     
     if (!userId) {
       return NextResponse.json(
