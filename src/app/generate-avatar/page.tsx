@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import Navigation from "@/components/navigation"
 import Link from "next/link"
 import PersonaSelection from "@/components/PersonaSelection"
@@ -19,31 +19,31 @@ export default function GenerateAvatarPage() {
   const [personalizedText, setPersonalizedText] = useState('');
   const [isUsingPersonalized, setIsUsingPersonalized] = useState(false);
 
-  const handlePersonaSelect = (persona: Persona | null) => {
+  const handlePersonaSelect = useCallback((persona: Persona | null) => {
     setSelectedPersona(persona);
     console.log('Selected persona:', persona);
-  };
+  }, []);
 
-  const handleTextChange = (text: string, isPersonalized: boolean = false, original?: string, personalized?: string) => {
+  const handleTextChange = useCallback((text: string, isPersonalized: boolean = false, original?: string, personalized?: string) => {
     setCurrentText(text);
     setIsUsingPersonalized(isPersonalized);
     if (original) setOriginalText(original);
     if (personalized) setPersonalizedText(personalized);
     console.log('Current text:', text, 'Using personalized:', isPersonalized);
-  };
+  }, []);
 
-  const handleVoiceGenerated = (audioUrl: string) => {
+  const handleVoiceGenerated = useCallback((audioUrl: string) => {
     setCurrentAudioUrl(audioUrl);
     console.log('Voice generated:', audioUrl);
-  };
+  }, []);
 
 
 
-  const handleScriptChange = (text: string, isPersonalized: boolean) => {
+  const handleScriptChange = useCallback((text: string, isPersonalized: boolean) => {
     setCurrentText(text);
     setIsUsingPersonalized(isPersonalized);
     console.log('Script changed to:', isPersonalized ? 'AI Personalized' : 'Original');
-  };
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
