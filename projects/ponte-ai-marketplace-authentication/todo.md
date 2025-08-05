@@ -2,7 +2,7 @@
 
 ## Week 1: Foundation & Setup
 
-### Ticket-001: Set up Clerk authentication integration ✅ COMPLETED
+### Ticket-001: Set up Clerk authentication integration (PON-48) ✅ COMPLETED
 - [x] Install `@clerk/nextjs@latest` package
 - [x] Create environment variables in `.env.local`
 - [x] Create `middleware.ts` with `clerkMiddleware()`

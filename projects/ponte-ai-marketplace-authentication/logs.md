@@ -32,13 +32,14 @@
 
 ## Ticket Progress
 
-### Ticket-001: Set up Clerk authentication integration ✅ COMPLETED
+### Ticket-001: Set up Clerk authentication integration (PON-48) ✅ COMPLETED
 - **Status**: Completed
 - **Estimated Effort**: 3 hours
 - **Actual Effort**: ~3 hours
 - **Dependencies**: None
 - **Notes**: Foundation ticket, must be completed first
 - **PR**: https://github.com/mark-torres10/ponte_ai_avatars/pull/27
+- **Linear Issue**: https://linear.app/metresearch/issue/PON-48
 - **Key Deliverables**:
   - Clerk package installed and configured
   - Environment variables set up
