@@ -82,10 +82,12 @@ const SelfInterviewStep: React.FC = () => {
   useEffect(() => {
     return () => {
       const urlsToCleanup = createdUrlsRef.current
-      urlsToCleanup.forEach(url => {
-        URL.revokeObjectURL(url)
-      })
-      urlsToCleanup.clear()
+      if (urlsToCleanup) {
+        urlsToCleanup.forEach(url => {
+          URL.revokeObjectURL(url)
+        })
+        urlsToCleanup.clear()
+      }
     }
   }, [])
 

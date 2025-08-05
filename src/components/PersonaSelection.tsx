@@ -77,7 +77,7 @@ export default function PersonaSelection({ onPersonaSelect }: PersonaSelectionPr
     };
 
     loadImages();
-  }, []); // Empty dependency array - only run once on mount
+  }, [personas]); // Include personas in dependency array
 
   return (
     <div className="space-y-8">

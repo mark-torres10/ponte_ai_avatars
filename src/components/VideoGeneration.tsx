@@ -11,7 +11,7 @@ interface VideoGenerationProps {
   selectedPersona: Persona | null;
   audioUrl: string | null;
   currentText: string;
-  onVideoGenerated: (videoUrl: string) => void;
+  onVideoGenerated?: (videoUrl: string) => void;
 }
 
 export default function VideoGeneration({ 
@@ -71,7 +71,7 @@ export default function VideoGeneration({
         // Use the local video file from public directory
         const localVideoUrl = "/local-test-video.mp4";
         setVideoUrl(localVideoUrl);
-        onVideoGenerated(localVideoUrl);
+        onVideoGenerated?.(localVideoUrl);
         setGenerationProgress('Local video loaded successfully!');
         setShowQualityFeedback(true);
         return;
@@ -99,7 +99,7 @@ export default function VideoGeneration({
       
       if (response.success && response.data) {
         setVideoUrl(response.data.videoUrl);
-        onVideoGenerated(response.data.videoUrl);
+        onVideoGenerated?.(response.data.videoUrl);
         setGenerationProgress('Video generated successfully!');
         setShowQualityFeedback(true);
         

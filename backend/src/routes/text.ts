@@ -5,10 +5,12 @@ import { logger } from '../utils/logger';
 
 const router = Router();
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: config.OPENAI_API_KEY,
-});
+// Initialize OpenAI client only if API key is available
+const openai = config.OPENAI_API_KEY 
+  ? new OpenAI({
+      apiKey: config.OPENAI_API_KEY,
+    })
+  : null;
 
 interface PersonalizeTextRequest {
   text: string;
@@ -90,6 +92,31 @@ router.post('/personalize', async (req: Request, res: Response) => {
       personaId, 
       textLength: text.length 
     });
+
+    // If OpenAI is not configured, return a mock response
+    if (!openai) {
+      logger.warn('OpenAI not configured, returning mock response', { requestId });
+      const mockPersonalizedText = `[${persona.name} style] ${text}`;
+      
+      const response: PersonalizeTextResponse = {
+        success: true,
+        data: {
+          originalText: text,
+          personalizedText: mockPersonalizedText,
+          personaId,
+        },
+        timestamp: new Date().toISOString(),
+      };
+
+      const duration = Date.now() - startTime;
+      logger.info('Text personalization completed (mock)', { 
+        requestId, 
+        duration, 
+        success: true 
+      });
+
+      return res.json(response);
+    }
 
     // Create OpenAI prompt
     const prompt = `You are ${persona.name}. Rewrite the following text in your unique style: ${persona.style}

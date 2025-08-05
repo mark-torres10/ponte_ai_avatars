@@ -15,7 +15,6 @@ export default function GenerateAvatarPage() {
   const [selectedPersona, setSelectedPersona] = useState<Persona | null>(null);
   const [currentText, setCurrentText] = useState('');
   const [currentAudioUrl, setCurrentAudioUrl] = useState<string | null>(null);
-  const [currentVideoUrl, setCurrentVideoUrl] = useState<string | null>(null);
   const [originalText, setOriginalText] = useState('');
   const [personalizedText, setPersonalizedText] = useState('');
   const [isUsingPersonalized, setIsUsingPersonalized] = useState(false);
@@ -38,10 +37,7 @@ export default function GenerateAvatarPage() {
     console.log('Voice generated:', audioUrl);
   };
 
-  const handleVideoGenerated = (videoUrl: string) => {
-    setCurrentVideoUrl(videoUrl);
-    console.log('Video generated:', videoUrl);
-  };
+
 
   const handleScriptChange = (text: string, isPersonalized: boolean) => {
     setCurrentText(text);
@@ -106,7 +102,6 @@ export default function GenerateAvatarPage() {
                   selectedPersona={selectedPersona} 
                   audioUrl={currentAudioUrl}
                   currentText={currentText} 
-                  onVideoGenerated={handleVideoGenerated}
                 />
               </div>
             )}
