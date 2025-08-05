@@ -45,6 +45,25 @@ export default function GenerateAvatarPage() {
     console.log('Script changed to:', isPersonalized ? 'AI Personalized' : 'Original');
   }, []);
 
+  const handleManualSave = useCallback(() => {
+    // Save the current text state to localStorage or other storage
+    const saveData = {
+      currentText,
+      originalText,
+      personalizedText,
+      isUsingPersonalized,
+      selectedPersona: selectedPersona?.id,
+      timestamp: Date.now()
+    };
+    
+    try {
+      localStorage.setItem('avatar-generation-draft', JSON.stringify(saveData));
+      console.log('Avatar generation data saved');
+    } catch (error) {
+      console.error('Failed to save avatar generation data:', error);
+    }
+  }, [currentText, originalText, personalizedText, isUsingPersonalized, selectedPersona]);
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -75,7 +94,8 @@ export default function GenerateAvatarPage() {
               <div className="card-ponte p-8 rounded-lg mb-8">
                 <TextInput 
                   selectedPersona={selectedPersona} 
-                  onTextChange={handleTextChange} 
+                  onTextChange={handleTextChange}
+                  onManualSave={handleManualSave}
                 />
               </div>
             )}

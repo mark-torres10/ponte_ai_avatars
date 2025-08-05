@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useForm, FormProvider } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -11,6 +11,11 @@ import TonePersonalityStep from './TonePersonalityStep'
 import SelfInterviewStep from './SelfInterviewStep'
 import ReviewStep from './ReviewStep'
 import MockDashboard from './MockDashboard'
+import DraftRecoveryModal from './DraftRecoveryModal'
+import AutoSaveIndicator from './AutoSaveIndicator'
+import { useOnboardingProgress } from '@/lib/useOnboardingProgress'
+import { isLocalStorageSupported, type OnboardingDraft } from '@/lib/storage'
+import { ONBOARDING_CONSTANTS } from '@/lib/constants'
 
 // Form schema for the entire onboarding process
 const onboardingSchema = z.object({
@@ -52,9 +57,33 @@ const steps = [
 ]
 
 export default function OnboardingWizard() {
-  const [currentStep, setCurrentStep] = useState(0)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [showDashboard, setShowDashboard] = useState(false)
+  const [showDraftModal, setShowDraftModal] = useState(false)
+  const [draftData, setDraftData] = useState<OnboardingDraft | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
+  const [lastSaved, setLastSaved] = useState<number>(Date.now())
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  
+  // Progress management hook
+  const {
+    currentStep,
+    completedSteps,
+    hasExistingDraft,
+    isResuming,
+    setCurrentStep,
+    markStepAsCompleted,
+    saveCurrentProgress,
+    loadExistingDraft,
+    clearAllProgress,
+    markOnboardingAsComplete,
+    resumeFromDraft,
+    canNavigateToStep,
+  } = useOnboardingProgress({
+    totalSteps: ONBOARDING_CONSTANTS.TOTAL_STEPS,
+    autoSaveInterval: ONBOARDING_CONSTANTS.AUTO_SAVE_INTERVAL,
+    inactivityTimeout: ONBOARDING_CONSTANTS.INACTIVITY_TIMEOUT,
+  })
   
   const methods = useForm<OnboardingFormData>({
     resolver: zodResolver(onboardingSchema),
@@ -86,13 +115,66 @@ export default function OnboardingWizard() {
     mode: 'onChange',
   })
 
-  const { formState } = methods
+  const { formState, watch } = methods
+
+  // Manual save function
+  const handleManualSave = () => {
+    if (!isLocalStorageSupported() || !formState.isDirty) return
+    
+    setIsSaving(true)
+    const formData = methods.getValues()
+    saveCurrentProgress(formData)
+    setLastSaved(Date.now())
+    setHasUnsavedChanges(false)
+    setTimeout(() => setIsSaving(false), 1000)
+  }
+
+  // Track form changes for manual save
+  useEffect(() => {
+    if (!isLocalStorageSupported()) return
+
+    const subscription = watch((formData) => {
+      setHasUnsavedChanges(true)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [watch])
+
+  // Auto-save on blur (when user finishes editing a field)
+  const handleFormBlur = () => {
+    if (!isLocalStorageSupported()) return
+    
+    if (formState.isDirty && hasUnsavedChanges) {
+      setIsSaving(true)
+      const formData = methods.getValues()
+      saveCurrentProgress(formData)
+      setLastSaved(Date.now())
+      setHasUnsavedChanges(false)
+      setTimeout(() => setIsSaving(false), 1000)
+    }
+  }
+
+  // Check for existing draft on mount
+  useEffect(() => {
+    if (hasExistingDraft) {
+      const draft = loadExistingDraft()
+      if (draft) {
+        setDraftData(draft)
+        setShowDraftModal(true)
+      }
+    }
+  }, [hasExistingDraft, loadExistingDraft])
 
   const goToNextStep = async () => {
     // Validate current step before proceeding
     const isValid = await methods.trigger()
     if (isValid && currentStep < steps.length - 1) {
       console.log('Moving to next step:', currentStep + 1)
+      
+      // Mark current step as completed
+      markStepAsCompleted(currentStep)
+      
+      // Move to next step
       setCurrentStep(currentStep + 1)
     }
   }
@@ -103,9 +185,46 @@ export default function OnboardingWizard() {
     }
   }
 
+  const handleNavigateToStep = (stepIndex: number) => {
+    if (canNavigateToStep(stepIndex)) {
+      setCurrentStep(stepIndex)
+    }
+  }
+
+  const handleResumeDraft = () => {
+    if (draftData) {
+      // Reset form with draft data
+      methods.reset(draftData.formData)
+      
+      // Resume progress
+      resumeFromDraft()
+      
+      // Close modal
+      setShowDraftModal(false)
+      setDraftData(null)
+    }
+  }
+
+  const handleStartFresh = () => {
+    // Clear all progress and start over
+    clearAllProgress()
+    methods.reset()
+    setShowDraftModal(false)
+    setDraftData(null)
+  }
+
+  const handleCloseDraftModal = () => {
+    setShowDraftModal(false)
+    setDraftData(null)
+  }
+
   const onSubmit = (data: OnboardingFormData) => {
     console.log('Form submitted:', data)
     console.log('Setting isSubmitted to true')
+    
+    // Mark onboarding as complete
+    markOnboardingAsComplete()
+    
     // TODO: Handle form submission
     setIsSubmitted(true)
     console.log('isSubmitted should now be true')
@@ -142,10 +261,6 @@ export default function OnboardingWizard() {
     setCurrentStep(0) // Go back to first step
   }
 
-  const handleNavigateToStep = (stepIndex: number) => {
-    setCurrentStep(stepIndex)
-  }
-
   const CurrentStepComponent = steps[currentStep].component
 
   // Show mock dashboard after submission
@@ -157,13 +272,21 @@ export default function OnboardingWizard() {
             <div className="max-w-7xl mx-auto">
               <FormProvider {...methods}>
                 <MockDashboard onEditProfile={handleEditProfile} />
-              </FormProvider>
-            </div>
+                          </FormProvider>
           </div>
         </div>
       </div>
-    )
-  }
+      
+      {/* Auto-save indicator */}
+      <AutoSaveIndicator
+        lastSaved={lastSaved}
+        isSaving={isSaving}
+        hasChanges={hasUnsavedChanges}
+        onManualSave={handleManualSave}
+      />
+    </div>
+  )
+}
 
   // Show success message after submission
   if (isSubmitted) {
@@ -250,6 +373,16 @@ export default function OnboardingWizard() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Draft Recovery Modal */}
+      {showDraftModal && draftData && (
+        <DraftRecoveryModal
+          draft={draftData}
+          onResume={handleResumeDraft}
+          onStartFresh={handleStartFresh}
+          onClose={handleCloseDraftModal}
+        />
+      )}
+      
       <div className="pt-24 pb-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
@@ -258,11 +391,16 @@ export default function OnboardingWizard() {
               currentStep={currentStep}
               totalSteps={steps.length}
               stepTitles={steps.map(step => step.title)}
+              completedSteps={completedSteps}
+              canNavigateToStep={canNavigateToStep}
+              onStepClick={handleNavigateToStep}
+              showValidation={true}
+              isResuming={isResuming}
             />
 
             {/* Form */}
             <FormProvider {...methods}>
-              <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-8">
+              <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-8" onBlur={handleFormBlur}>
                 {/* Current Step Component */}
                 <div className="card-ponte p-8 rounded-lg">
                   {currentStep === steps.length - 1 ? (
@@ -311,6 +449,14 @@ export default function OnboardingWizard() {
           </div>
         </div>
       </div>
+      
+      {/* Auto-save indicator */}
+      <AutoSaveIndicator
+        lastSaved={lastSaved}
+        isSaving={isSaving}
+        hasChanges={hasUnsavedChanges}
+        onManualSave={handleManualSave}
+      />
     </div>
   )
 } 
