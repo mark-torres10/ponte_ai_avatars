@@ -36,8 +36,14 @@ jobs:
         cd backend
         npm run build
         
+    - name: Run backend tests
+      run: |
+        cd backend
+        npm test
+        
     - name: Verify builds completed
       run: |
         echo "✅ Frontend build completed successfully"
         echo "✅ Backend build completed successfully"
+        echo "✅ Backend tests passed"
         echo "✅ All TypeScript compilation passed" 

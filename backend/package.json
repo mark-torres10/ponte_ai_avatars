@@ -1,7 +1,6 @@
 {
   "name": "ponte-ai-avatar-backend",
   "version": "1.0.0",
-  "type": "module",
   "description": "Backend API service for Ponte AI Avatar Generation Demo",
   "main": "dist/index.js",
   "scripts": {

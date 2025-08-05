@@ -95,5 +95,6 @@ jobs:
         echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
         echo "✅ Frontend build: PASSED" >> $GITHUB_STEP_SUMMARY
         echo "✅ Backend build: PASSED" >> $GITHUB_STEP_SUMMARY
+        echo "✅ Backend tests: PASSED" >> $GITHUB_STEP_SUMMARY
         echo "✅ TypeScript compilation: PASSED" >> $GITHUB_STEP_SUMMARY
         echo "✅ All checks completed successfully" >> $GITHUB_STEP_SUMMARY 
