@@ -36,6 +36,38 @@ Reference: `spec.md` - Section 7 Technical Notes (Database Schema)
 - User data synchronization triggers are implemented
 - Database utilities are available for the application
 - TypeScript types are generated for the database schema
+- **Frontend API routes proxy to backend correctly**
+- **Backend handles all Supabase operations**
+- **No direct Supabase access from frontend**
+- **Proper separation of concerns maintained**
+
+## Current Architecture (Updated)
+
+### Frontend (Next.js - Port 3000)
+- **Clerk Authentication**: Handles user sign-in/sign-up
+- **API Routes**: Proxy requests to backend (no direct Supabase access)
+- **UI Components**: React components for user interface
+- **Middleware**: Clerk middleware for route protection
+
+### Backend (Express - Port 3001)
+- **User Management**: Full CRUD operations for users
+- **Supabase Integration**: Direct database access with service role key
+- **Authentication**: Receives Clerk user ID from frontend
+- **CORS**: Configured to allow frontend requests
+
+### Data Flow
+1. **User Authentication**: Clerk handles sign-in/sign-up
+2. **Frontend API Call**: Frontend calls `/api/users` routes
+3. **Frontend Proxy**: Frontend routes proxy to `http://localhost:3001/api/users`
+4. **Backend Processing**: Backend validates and processes request
+5. **Database Operation**: Backend performs Supabase operations
+6. **Response**: Backend returns data to frontend
+
+### Security Model
+- **Frontend**: No database credentials, only UI and authentication
+- **Backend**: Has Supabase service role key for database operations
+- **Authentication**: Clerk user ID passed via Authorization header
+- **CORS**: Backend configured to accept frontend requests
 
 ## Test Plan
 
@@ -75,39 +107,54 @@ Reference: `spec.md` - Section 7 Technical Notes (Database Schema)
   - [x] Policy "Users can insert own data" exists
   - [x] Policy "Users can delete own data" exists
 
-### Test 4: API Endpoints Testing
+### Test 4: API Endpoints Testing (Updated Architecture)
 - [ ] **Prerequisites Setup**
-  - [ ] Start dev server: `npm run dev`
+  - [ ] Start frontend dev server: `npm run dev`
+  - [ ] Start backend dev server: `cd backend && npm run dev`
   - [ ] Open browser to `http://localhost:3000`
   - [ ] Sign in with Clerk (Google/Microsoft/Email)
   - [ ] Get Clerk session token from browser dev tools
   - [ ] Verify Clerk authentication is working
 
+- [ ] **Frontend API Proxy Testing**
+  - [ ] Test frontend API routes proxy to backend correctly
+  - [ ] Verify frontend `/api/users` routes work without direct Supabase access
+  - [ ] Check browser network tab for requests to backend
+
+- [ ] **Backend User Routes Testing**
+  - [ ] Test backend directly: `curl http://localhost:3001/api/users`
+  - [ ] Verify backend responds with proper CORS headers
+  - [ ] Test backend authentication with Clerk user ID
+
 - [ ] **Create User (POST /api/users)**
-  - [ ] Run: `node projects/ponte-ai-marketplace-authentication/ticket-002_tests.js --test 4 --clerk-session-token <your_token>`
+  - [ ] Test through frontend proxy: `POST http://localhost:3000/api/users`
+  - [ ] Test backend directly: `POST http://localhost:3001/api/users`
   - [ ] Verify response status: 200 for authenticated requests
   - [ ] Verify response contains user data with UUID
   - [ ] Verify user appears in Supabase dashboard
-  - [ ] Test without token: `node projects/ponte-ai-marketplace-authentication/ticket-002_tests.js --test 4`
-  - [ ] Verify response status: 401 for unauthenticated requests
+  - [ ] Test without authentication: verify 401 response
 
 - [ ] **Get User (GET /api/users/[clerkUserId])**
-  - [ ] Test getting user by clerk_user_id
+  - [ ] Test through frontend proxy: `GET http://localhost:3000/api/users/[clerkUserId]`
+  - [ ] Test backend directly: `GET http://localhost:3001/api/users/[clerkUserId]`
   - [ ] Verify response status: 200
   - [ ] Verify response contains correct user data
 
 - [ ] **Update User (PUT /api/users/[clerkUserId])**
-  - [ ] Test updating user email and role
+  - [ ] Test through frontend proxy: `PUT http://localhost:3000/api/users/[clerkUserId]`
+  - [ ] Test backend directly: `PUT http://localhost:3001/api/users/[clerkUserId]`
   - [ ] Verify response status: 200
   - [ ] Verify data is updated in Supabase
 
 - [ ] **Get All Users (GET /api/users)**
-  - [ ] Test getting all users
+  - [ ] Test through frontend proxy: `GET http://localhost:3000/api/users`
+  - [ ] Test backend directly: `GET http://localhost:3001/api/users`
   - [ ] Verify response status: 200
   - [ ] Verify response contains array of users
 
 - [ ] **Delete User (DELETE /api/users/[clerkUserId])**
-  - [ ] Test deleting user
+  - [ ] Test through frontend proxy: `DELETE http://localhost:3000/api/users/[clerkUserId]`
+  - [ ] Test backend directly: `DELETE http://localhost:3001/api/users/[clerkUserId]`
   - [ ] Verify response status: 200
   - [ ] Verify user is removed from Supabase
 
@@ -228,15 +275,24 @@ Reference: `spec.md` - Section 7 Technical Notes (Database Schema)
 - [ ] Jest tests written and passing
 - [ ] Database operations validated
 
-## Complete Testing Workflow
+## Complete Testing Workflow (Updated Architecture)
 
 ### Step 1: Environment Setup
-1. **Start Development Server**
+1. **Start Both Servers**
    ```bash
+   # Terminal 1: Start Frontend
    npm run dev
+   
+   # Terminal 2: Start Backend
+   cd backend && npm run dev
    ```
 
-2. **Verify Clerk Integration**
+2. **Verify Both Servers Are Running**
+   - Frontend: `http://localhost:3000` (Next.js)
+   - Backend: `http://localhost:3001` (Express)
+   - Check both servers start without errors
+
+3. **Verify Clerk Integration**
    - Open browser to `http://localhost:3000`
    - Navigate to `/auth-test` page
    - Verify Clerk components are loading
@@ -255,42 +311,84 @@ Reference: `spec.md` - Section 7 Technical Notes (Database Schema)
    - Find the session token (JWT format)
    - Copy the full token
 
-### Step 3: Run API Tests
-1. **Test Without Authentication (Should Return 401)**
+### Step 3: Test Backend Directly
+1. **Test Backend Health**
    ```bash
-   node projects/ponte-ai-marketplace-authentication/ticket-002_tests.js --test 4
+   curl http://localhost:3001/health
    ```
 
-2. **Test With Authentication (Should Return 200)**
+2. **Test Backend User Routes (Without Auth)**
    ```bash
-   node projects/ponte-ai-marketplace-authentication/ticket-002_tests.js --test 4 --clerk-session-token <your_token>
+   # Should return 401 Unauthorized
+   curl http://localhost:3001/api/users
+   curl http://localhost:3001/api/users/test-user-id
    ```
 
-3. **Run All Test Suites**
+3. **Test Backend User Routes (With Auth)**
    ```bash
-   # Test 4: API Endpoints
-   node projects/ponte-ai-marketplace-authentication/ticket-002_tests.js --test 4 --clerk-session-token <your_token>
-   
-   # Test 5: Error Handling
-   node projects/ponte-ai-marketplace-authentication/ticket-002_tests.js --test 5 --clerk-session-token <your_token>
-   
-   # Test 6: TypeScript Types
-   node projects/ponte-ai-marketplace-authentication/ticket-002_tests.js --test 6
-   
-   # Test 7: Jest Tests
-   node projects/ponte-ai-marketplace-authentication/ticket-002_tests.js --test 7
-   
-   # Test 8: Database Constraints
-   node projects/ponte-ai-marketplace-authentication/ticket-002_tests.js --test 8 --clerk-session-token <your_token>
-   
-   # Test 9: Auto-update Triggers
-   node projects/ponte-ai-marketplace-authentication/ticket-002_tests.js --test 9 --clerk-session-token <your_token>
-   
-   # Test 10: Frontend Integration
-   node projects/ponte-ai-marketplace-authentication/ticket-002_tests.js --test 10 --clerk-session-token <your_token>
+   # Replace <clerk_user_id> with actual Clerk user ID
+   curl -H "Authorization: Bearer <clerk_user_id>" http://localhost:3001/api/users
+   curl -H "Authorization: Bearer <clerk_user_id>" http://localhost:3001/api/users/<clerk_user_id>
    ```
 
-### Step 4: Verify Database Changes
+### Step 4: Test Frontend Proxy
+1. **Test Frontend API Routes**
+   ```bash
+   # These should proxy to backend
+   curl http://localhost:3000/api/users
+   curl http://localhost:3000/api/users/<clerk_user_id>
+   ```
+
+2. **Verify Proxy in Browser**
+   - Open browser Developer Tools (F12)
+   - Go to Network tab
+   - Make API calls from frontend
+   - Verify requests go to backend
+
+### Step 5: Test Complete Flow
+1. **Create User Through Frontend**
+   ```bash
+   curl -X POST http://localhost:3000/api/users \
+     -H "Content-Type: application/json" \
+     -H "Authorization: Bearer <clerk_user_id>" \
+     -d '{"role": "client", "email": "test@example.com"}'
+   ```
+
+2. **Get User Through Frontend**
+   ```bash
+   curl http://localhost:3000/api/users/<clerk_user_id>
+   ```
+
+3. **Update User Through Frontend**
+   ```bash
+   curl -X PUT http://localhost:3000/api/users/<clerk_user_id> \
+     -H "Content-Type: application/json" \
+     -H "Authorization: Bearer <clerk_user_id>" \
+     -d '{"role": "talent"}'
+   ```
+
+### Step 6: Browser Testing
+1. **Test Clerk Components**
+   - Go to `http://localhost:3000`
+   - Test sign-in/sign-up flow
+   - Verify Clerk components work correctly
+
+2. **Test API Calls from Browser Console**
+   ```javascript
+   // Get current user ID from Clerk
+   const userId = 'your_clerk_user_id';
+   
+   // Test API calls
+   fetch('/api/users', {
+     headers: { 'Authorization': `Bearer ${userId}` }
+   }).then(r => r.json()).then(console.log);
+   
+   fetch(`/api/users/${userId}`, {
+     headers: { 'Authorization': `Bearer ${userId}` }
+   }).then(r => r.json()).then(console.log);
+   ```
+
+### Step 7: Verify Database Changes
 1. **Check Supabase Dashboard**
    - Go to your Supabase project dashboard
    - Navigate to Table Editor
@@ -302,10 +400,61 @@ Reference: `spec.md` - Section 7 Technical Notes (Database Schema)
    - Verify admin policies are working correctly
 
 ### Expected Test Results
-- **Without Token**: All API calls should return 401 Unauthorized
-- **With Token**: API calls should return 200/201 for successful operations
-- **Error Cases**: Should return appropriate 400/409 status codes
-- **Database**: Users should be created/updated/deleted in Supabase
+- **Backend Direct**: API calls work with proper authentication
+- **Frontend Proxy**: API calls proxy to backend correctly
+- **Without Auth**: All API calls return 401 Unauthorized
+- **With Auth**: API calls return 200/201 for successful operations
+- **Error Cases**: Return appropriate 400/409 status codes
+- **Database**: Users created/updated/deleted in Supabase
+- **Clerk Integration**: Authentication works seamlessly
+
+## Quick Testing Summary
+
+### 🚀 Start Both Servers
+```bash
+# Terminal 1: Frontend
+npm run dev
+
+# Terminal 2: Backend  
+cd backend && npm run dev
+```
+
+### 🔐 Get Clerk User ID
+1. Go to `http://localhost:3000`
+2. Sign in with Clerk
+3. Open browser dev tools → Application → Clerk session
+4. Copy the user ID (not the JWT token)
+
+### 🧪 Test Backend Directly
+```bash
+# Test health
+curl http://localhost:3001/health
+
+# Test without auth (should return 401)
+curl http://localhost:3001/api/users
+
+# Test with auth (should return 200)
+curl -H "Authorization: Bearer YOUR_CLERK_USER_ID" http://localhost:3001/api/users
+```
+
+### 🌐 Test Frontend Proxy
+```bash
+# These proxy to backend
+curl http://localhost:3000/api/users
+curl http://localhost:3000/api/users/YOUR_CLERK_USER_ID
+```
+
+### 📊 Verify in Supabase
+- Go to Supabase Dashboard → Table Editor
+- Check `users` table for new records
+- Verify `updated_at` timestamps update
+
+### ✅ Success Indicators
+- Both servers start without errors
+- Backend responds to direct API calls
+- Frontend proxies requests to backend
+- Users created/updated in Supabase
+- Clerk authentication works in browser
 
 ## Links & References
 - Specification: `spec.md`
