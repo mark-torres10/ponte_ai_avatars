@@ -56,7 +56,11 @@ const steps = [
   { id: 'review', title: 'Review & Submit', component: ReviewStep },
 ]
 
-export default function OnboardingWizard() {
+interface OnboardingWizardProps {
+  onComplete?: () => void
+}
+
+export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [showDashboard, setShowDashboard] = useState(false)
   const [showDraftModal, setShowDraftModal] = useState(false)
@@ -99,12 +103,14 @@ export default function OnboardingWizard() {
         videoSample: undefined,
       },
       personality: {
+        toneCategories: [],
         personalityTraits: {
           extroversion: 50,
           formality: 50,
           energy: 50,
           professionalism: 50,
         },
+        customTone: '',
       },
       interview: {
         predefinedAnswers: {},
@@ -117,7 +123,44 @@ export default function OnboardingWizard() {
 
   const { formState, watch } = methods
 
-  // Manual save function
+  // Load existing draft on mount
+  useEffect(() => {
+    if (hasExistingDraft) {
+      setShowDraftModal(true)
+      loadExistingDraft().then(draft => {
+        if (draft) {
+          setDraftData(draft)
+        }
+      })
+    }
+  }, [hasExistingDraft, loadExistingDraft])
+
+  // Auto-save functionality
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (hasUnsavedChanges && formState.isDirty) {
+        handleAutoSave()
+      }
+    }, ONBOARDING_CONSTANTS.AUTO_SAVE_INTERVAL)
+
+    return () => clearInterval(interval)
+  }, [hasUnsavedChanges, formState.isDirty])
+
+  const handleAutoSave = async () => {
+    if (!formState.isDirty) return
+
+    setIsSaving(true)
+    try {
+      await saveCurrentProgress(methods.getValues())
+      setLastSaved(Date.now())
+      setHasUnsavedChanges(false)
+    } catch (error) {
+      console.error('Auto-save failed:', error)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
   const handleManualSave = () => {
     if (!isLocalStorageSupported() || !formState.isDirty) return
     
@@ -154,17 +197,6 @@ export default function OnboardingWizard() {
     }
   }
 
-  // Check for existing draft on mount
-  useEffect(() => {
-    if (hasExistingDraft) {
-      const draft = loadExistingDraft()
-      if (draft) {
-        setDraftData(draft)
-        setShowDraftModal(true)
-      }
-    }
-  }, [hasExistingDraft, loadExistingDraft])
-
   const goToNextStep = async () => {
     // Validate current step before proceeding
     const isValid = await methods.trigger()
@@ -176,6 +208,7 @@ export default function OnboardingWizard() {
       
       // Move to next step
       setCurrentStep(currentStep + 1)
+      setHasUnsavedChanges(true)
     }
   }
 
@@ -219,15 +252,14 @@ export default function OnboardingWizard() {
   }
 
   const onSubmit = (data: OnboardingFormData) => {
-    console.log('Form submitted:', data)
-    console.log('Setting isSubmitted to true')
-    
-    // Mark onboarding as complete
+    console.log('Onboarding data submitted:', data)
+    setIsSubmitted(true)
     markOnboardingAsComplete()
     
-    // TODO: Handle form submission
-    setIsSubmitted(true)
-    console.log('isSubmitted should now be true')
+    // Call onComplete callback if provided
+    if (onComplete) {
+      onComplete()
+    }
   }
 
   const handleSubmitClick = async () => {
