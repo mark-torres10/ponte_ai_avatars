@@ -93,6 +93,7 @@ export async function GET(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authenticatedUserId}`,
       },
     });
     
@@ -143,12 +144,12 @@ export async function PUT(
     
     const body = await request.json();
     
-    // Validate role if provided
+    // Validate role if provided with improved error messaging
     if (body.role && !validateRole(body.role)) {
       return NextResponse.json(
         {
           success: false,
-          error: `Invalid role. Must be one of: ${VALID_ROLES.join(', ')}`,
+          error: `Invalid role '${body.role}'. Role must be one of the following valid values: ${VALID_ROLES.join(', ')}. Please provide a valid role or omit this field.`,
         },
         { status: 400 }
       );
@@ -158,6 +159,7 @@ export async function PUT(
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authenticatedUserId}`,
       },
       body: JSON.stringify(body),
     });
@@ -211,6 +213,7 @@ export async function DELETE(
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authenticatedUserId}`,
       },
     });
     

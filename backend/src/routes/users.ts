@@ -236,10 +236,7 @@ router.put('/:clerkUserId', async (req: Request, res: Response) => {
     // Update user
     const { data: updatedUser, error } = await supabase
       .from('users')
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updates)
       .eq('clerk_user_id', clerkUserId)
       .select()
       .single();
@@ -277,7 +274,32 @@ router.delete('/:clerkUserId', async (req: Request, res: Response) => {
       });
     }
 
+    // Get user ID from authorization header
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({
+        success: false,
+        error: 'Unauthorized - Missing or invalid authorization header',
+      });
+    }
+    
+    const authenticatedUserId = authHeader.replace('Bearer ', '');
+    
     const supabase = getSupabaseClient();
+    
+    // Check if the authenticated user is an admin
+    const { data: currentUser } = await supabase
+      .from('users')
+      .select('role')
+      .eq('clerk_user_id', authenticatedUserId)
+      .single();
+    
+    if (!currentUser || currentUser.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        error: 'Forbidden - Admin access required for user deletion',
+      });
+    }
     
     // Check if user exists
     const { data: existingUser } = await supabase
