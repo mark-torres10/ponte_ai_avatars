@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { User, UserRole } from '@/types/user'
 import { useClerkUser } from './useClerkUser'
+import { VALID_USER_ROLES } from './auth-utils'
 
 interface UseUserRoleReturn {
   userData: User | null
@@ -180,7 +181,7 @@ export function useRoleAssignment() {
 // Hook for role validation
 export function useRoleValidation() {
   const validateRole = (role: string): role is UserRole => {
-    return ['admin', 'client', 'talent'].includes(role)
+    return VALID_USER_ROLES.includes(role as any)
   }
 
   const getRoleDisplayName = (role: UserRole): string => {

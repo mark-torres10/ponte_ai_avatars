@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { UserRole } from '@/types/user';
 import { logger } from '@/lib/logger';
+import { VALID_USER_ROLES } from '@/lib/auth-utils';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
-
-// Valid roles constant
-const VALID_ROLES: UserRole[] = ['admin', 'client', 'talent'];
 
 // Bearer token validation regex - allows alphanumeric, dots, underscores, and hyphens
 const BEARER_TOKEN_REGEX = /^[a-zA-Z0-9._-]+$/;
@@ -56,7 +54,7 @@ async function authenticateRequest(request: NextRequest): Promise<string | null>
  * @returns True if role is valid, false otherwise
  */
 function validateRole(role: string): role is UserRole {
-  return VALID_ROLES.includes(role as UserRole);
+  return VALID_USER_ROLES.includes(role as any);
 }
 
 // GET /api/users/[clerkUserId] - Get user by Clerk user ID
@@ -137,7 +135,7 @@ export async function PUT(
       return NextResponse.json(
         {
           success: false,
-          error: `Invalid role '${body.role}'. Role must be one of the following valid values: ${VALID_ROLES.join(', ')}. Please provide a valid role or omit this field.`,
+          error: `Invalid role '${body.role}'. Role must be one of the following valid values: ${VALID_USER_ROLES.join(', ')}. Please provide a valid role or omit this field.`,
         },
         { status: 400 }
       );

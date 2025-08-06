@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals'
 import { UserRole } from '@/types/user'
+import { VALID_USER_ROLES } from '@/lib/auth-utils'
 
 // Mock the Clerk middleware
 jest.mock('@clerk/nextjs/server', () => ({
@@ -59,7 +60,7 @@ describe('Role-Based Routing and Access Control', () => {
   describe('Role Validation', () => {
     it('should validate user roles correctly', () => {
       const isValidUserRole = (role: string): role is UserRole => {
-        return ['admin', 'client', 'talent'].includes(role)
+        return VALID_USER_ROLES.includes(role as any)
       }
 
       expect(isValidUserRole('admin')).toBe(true)
@@ -252,7 +253,7 @@ describe('Role-Based Routing and Access Control', () => {
 
     it('should validate role during user creation', () => {
       const validateRole = (role: string): boolean => {
-        return ['admin', 'client', 'talent'].includes(role)
+        return VALID_USER_ROLES.includes(role as any)
       }
 
       expect(validateRole('admin')).toBe(true)
