@@ -7,16 +7,11 @@ interface ClerkWrapperProps {
   children: ReactNode
 }
 
-// Check if Clerk is configured
-const hasClerkConfig = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-
-// Dynamic import of Clerk components only when needed
-const ClerkAuthWrapper = hasClerkConfig 
-  ? dynamic(() => import('./ClerkAuthWrapper'), {
-      ssr: false,
-      loading: () => <ClerkLoadingFallback />
-    })
-  : null
+// Dynamic import of Clerk components - always import, check config at runtime
+const ClerkAuthWrapper = dynamic(() => import('./ClerkAuthWrapper'), {
+  ssr: false,
+  loading: () => <ClerkLoadingFallback />
+})
 
 // Loading fallback component
 function ClerkLoadingFallback() {
@@ -65,13 +60,11 @@ function ClerkNotConfiguredFallback() {
 }
 
 export function ClerkWrapper({ children }: ClerkWrapperProps) {
+  // Check if Clerk is configured at runtime
+  const hasClerkConfig = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+
   // If Clerk is not configured, show fallback
   if (!hasClerkConfig) {
-    return <ClerkNotConfiguredFallback />
-  }
-
-  // If Clerk is configured but component failed to load, show fallback
-  if (!ClerkAuthWrapper) {
     return <ClerkNotConfiguredFallback />
   }
 

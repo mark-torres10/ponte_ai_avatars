@@ -184,9 +184,10 @@ export default clerkMiddleware(async (auth, req) => {
       }
     } catch (error) {
       console.error('🔍 Middleware: Error checking user role:', error);
-      // On error, allow the route and let client-side handle it
-      console.log('🔍 Middleware: Error occurred, allowing route for client-side handling');
-      return NextResponse.next();
+      // On error, deny access for security - redirect to login
+      console.log('🔍 Middleware: Error occurred, denying access for security');
+      const loginUrl = new URL('/login', req.url);
+      return NextResponse.redirect(loginUrl);
     }
   }
 

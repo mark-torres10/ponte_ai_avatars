@@ -1,30 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { authenticateRequest } from '@/lib/auth-utils';
+import { logger } from '@/lib/logger';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
 
 // GET /api/users - Get all users (admin only)
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
-    // Try to get user ID from Clerk session first
-    let userId: string | null = null;
-    
-    try {
-      const authResult = await auth();
-      userId = authResult.userId;
-      console.log('Clerk auth result:', { userId, hasUserId: !!userId });
-    } catch (authError) {
-      console.log('Clerk auth error:', authError);
-    }
-    
-    // If Clerk auth didn't provide a userId, try Authorization header
-    if (!userId) {
-      const authHeader = request.headers.get('authorization');
-      if (authHeader && authHeader.startsWith('Bearer ')) {
-        userId = authHeader.replace('Bearer ', '');
-        console.log('Using Authorization header, userId:', userId);
-      }
-    }
+    const userId = await authenticateRequest(request);
     
     if (!userId) {
       return NextResponse.json(
@@ -47,7 +30,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error('Error fetching users:', error);
+    logger.error('Error fetching users', { error });
     return NextResponse.json(
       {
         success: false,
@@ -61,25 +44,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 // POST /api/users - Create a new user (for current authenticated user)
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
-    // Try to get user ID from Clerk session first
-    let userId: string | null = null;
-    
-    try {
-      const authResult = await auth();
-      userId = authResult.userId;
-      console.log('Clerk auth result:', { userId, hasUserId: !!userId });
-    } catch (authError) {
-      console.log('Clerk auth error:', authError);
-    }
-    
-    // If Clerk auth didn't provide a userId, try Authorization header
-    if (!userId) {
-      const authHeader = request.headers.get('authorization');
-      if (authHeader && authHeader.startsWith('Bearer ')) {
-        userId = authHeader.replace('Bearer ', '');
-        console.log('Using Authorization header, userId:', userId);
-      }
-    }
+    const userId = await authenticateRequest(request);
     
     if (!userId) {
       return NextResponse.json(
@@ -127,7 +92,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error('Error creating user:', error);
+    logger.error('Error creating user', { error });
     return NextResponse.json(
       {
         success: false,

@@ -15,10 +15,11 @@ const BEARER_TOKEN_REGEX = /^[a-zA-Z0-9._-]+$/;
  * @param request - The NextRequest object
  * @returns The authenticated user ID or null if not authenticated
  */
+import { auth } from '@clerk/nextjs/server';
+
 async function authenticateRequest(request: NextRequest): Promise<string | null> {
   try {
     // Try to get user ID from Clerk session
-    const { auth } = await import('@clerk/nextjs/server');
     const authResult = await auth();
     const clerkUserId = authResult.userId;
     

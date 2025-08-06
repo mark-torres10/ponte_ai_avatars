@@ -2,11 +2,12 @@
 
 import Link from "next/link"
 
-// Check if Clerk environment variables are available
-const hasClerkConfig = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+interface NavigationProps {
+  hasClerkConfig?: boolean
+}
 
 // Basic navigation component that works without Clerk
-const Navigation = () => {
+const Navigation = ({ hasClerkConfig = false }: NavigationProps) => {
   
   // If Clerk is not available, render basic navigation
   if (!hasClerkConfig) {

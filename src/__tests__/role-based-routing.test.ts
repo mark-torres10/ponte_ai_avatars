@@ -8,7 +8,7 @@ jest.mock('@clerk/nextjs/server', () => ({
 }))
 
 // Mock fetch
-global.fetch = jest.fn()
+global.fetch = jest.fn() as jest.MockedFunction<typeof fetch>
 
 describe('Role-Based Routing and Access Control', () => {
   beforeEach(() => {
@@ -49,12 +49,10 @@ describe('Role-Based Routing and Access Control', () => {
 
     it('should define correct onboarding routes', () => {
       const onboardingRoutes = [
-        '/onboard-client',
-        '/onboard-talent',
+        '/role-selection',
       ]
 
-      expect(onboardingRoutes).toContain('/onboard-client')
-      expect(onboardingRoutes).toContain('/onboard-talent')
+      expect(onboardingRoutes).toContain('/role-selection')
     })
   })
 
@@ -216,14 +214,12 @@ describe('Role-Based Routing and Access Control', () => {
 
     it('should identify onboarding routes correctly', () => {
       const isOnboardingRoute = (pathname: string): boolean => {
-        const onboardingRoutes = ['/onboard-client', '/onboard-talent']
+        const onboardingRoutes = ['/role-selection']
         return onboardingRoutes.some(route => pathname.startsWith(route))
       }
 
-      expect(isOnboardingRoute('/onboard-client')).toBe(true)
-      expect(isOnboardingRoute('/onboard-talent')).toBe(true)
-      expect(isOnboardingRoute('/onboard-client/step1')).toBe(true)
-      expect(isOnboardingRoute('/onboard-talent/profile')).toBe(true)
+      expect(isOnboardingRoute('/role-selection')).toBe(true)
+      expect(isOnboardingRoute('/role-selection/step1')).toBe(true)
       expect(isOnboardingRoute('/talent')).toBe(false)
       expect(isOnboardingRoute('/client')).toBe(false)
       expect(isOnboardingRoute('/admin')).toBe(false)
@@ -270,10 +266,11 @@ describe('Role-Based Routing and Access Control', () => {
   describe('Error Handling', () => {
     it('should handle authentication errors gracefully', () => {
       const handleAuthError = (error: unknown): string => {
-        if (error.message?.includes('unauthorized')) {
+        const errorObj = error as { message?: string }
+        if (errorObj.message?.includes('unauthorized')) {
           return 'Please sign in to continue'
         }
-        if (error.message?.includes('forbidden')) {
+        if (errorObj.message?.includes('forbidden')) {
           return 'You do not have permission to access this resource'
         }
         return 'An unexpected error occurred'
@@ -287,10 +284,11 @@ describe('Role-Based Routing and Access Control', () => {
 
     it('should handle role fetch errors gracefully', () => {
       const handleRoleFetchError = (error: unknown): string => {
-        if (error.message?.includes('network')) {
+        const errorObj = error as { message?: string }
+        if (errorObj.message?.includes('network')) {
           return 'Network error. Please check your connection.'
         }
-        if (error.message?.includes('not found')) {
+        if (errorObj.message?.includes('not found')) {
           return 'User not found. Please contact support.'
         }
         return 'Failed to fetch user role. Please try again.'

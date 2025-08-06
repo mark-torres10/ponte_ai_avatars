@@ -14,10 +14,14 @@ const ClerkProvider = dynamic(() => import("@clerk/nextjs").then(mod => ({ defau
 })
 
 export default function ClerkProviderWrapper({ children }: ClerkProviderWrapperProps) {
+  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+  
+  if (!publishableKey) {
+    throw new Error('NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is required but not provided')
+  }
+
   return (
-    <ClerkProvider
-      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY!}
-    >
+    <ClerkProvider publishableKey={publishableKey}>
       {children}
     </ClerkProvider>
   )
