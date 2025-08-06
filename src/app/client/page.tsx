@@ -1,13 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useUser, SignOutButton } from '@clerk/nextjs'
+import { SignOutButton } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { User } from '@/types/user'
+import { useClerkUser } from '@/lib/useClerkUser'
 
 export default function ClientDashboardPage() {
-  const { user, isLoaded } = useUser()
+  const { user, isLoaded } = useClerkUser()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -37,7 +37,7 @@ export default function ClientDashboardPage() {
           // User doesn't exist, but don't redirect - let middleware handle this
           setError('User data not found')
         }
-      } catch (error) {
+      } catch {
         // Error fetching user data, but don't redirect - let middleware handle this
         setError('Failed to load user data')
       } finally {

@@ -1,3 +1,5 @@
+import { VALID_USER_ROLES } from '@/lib/auth-utils';
+
 // User role type
 export type UserRole = 'admin' | 'client' | 'talent';
 
@@ -59,7 +61,7 @@ export interface UsersListResponse {
 
 // User role validation
 export const isValidUserRole = (role: string): role is UserRole => {
-  return ['admin', 'client', 'talent'].includes(role);
+  return VALID_USER_ROLES.includes(role as any);
 };
 
 // User role display names

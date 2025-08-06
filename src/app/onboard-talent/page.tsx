@@ -1,12 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useClerkUser } from '@/lib/useClerkUser'
 
 export default function OnboardTalentPage() {
-  const { user, isLoaded } = useUser()
+  const { user, isLoaded } = useClerkUser()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)

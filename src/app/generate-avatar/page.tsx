@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import Link from "next/link"
-import { useUser } from '@clerk/nextjs'
+import { useClerkUser } from '@/lib/useClerkUser'
 import PersonaSelection from "@/components/PersonaSelection"
 import TextInput from "@/components/TextInput"
 import VoiceGeneration from "@/components/VoiceGeneration"
@@ -13,7 +13,7 @@ import AdminNavbar from "@/components/AdminNavbar"
 import { Persona } from "@/lib/personas"
 
 export default function GenerateAvatarPage() {
-  const { user, isLoaded } = useUser()
+  const { user, isLoaded } = useClerkUser()
   const [selectedPersona, setSelectedPersona] = useState<Persona | null>(null);
   const [currentText, setCurrentText] = useState('');
   const [currentAudioUrl, setCurrentAudioUrl] = useState<string | null>(null);

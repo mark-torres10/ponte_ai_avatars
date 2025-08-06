@@ -2,6 +2,9 @@ import { NextRequest } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { logger } from './logger'
 
+// Shared constant for valid user roles
+export const VALID_USER_ROLES = ['admin', 'client', 'talent'] as const;
+
 /**
  * Centralized authentication utility for API routes
  * Handles Clerk session and Authorization header checks
@@ -40,7 +43,7 @@ export async function authenticateRequest(request: NextRequest): Promise<string 
  * Validates if a user has the required role
  */
 export function validateUserRole(userRole: string | null | undefined): userRole is string {
-  return !!userRole && ['admin', 'client', 'talent'].includes(userRole)
+  return !!userRole && VALID_USER_ROLES.includes(userRole as any)
 }
 
 /**

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { authenticateRequest } from '@/lib/auth-utils';
+import { authenticateRequest, validateUserRole } from '@/lib/auth-utils';
 import { logger } from '@/lib/logger';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
@@ -69,8 +69,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
     
-    // Validate role
-    if (!['admin', 'client', 'talent'].includes(body.role)) {
+    // Validate role using centralized validation utility
+    if (!validateUserRole(body.role)) {
       return NextResponse.json(
         {
           success: false,

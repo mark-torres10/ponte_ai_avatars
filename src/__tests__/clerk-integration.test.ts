@@ -80,7 +80,7 @@ describe('Clerk Integration Tests', () => {
         try {
           // This would normally be a dynamic import
           return true
-        } catch (_error) {
+        } catch {
           return false
         }
       }
@@ -99,7 +99,7 @@ describe('Clerk Integration Tests', () => {
         try {
           // Simulate Clerk auth failure
           throw new Error('Clerk not configured')
-        } catch (_error) {
+        } catch {
           // Fallback to Authorization header
           const authHeader = request?.headers?.get?.('authorization') as string | null
           if (authHeader && authHeader.startsWith('Bearer ')) {
@@ -129,7 +129,7 @@ describe('Clerk Integration Tests', () => {
         try {
           // Simulate Clerk auth failure
           throw new Error('Clerk not configured')
-        } catch (_error) {
+        } catch {
           // Fallback to Authorization header
           const authHeader = request?.headers?.get?.('authorization') as string | null
           if (authHeader && authHeader.startsWith('Bearer ')) {

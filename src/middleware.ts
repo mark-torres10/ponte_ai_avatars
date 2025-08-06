@@ -1,5 +1,6 @@
 import { clerkMiddleware } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { logger } from "@/lib/logger";
 
 // Define protected routes and their required roles
 const protectedRoutes = {
@@ -27,24 +28,23 @@ export default clerkMiddleware(async (auth, req) => {
   const { userId } = await auth();
   const { pathname } = req.nextUrl;
 
-  console.log('🔍 Middleware: Processing request for pathname:', pathname);
-  console.log('🔍 Middleware: User ID:', userId);
+  logger.info('Middleware: Processing request', { pathname, userId });
 
   // Allow public routes
   if (publicRoutes.includes(pathname)) {
-    console.log('🔍 Middleware: Allowing public route:', pathname);
+    logger.info('Middleware: Allowing public route', { pathname });
     return NextResponse.next();
   }
   
   // Allow API routes that start with /api/users (for role checking)
   if (pathname.startsWith('/api/users/')) {
-    console.log('🔍 Middleware: Allowing API route:', pathname);
+    logger.info('Middleware: Allowing API route', { pathname });
     return NextResponse.next();
   }
 
   // If user is not authenticated, redirect to login
   if (!userId) {
-    console.log('🔍 Middleware: User not authenticated, redirecting to login');
+    logger.warn('Middleware: User not authenticated, redirecting to login', { pathname });
     const signInUrl = new URL('/login', req.url);
     signInUrl.searchParams.set('redirect_url', pathname);
     return NextResponse.redirect(signInUrl);
@@ -52,42 +52,41 @@ export default clerkMiddleware(async (auth, req) => {
 
   // Special handling for root page - redirect authenticated users to appropriate dashboard
   if (pathname === '/') {
-    console.log('🔍 Middleware: Root page access, checking user role for dashboard redirect');
+    logger.info('Middleware: Root page access, checking user role for dashboard redirect');
     
     try {
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
       const apiUrl = `${baseUrl}/api/users/${userId}`;
-      console.log('🔍 Middleware: Making API call to:', apiUrl);
+      logger.debug('Middleware: Making API call', { apiUrl });
       
       const response = await fetch(apiUrl);
-      console.log('🔍 Middleware: API Response status:', response.status);
-      console.log('🔍 Middleware: API Response ok:', response.ok);
+      logger.debug('Middleware: API Response received', { status: response.status, ok: response.ok });
       
       if (response.ok) {
         const userData = await response.json();
-        console.log('🔍 Middleware: User data received:', userData);
+        logger.debug('Middleware: User data received', { userData });
         const userRole = userData.data?.role;
-        console.log('🔍 Middleware: User role:', userRole);
+        logger.info('Middleware: User role retrieved', { userRole });
         
         if (userRole) {
           // User has a role, redirect to their dashboard
-          console.log('🔍 Middleware: Redirecting user with role', userRole, 'to dashboard');
+          logger.info('Middleware: Redirecting user to dashboard', { userRole });
           const dashboardUrl = new URL(`/${userRole}`, req.url);
           return NextResponse.redirect(dashboardUrl);
         } else {
           // User has no role, redirect to role selection
-          console.log('🔍 Middleware: User has no role, redirecting to role selection');
+          logger.info('Middleware: User has no role, redirecting to role selection');
           const roleSelectionUrl = new URL('/role-selection', req.url);
           return NextResponse.redirect(roleSelectionUrl);
         }
       } else {
         // User doesn't exist, redirect to role selection
-        console.log('🔍 Middleware: User not found, redirecting to role selection');
+        logger.info('Middleware: User not found, redirecting to role selection');
         const roleSelectionUrl = new URL('/role-selection', req.url);
         return NextResponse.redirect(roleSelectionUrl);
       }
     } catch (error) {
-      console.error('🔍 Middleware: Error checking user role for root page:', error);
+      logger.error('Middleware: Error checking user role for root page', { error });
       // On error, redirect to role selection
       const roleSelectionUrl = new URL('/role-selection', req.url);
       return NextResponse.redirect(roleSelectionUrl);
@@ -101,14 +100,13 @@ export default clerkMiddleware(async (auth, req) => {
 
   // For protected routes, check user role
   if (Object.keys(protectedRoutes).includes(pathname)) {
-    console.log('🔍 Middleware: Checking protected route:', pathname);
-    console.log('🔍 Middleware: User ID:', userId);
+    logger.info('Middleware: Checking protected route', { pathname, userId });
     
     try {
       // Fetch user role from API with retry logic
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
       const apiUrl = `${baseUrl}/api/users/${userId}`;
-      console.log('🔍 Middleware: Making API call to:', apiUrl);
+      logger.debug('Middleware: Making API call', { apiUrl });
       
       let response;
       let retryCount = 0;
@@ -120,8 +118,7 @@ export default clerkMiddleware(async (auth, req) => {
             // No Authorization header needed - Clerk handles authentication in middleware context
           });
           
-          console.log('🔍 Middleware: API Response status:', response.status);
-          console.log('🔍 Middleware: API Response ok:', response.ok);
+          logger.debug('Middleware: API Response received', { status: response.status, ok: response.ok });
           
           if (response.ok) {
             break; // Success, exit retry loop
@@ -129,7 +126,7 @@ export default clerkMiddleware(async (auth, req) => {
           
           if (response.status === 404 && retryCount < maxRetries) {
             // User might not exist yet, wait a bit and retry
-            console.log('🔍 Middleware: User not found, retrying...');
+            logger.debug('Middleware: User not found, retrying', { retryCount });
             await new Promise(resolve => setTimeout(resolve, 500));
             retryCount++;
             continue;
@@ -137,9 +134,9 @@ export default clerkMiddleware(async (auth, req) => {
           
           break; // Exit retry loop for other errors
         } catch (fetchError) {
-          console.error('🔍 Middleware: Fetch error:', fetchError);
+          logger.error('Middleware: Fetch error', { error: fetchError });
           if (retryCount < maxRetries) {
-            console.log('🔍 Middleware: Fetch failed, retrying...');
+            logger.debug('Middleware: Fetch failed, retrying', { retryCount });
             await new Promise(resolve => setTimeout(resolve, 500));
             retryCount++;
             continue;
@@ -150,42 +147,41 @@ export default clerkMiddleware(async (auth, req) => {
 
       if (response && response.ok) {
         const userData = await response.json();
-        console.log('🔍 Middleware: User data received:', userData);
+        logger.debug('Middleware: User data received', { userData });
         const userRole = userData.data?.role;
-        console.log('🔍 Middleware: User role:', userRole);
+        logger.info('Middleware: User role retrieved', { userRole });
 
         if (userRole) {
           // Check if user has access to this route
           const requiredRoles = protectedRoutes[pathname as keyof typeof protectedRoutes];
-          console.log('🔍 Middleware: Required roles for', pathname, ':', requiredRoles);
-          console.log('🔍 Middleware: User role', userRole, 'in required roles:', requiredRoles?.includes(userRole));
+          logger.debug('Middleware: Checking route access', { pathname, userRole, requiredRoles });
           
           if (requiredRoles && requiredRoles.includes(userRole)) {
-            console.log('🔍 Middleware: ✅ User has access, allowing route');
+            logger.info('Middleware: User has access, allowing route', { pathname, userRole });
             return NextResponse.next();
           } else {
             // User doesn't have access, redirect to their dashboard
-            console.log('🔍 Middleware: ❌ User lacks access, redirecting to dashboard:', `/${userRole}`);
+            logger.warn('Middleware: User lacks access, redirecting to dashboard', { pathname, userRole });
             const dashboardUrl = new URL(`/${userRole}`, req.url);
             return NextResponse.redirect(dashboardUrl);
           }
         } else {
           // User has no role assigned, redirect to role selection
-          console.log('🔍 Middleware: ❌ User has no role assigned, redirecting to role selection');
+          logger.warn('Middleware: User has no role assigned, redirecting to role selection');
           const roleSelectionUrl = new URL('/role-selection', req.url);
           return NextResponse.redirect(roleSelectionUrl);
         }
       } else {
         // User doesn't exist in database or API failed
         // Redirect to role selection instead of allowing the route
-        console.log('🔍 Middleware: User not found in database, redirecting to role selection');
+        logger.info('Middleware: User not found in database, redirecting to role selection');
         const roleSelectionUrl = new URL('/role-selection', req.url);
         return NextResponse.redirect(roleSelectionUrl);
       }
     } catch (error) {
-      console.error('🔍 Middleware: Error checking user role:', error);
+      logger.error('Middleware: Error checking user role', { error });
       // On error, deny access for security - redirect to login
-      console.log('🔍 Middleware: Error occurred, denying access for security');
+      logger.warn('Middleware: Error occurred, denying access for security');
       const loginUrl = new URL('/login', req.url);
       return NextResponse.redirect(loginUrl);
     }

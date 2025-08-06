@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useUser } from '@clerk/nextjs'
 import { User, UserRole } from '@/types/user'
+import { useClerkUser } from './useClerkUser'
 
 interface UseUserRoleReturn {
   userData: User | null
@@ -17,7 +17,7 @@ interface UseUserRoleReturn {
 }
 
 export function useUserRole(): UseUserRoleReturn {
-  const { user, isLoaded } = useUser()
+  const { user, isLoaded } = useClerkUser()
   const [userData, setUserData] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -129,7 +129,7 @@ export function useRoleRedirect() {
 
 // Hook for role assignment
 export function useRoleAssignment() {
-  const { user } = useUser()
+  const { user } = useClerkUser()
   const [isAssigning, setIsAssigning] = useState(false)
   const [assignmentError, setAssignmentError] = useState<string | null>(null)
 

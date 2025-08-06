@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useUser, SignOutButton } from '@clerk/nextjs'
+import { SignOutButton } from '@clerk/nextjs'
 import { UserRole } from '@/types/user'
 import Link from 'next/link'
+import { useClerkUser } from '@/lib/useClerkUser'
 
 export default function RoleSelectionPage() {
-  const { user, isLoaded } = useUser()
+  const { user, isLoaded } = useClerkUser()
   const router = useRouter()
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null)
   const [isLoading, setIsLoading] = useState(false)
