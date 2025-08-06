@@ -1,7 +1,6 @@
 import Link from "next/link"
 import Navigation from "@/components/navigation"
 import { auth } from "@clerk/nextjs/server"
-import { redirect } from "next/navigation"
 
 // Sample avatar data for the carousel
 const sampleAvatars = [
@@ -60,11 +59,6 @@ const sampleAvatars = [
 export default async function HomePage() {
   const { userId } = await auth();
   
-  // If user is not authenticated, redirect to login
-  if (!userId) {
-    redirect('/login');
-  }
-
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -96,12 +90,21 @@ export default async function HomePage() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Link
-                href="/request-talent"
-                className="btn-primary-ponte text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 rounded-md font-medium w-full sm:w-auto"
-              >
-                Explore Avatar Marketplace
-              </Link>
+              {userId ? (
+                <Link
+                  href="/role-selection"
+                  className="btn-primary-ponte text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 rounded-md font-medium w-full sm:w-auto"
+                >
+                  Go to Dashboard
+                </Link>
+              ) : (
+                <Link
+                  href="/login"
+                  className="btn-primary-ponte text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 rounded-md font-medium w-full sm:w-auto"
+                >
+                  Get Started
+                </Link>
+              )}
               <Link
                 href="/generate-avatar"
                 className="btn-secondary-ponte text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 rounded-md font-medium w-full sm:w-auto"
@@ -222,7 +225,7 @@ export default async function HomePage() {
                 Maintain full control over usage rights while earning passive income.
               </p>
               <Link
-                href="/onboard-client"
+                href="/login"
                 className="btn-primary-ponte text-sm px-4 py-2 rounded-md font-medium"
               >
                 Apply as Talent
@@ -236,7 +239,7 @@ export default async function HomePage() {
                 Create compelling campaigns with ethical AI avatar technology.
               </p>
               <Link
-                href="/request-talent"
+                href="/login"
                 className="btn-primary-ponte text-sm px-4 py-2 rounded-md font-medium"
               >
                 Start Booking Avatars

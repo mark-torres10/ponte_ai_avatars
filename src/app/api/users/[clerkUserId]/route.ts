@@ -76,24 +76,11 @@ export async function GET(
       );
     }
     
-    // Authenticate the request
-    const authenticatedUserId = await authenticateRequest(request);
-    
-    if (!authenticatedUserId) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Unauthorized - User not authenticated',
-        },
-        { status: 401 }
-      );
-    }
-    
+    // No authentication required for this endpoint - backend is public
     const response = await fetch(`${BACKEND_URL}/api/users/${clerkUserId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authenticatedUserId}`,
       },
     });
     

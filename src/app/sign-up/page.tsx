@@ -32,7 +32,7 @@ export default function SignUpPage() {
                 socialButtonsBlockButtonText: "text-foreground",
               },
             }}
-            redirectUrl="/"
+            redirectUrl="/role-selection"
           />
         </div>
       </div>
