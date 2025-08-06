@@ -1,8 +1,7 @@
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import { LocalTestingProvider } from "@/lib/local-testing-context"
-import { ClerkProvider } from "@clerk/nextjs"
+import ClerkRootWrapper from "@/components/ClerkRootWrapper"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -26,13 +25,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${inter.className} min-h-screen bg-background text-foreground antialiased`}>
-        <ClerkProvider
-          publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || ''}
-        >
-          <LocalTestingProvider>
-            {children}
-          </LocalTestingProvider>
-        </ClerkProvider>
+        <ClerkRootWrapper>
+          {children}
+        </ClerkRootWrapper>
       </body>
     </html>
   )
