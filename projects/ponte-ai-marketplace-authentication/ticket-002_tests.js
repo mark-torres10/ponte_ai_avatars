@@ -14,7 +14,7 @@ const clerkSessionToken = clerkTokenIndex !== -1 ? args[clerkTokenIndex + 1] : '
 
 if (!testNumber) {
     console.error('Usage: node ticket-002_tests.js --test <test_number> [--clerk-session-token <token>]');
-    console.error('Available tests: 4, 5, 6, 7, 8, 9, 10');
+    console.error('Available tests: 4, 5, 6, 7, 8, 9, 10, 11');
     console.error('');
     console.error('Examples:');
     console.error('  node ticket-002_tests.js --test 4');
@@ -36,6 +36,16 @@ const BACKEND_API_BASE = `${BACKEND_URL}/api/users`;
 
 // Use the provided Clerk session token or empty string for unauthenticated tests
 const AUTH_HEADER = clerkSessionToken;
+
+// Validate AUTH_HEADER to prevent command injection
+// Only allow alphanumeric characters, dots, underscores, and hyphens
+const AUTH_HEADER_REGEX = /^[a-zA-Z0-9._-]*$/;
+if (AUTH_HEADER && !AUTH_HEADER_REGEX.test(AUTH_HEADER)) {
+    console.error('❌ Security Error: Invalid characters in authentication token');
+    console.error('Token contains unsafe characters that could lead to command injection');
+    console.error('Only alphanumeric characters, dots, underscores, and hyphens are allowed');
+    process.exit(1);
+}
 
 // Test data
 const testUser = {

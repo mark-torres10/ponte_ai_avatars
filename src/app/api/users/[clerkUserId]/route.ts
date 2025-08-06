@@ -1,6 +1,62 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { UserRole } from '@/types/user';
+import { logger } from '@/lib/logger';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
+
+// Valid roles constant
+const VALID_ROLES: UserRole[] = ['admin', 'client', 'talent'];
+
+// Bearer token validation regex - allows alphanumeric, dots, underscores, and hyphens
+const BEARER_TOKEN_REGEX = /^[a-zA-Z0-9._-]+$/;
+
+/**
+ * Authenticates the request using Clerk session or Authorization header
+ * @param request - The NextRequest object
+ * @returns The authenticated user ID or null if not authenticated
+ */
+async function authenticateRequest(request: NextRequest): Promise<string | null> {
+  try {
+    // Try to get user ID from Clerk session
+    const { auth } = await import('@clerk/nextjs/server');
+    const authResult = await auth();
+    const clerkUserId = authResult.userId;
+    
+    if (clerkUserId) {
+      logger.auth('Clerk session', clerkUserId, true);
+      return clerkUserId;
+    }
+  } catch (authError) {
+    logger.warn('Clerk authentication failed', { error: authError });
+  }
+  
+  // If Clerk auth didn't provide a userId, try Authorization header
+  const authHeader = request.headers.get('authorization');
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.replace('Bearer ', '');
+    
+    // Validate Bearer token format
+    if (!BEARER_TOKEN_REGEX.test(token)) {
+      logger.error('Invalid Bearer token format', { token: token.substring(0, 10) + '...' });
+      return null;
+    }
+    
+    logger.auth('Authorization header', token, true);
+    return token;
+  }
+  
+  logger.warn('No valid authentication found');
+  return null;
+}
+
+/**
+ * Validates user role against allowed values
+ * @param role - The role to validate
+ * @returns True if role is valid, false otherwise
+ */
+function validateRole(role: string): role is UserRole {
+  return VALID_ROLES.includes(role as UserRole);
+}
 
 // GET /api/users/[clerkUserId] - Get user by Clerk user ID
 export async function GET(
@@ -20,28 +76,9 @@ export async function GET(
       );
     }
     
-    // Try to get user ID from Clerk session or Authorization header
-    let authenticatedUserId: string | null = null;
+    // Authenticate the request
+    const authenticatedUserId = await authenticateRequest(request);
     
-    try {
-      const { auth } = await import('@clerk/nextjs/server');
-      const authResult = await auth();
-      authenticatedUserId = authResult.userId;
-      console.log('Clerk auth result:', { authenticatedUserId, hasUserId: !!authenticatedUserId });
-    } catch (authError) {
-      console.log('Clerk auth error:', authError);
-    }
-    
-    // If Clerk auth didn't provide a userId, try Authorization header
-    if (!authenticatedUserId) {
-      const authHeader = request.headers.get('authorization');
-      if (authHeader && authHeader.startsWith('Bearer ')) {
-        authenticatedUserId = authHeader.replace('Bearer ', '');
-        console.log('Using Authorization header, authenticatedUserId:', authenticatedUserId);
-      }
-    }
-    
-    // For now, allow access if authenticated (we can add stricter checks later)
     if (!authenticatedUserId) {
       return NextResponse.json(
         {
@@ -62,7 +99,7 @@ export async function GET(
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error('Error fetching user:', error);
+    logger.error('Failed to fetch user', { error, clerkUserId });
     return NextResponse.json(
       {
         success: false,
@@ -91,28 +128,9 @@ export async function PUT(
       );
     }
     
-    // Try to get user ID from Clerk session or Authorization header
-    let authenticatedUserId: string | null = null;
+    // Authenticate the request
+    const authenticatedUserId = await authenticateRequest(request);
     
-    try {
-      const { auth } = await import('@clerk/nextjs/server');
-      const authResult = await auth();
-      authenticatedUserId = authResult.userId;
-      console.log('Clerk auth result:', { authenticatedUserId, hasUserId: !!authenticatedUserId });
-    } catch (authError) {
-      console.log('Clerk auth error:', authError);
-    }
-    
-    // If Clerk auth didn't provide a userId, try Authorization header
-    if (!authenticatedUserId) {
-      const authHeader = request.headers.get('authorization');
-      if (authHeader && authHeader.startsWith('Bearer ')) {
-        authenticatedUserId = authHeader.replace('Bearer ', '');
-        console.log('Using Authorization header, authenticatedUserId:', authenticatedUserId);
-      }
-    }
-    
-    // For now, allow access if authenticated (we can add stricter checks later)
     if (!authenticatedUserId) {
       return NextResponse.json(
         {
@@ -126,11 +144,11 @@ export async function PUT(
     const body = await request.json();
     
     // Validate role if provided
-    if (body.role && !['admin', 'client', 'talent'].includes(body.role)) {
+    if (body.role && !validateRole(body.role)) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Invalid role. Must be admin, client, or talent',
+          error: `Invalid role. Must be one of: ${VALID_ROLES.join(', ')}`,
         },
         { status: 400 }
       );
@@ -147,7 +165,7 @@ export async function PUT(
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error('Error updating user:', error);
+    logger.error('Failed to update user', { error, clerkUserId });
     return NextResponse.json(
       {
         success: false,
@@ -176,28 +194,9 @@ export async function DELETE(
       );
     }
     
-    // Try to get user ID from Clerk session or Authorization header
-    let authenticatedUserId: string | null = null;
+    // Authenticate the request
+    const authenticatedUserId = await authenticateRequest(request);
     
-    try {
-      const { auth } = await import('@clerk/nextjs/server');
-      const authResult = await auth();
-      authenticatedUserId = authResult.userId;
-      console.log('Clerk auth result:', { authenticatedUserId, hasUserId: !!authenticatedUserId });
-    } catch (authError) {
-      console.log('Clerk auth error:', authError);
-    }
-    
-    // If Clerk auth didn't provide a userId, try Authorization header
-    if (!authenticatedUserId) {
-      const authHeader = request.headers.get('authorization');
-      if (authHeader && authHeader.startsWith('Bearer ')) {
-        authenticatedUserId = authHeader.replace('Bearer ', '');
-        console.log('Using Authorization header, authenticatedUserId:', authenticatedUserId);
-      }
-    }
-    
-    // For now, allow access if authenticated (we can add stricter checks later)
     if (!authenticatedUserId) {
       return NextResponse.json(
         {
@@ -218,7 +217,7 @@ export async function DELETE(
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error('Error deleting user:', error);
+    logger.error('Failed to delete user', { error, clerkUserId });
     return NextResponse.json(
       {
         success: false,
