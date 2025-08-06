@@ -4,6 +4,9 @@ import "./globals.css"
 import { LocalTestingProvider } from "@/lib/local-testing-context"
 import { ClerkProvider } from "@clerk/nextjs"
 
+// Check if Clerk environment variables are available
+const hasClerkConfig = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
@@ -26,11 +29,19 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${inter.className} min-h-screen bg-background text-foreground antialiased`}>
-        <ClerkProvider>
+        {hasClerkConfig ? (
+          <ClerkProvider
+            publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY!}
+          >
+            <LocalTestingProvider>
+              {children}
+            </LocalTestingProvider>
+          </ClerkProvider>
+        ) : (
           <LocalTestingProvider>
             {children}
           </LocalTestingProvider>
-        </ClerkProvider>
+        )}
       </body>
     </html>
   )
