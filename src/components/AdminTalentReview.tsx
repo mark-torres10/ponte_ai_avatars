@@ -127,7 +127,7 @@ export default function AdminTalentReview() {
     }))
   }
 
-  const handleExport = async (format: 'csv' | 'json', _filters: Record<string, unknown>) => {
+  const handleExport = async (format: 'csv' | 'json') => {
     try {
       // Get the data to export (filtered data or all data)
       const dataToExport = filteredData.length > 0 ? filteredData : talentData

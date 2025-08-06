@@ -1,14 +1,12 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
 
 // Check if Clerk environment variables are available
 const hasClerkConfig = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 
 // Basic navigation component that works without Clerk
 const Navigation = () => {
-  const pathname = usePathname()
   
   // If Clerk is not available, render basic navigation
   if (!hasClerkConfig) {
