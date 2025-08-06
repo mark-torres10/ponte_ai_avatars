@@ -83,7 +83,8 @@ const SelfInterviewStep: React.FC = () => {
     return () => {
       const urlsToCleanup = createdUrlsRef.current
       if (urlsToCleanup) {
-        urlsToCleanup.forEach(url => {
+        const urls = Array.from(urlsToCleanup)
+        urls.forEach(url => {
           URL.revokeObjectURL(url)
         })
         urlsToCleanup.clear()

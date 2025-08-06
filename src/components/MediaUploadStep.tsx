@@ -48,9 +48,11 @@ const MediaUploadStep: React.FC = () => {
   // File validation constants
   const MAX_IMAGE_SIZE = 10 * 1024 * 1024 // 10MB
   const MAX_VIDEO_SIZE = 50 * 1024 * 1024 // 50MB
-  const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png']
-  const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/quicktime', 'video/webm']
   const MAX_HEADSHOTS = 5
+  
+  // Memoize allowed types to prevent dependency changes
+  const ALLOWED_IMAGE_TYPES = React.useMemo(() => ['image/jpeg', 'image/jpg', 'image/png'], [])
+  const ALLOWED_VIDEO_TYPES = React.useMemo(() => ['video/mp4', 'video/quicktime', 'video/webm'], [])
 
   // Compress image function
   const compressImage = async (file: File): Promise<File> => {
@@ -98,7 +100,7 @@ const MediaUploadStep: React.FC = () => {
     }
 
     return null
-  }, [])
+  }, [MAX_IMAGE_SIZE, MAX_VIDEO_SIZE, ALLOWED_IMAGE_TYPES, ALLOWED_VIDEO_TYPES])
 
   // Create uploaded file object
   const createUploadedFile = (file: File, type: 'image' | 'video'): UploadedFile => {
@@ -154,7 +156,7 @@ const MediaUploadStep: React.FC = () => {
       headshots: updatedHeadshots.map(h => h.file)
     })
     setIsCompressing(false)
-      }, [headshots, setValue, getValues, validateFile, ALLOWED_IMAGE_TYPES, ALLOWED_VIDEO_TYPES, MAX_IMAGE_SIZE, MAX_VIDEO_SIZE])
+      }, [headshots, setValue, getValues, validateFile])
 
   // Handle video upload
   const onVideoDrop = useCallback(async (acceptedFiles: File[]) => {

@@ -1,64 +1,41 @@
 import Link from "next/link"
-import Navigation from "@/components/navigation"
+import { auth } from "@clerk/nextjs/server"
+import { sampleAvatars } from "@/lib/sampleData"
 
-// Sample avatar data for the carousel
-const sampleAvatars = [
-  {
-    id: 1,
-    name: "Alex Thompson",
-    role: "Tech Influencer",
-    rating: "4.9",
-    bookings: "1,250",
-    price: "$2,500 - $15,000",
-    tags: ["Product Launches", "Training Videos"],
-    image: "/api/placeholder/300/400"
-  },
-  {
-    id: 2,
-    name: "Sarah Martinez",
-    role: "Celebrity Chef",
-    rating: "4.8",
-    bookings: "890",
-    price: "$3,000 - $20,000",
-    tags: ["Food Campaigns", "Cooking Tutorials"],
-    image: "/api/placeholder/300/400"
-  },
-  {
-    id: 3,
-    name: "Marcus Johnson",
-    role: "Professional Athlete",
-    rating: "5.0",
-    bookings: "2,100",
-    price: "$5,000 - $35,000",
-    tags: ["Sports Marketing", "Motivational Content"],
-    image: "/api/placeholder/300/400"
-  },
-  {
-    id: 4,
-    name: "Emma Chen",
-    role: "Podcast Host",
-    rating: "4.7",
-    bookings: "675",
-    price: "$1,800 - $12,000",
-    tags: ["Interview Style", "Educational Content"],
-    image: "/api/placeholder/300/400"
-  },
-  {
-    id: 5,
-    name: "David Rodriguez",
-    role: "Fitness Expert",
-    rating: "4.9",
-    bookings: "1,450",
-    price: "$2,200 - $18,000",
-    tags: ["Fitness Content", "Wellness Campaigns"],
-    image: "/api/placeholder/300/400"
-  }
-]
-
-export default function HomePage() {
+export default async function HomePage() {
+  const { userId } = await auth();
+  
   return (
     <div className="min-h-screen bg-background">
-      <Navigation />
+      {/* Header */}
+      <div className="border-b border-border">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <span className="text-2xl font-bold text-primary">
+                Ponte AI
+              </span>
+            </div>
+            <div className="flex items-center space-x-4">
+              {userId ? (
+                <Link
+                  href="/role-selection"
+                  className="text-sm text-foreground/60 hover:text-foreground transition-colors"
+                >
+                  Go to Dashboard
+                </Link>
+              ) : (
+                <Link
+                  href="/login"
+                  className="text-sm text-foreground/60 hover:text-foreground transition-colors"
+                >
+                  Sign In
+                </Link>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
       
       {/* Hero Section */}
       <section className="relative pt-24 pb-16 overflow-hidden">
@@ -87,12 +64,21 @@ export default function HomePage() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Link
-                href="/request-talent"
-                className="btn-primary-ponte text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 rounded-md font-medium w-full sm:w-auto"
-              >
-                Explore Avatar Marketplace
-              </Link>
+              {userId ? (
+                <Link
+                  href="/role-selection"
+                  className="btn-primary-ponte text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 rounded-md font-medium w-full sm:w-auto"
+                >
+                  Go to Dashboard
+                </Link>
+              ) : (
+                <Link
+                  href="/login"
+                  className="btn-primary-ponte text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 rounded-md font-medium w-full sm:w-auto"
+                >
+                  Get Started
+                </Link>
+              )}
               <Link
                 href="/generate-avatar"
                 className="btn-secondary-ponte text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 rounded-md font-medium w-full sm:w-auto"
@@ -213,7 +199,7 @@ export default function HomePage() {
                 Maintain full control over usage rights while earning passive income.
               </p>
               <Link
-                href="/onboard-client"
+                href="/login"
                 className="btn-primary-ponte text-sm px-4 py-2 rounded-md font-medium"
               >
                 Apply as Talent
@@ -227,7 +213,7 @@ export default function HomePage() {
                 Create compelling campaigns with ethical AI avatar technology.
               </p>
               <Link
-                href="/request-talent"
+                href="/login"
                 className="btn-primary-ponte text-sm px-4 py-2 rounded-md font-medium"
               >
                 Start Booking Avatars

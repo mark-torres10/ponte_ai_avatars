@@ -1,19 +1,45 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
 
-const Navigation = () => {
-  const pathname = usePathname()
+interface NavigationProps {
+  hasClerkConfig?: boolean
+}
 
-  const navItems = [
-    { href: "/", label: "Home" },
-    { href: "/request-talent", label: "Request Talent" },
-    { href: "/onboard-client", label: "Onboard Talent" },
-    { href: "/generate-avatar", label: "Generate Avatar" },
-  ]
-
+// Basic navigation component that works without Clerk
+const Navigation = ({ hasClerkConfig = false }: NavigationProps) => {
+  
+  // If Clerk is not available, render basic navigation
+  if (!hasClerkConfig) {
+    return (
+      <nav className="fixed top-0 w-full z-50 backdrop-blur-xl border-b border-white/10 bg-background/80">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <Link href="/" className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-ponte rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">P</span>
+              </div>
+              <span className="text-xl font-bold text-gradient">Ponte AI</span>
+            </Link>
+            
+            {/* Basic navigation without auth */}
+            <div className="flex items-center space-x-4">
+              <Link
+                href="/login"
+                className="btn-primary-ponte text-sm px-4 py-2 rounded-md font-medium"
+              >
+                Sign In
+              </Link>
+            </div>
+          </div>
+        </div>
+      </nav>
+    )
+  }
+  
+  // If Clerk is available, render auth navigation
+  // This will only be executed when Clerk is properly configured
   return (
     <nav className="fixed top-0 w-full z-50 backdrop-blur-xl border-b border-white/10 bg-background/80">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -25,36 +51,14 @@ const Navigation = () => {
             </div>
             <span className="text-xl font-bold text-gradient">Ponte AI</span>
           </Link>
-
-          {/* Navigation Links */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "nav-link text-sm font-medium transition-colors duration-200",
-                  pathname === item.href && "nav-link-active"
-                )}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </div>
-
-          {/* CTA Buttons */}
+          
+          {/* Basic navigation without auth - will be enhanced by Clerk when available */}
           <div className="flex items-center space-x-4">
             <Link
-              href="/request-talent"
-              className="btn-secondary-ponte text-sm px-4 py-2 rounded-md font-medium"
-            >
-              Book Avatar
-            </Link>
-            <Link
-              href="/onboard-client"
+              href="/login"
               className="btn-primary-ponte text-sm px-4 py-2 rounded-md font-medium"
             >
-              Join as Talent
+              Sign In
             </Link>
           </div>
         </div>

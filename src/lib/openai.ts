@@ -161,7 +161,7 @@ Perfect for: ${this.getUseCases(toneCategories)}`
   // Real OpenAI API integration (moved to backend for security)
   // This method is kept for reference but should not be used in production
   // All OpenAI calls should go through the backend API
-  private async callOpenAIAPI(_request: OpenAIPersonaRequest): Promise<OpenAIPersonaResponse> {
+  private async callOpenAIAPI(): Promise<OpenAIPersonaResponse> {
     console.warn('Direct OpenAI API calls are deprecated. Use backend API instead.')
     throw new Error('Direct OpenAI API calls are not allowed. Use the backend API.')
   }

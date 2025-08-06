@@ -4,6 +4,7 @@ import textRoutes from './text';
 import voiceRoutes from './voice';
 import videoRoutes from './video';
 import openaiRoutes from './openai';
+import userRoutes from './users';
 
 const router = Router();
 
@@ -28,6 +29,9 @@ router.use('/api/video', videoRoutes);
 
 // OpenAI routes
 router.use('/api/openai', openaiRoutes);
+
+// User management routes
+router.use('/api/users', userRoutes);
 
 // Placeholder for future avatar generation routes
 router.use('/api/v1/avatar', (_req, res) => {
