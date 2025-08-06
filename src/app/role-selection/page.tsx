@@ -34,6 +34,8 @@ export default function RoleSelectionPage() {
           headers: {
             'Content-Type': 'application/json',
           },
+          // Add cache: 'no-store' to ensure fresh data
+          cache: 'no-store'
         })
 
         console.log('🔍 API Response status:', response.status)
@@ -50,13 +52,13 @@ export default function RoleSelectionPage() {
             // User already has a role, redirect to appropriate dashboard
             switch (userRole) {
               case 'talent':
-                router.push('/talent')
+                router.replace('/talent') // Use replace instead of push to avoid back button issues
                 break
               case 'client':
-                router.push('/client')
+                router.replace('/client')
                 break
               case 'admin':
-                router.push('/admin')
+                router.replace('/admin')
                 break
             }
             return
@@ -75,7 +77,10 @@ export default function RoleSelectionPage() {
       }
     }
 
-    checkExistingRole()
+    // Add a small delay to prevent rapid re-renders
+    const timeoutId = setTimeout(checkExistingRole, 100)
+    
+    return () => clearTimeout(timeoutId)
   }, [isLoaded, user, router])
 
   if (!isLoaded || isCheckingRole) {

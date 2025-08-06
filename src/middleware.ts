@@ -49,6 +49,45 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.redirect(signInUrl);
   }
 
+  // Special handling for root page - redirect authenticated users to appropriate dashboard
+  if (pathname === '/') {
+    console.log('🔍 Middleware: Root page access, checking user role for dashboard redirect');
+    
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+      const apiUrl = `${baseUrl}/api/users/${userId}`;
+      
+      const response = await fetch(apiUrl);
+      
+      if (response.ok) {
+        const userData = await response.json();
+        const userRole = userData.data?.role;
+        
+        if (userRole) {
+          // User has a role, redirect to their dashboard
+          console.log('🔍 Middleware: Redirecting user with role', userRole, 'to dashboard');
+          const dashboardUrl = new URL(`/${userRole}`, req.url);
+          return NextResponse.redirect(dashboardUrl);
+        } else {
+          // User has no role, redirect to role selection
+          console.log('🔍 Middleware: User has no role, redirecting to role selection');
+          const roleSelectionUrl = new URL('/role-selection', req.url);
+          return NextResponse.redirect(roleSelectionUrl);
+        }
+      } else {
+        // User doesn't exist, redirect to role selection
+        console.log('🔍 Middleware: User not found, redirecting to role selection');
+        const roleSelectionUrl = new URL('/role-selection', req.url);
+        return NextResponse.redirect(roleSelectionUrl);
+      }
+    } catch (error) {
+      console.error('🔍 Middleware: Error checking user role for root page:', error);
+      // On error, redirect to role selection
+      const roleSelectionUrl = new URL('/role-selection', req.url);
+      return NextResponse.redirect(roleSelectionUrl);
+    }
+  }
+
   // For onboarding routes, allow access
   if (onboardingRoutes.includes(pathname)) {
     return NextResponse.next();
@@ -132,10 +171,10 @@ export default clerkMiddleware(async (auth, req) => {
         }
       } else {
         // User doesn't exist in database or API failed
-        // Instead of immediately redirecting to role selection, allow the route
-        // The client-side will handle the role checking and redirect if needed
-        console.log('🔍 Middleware: User not found, allowing route for client-side handling');
-        return NextResponse.next();
+        // Redirect to role selection instead of allowing the route
+        console.log('🔍 Middleware: User not found in database, redirecting to role selection');
+        const roleSelectionUrl = new URL('/role-selection', req.url);
+        return NextResponse.redirect(roleSelectionUrl);
       }
     } catch (error) {
       console.error('🔍 Middleware: Error checking user role:', error);
