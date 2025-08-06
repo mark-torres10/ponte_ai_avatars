@@ -12,7 +12,7 @@ export default function TalentDashboardPage() {
   const router = useRouter()
   const [userData, setUserData] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [_error, setError] = useState<string | null>(null)
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false)
 
   useEffect(() => {
@@ -78,12 +78,12 @@ export default function TalentDashboardPage() {
     )
   }
 
-  if (error) {
+  if (_error) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="text-destructive mb-4">⚠️</div>
-          <p className="text-destructive mb-4">{error}</p>
+          <p className="text-destructive mb-4">{_error}</p>
           <Link href="/" className="text-primary hover:underline">
             Return to home
           </Link>
@@ -263,9 +263,9 @@ export default function TalentDashboardPage() {
             <div className="text-center py-12">
               <div className="text-4xl mb-4">🎭</div>
               <p className="text-foreground/60 mb-4">No recent activity</p>
-              <p className="text-sm text-foreground/40">
-                Your profile is ready! You'll see booking requests here as they come in.
-              </p>
+                              <p className="text-sm text-foreground/40">
+                  Your profile is ready! You&apos;ll see booking requests here as they come in.
+                </p>
             </div>
           </div>
 

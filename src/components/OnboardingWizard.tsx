@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useForm, FormProvider } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -123,30 +123,7 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
 
   const { formState, watch } = methods
 
-  // Load existing draft on mount
-  useEffect(() => {
-    if (hasExistingDraft) {
-      setShowDraftModal(true)
-      loadExistingDraft().then(draft => {
-        if (draft) {
-          setDraftData(draft)
-        }
-      })
-    }
-  }, [hasExistingDraft, loadExistingDraft])
-
-  // Auto-save functionality
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (hasUnsavedChanges && formState.isDirty) {
-        handleAutoSave()
-      }
-    }, ONBOARDING_CONSTANTS.AUTO_SAVE_INTERVAL)
-
-    return () => clearInterval(interval)
-  }, [hasUnsavedChanges, formState.isDirty])
-
-  const handleAutoSave = async () => {
+  const handleAutoSave = useCallback(async () => {
     if (!formState.isDirty) return
 
     setIsSaving(true)
@@ -159,7 +136,29 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
     } finally {
       setIsSaving(false)
     }
-  }
+  }, [formState.isDirty, saveCurrentProgress, methods])
+
+  // Load existing draft on mount
+  useEffect(() => {
+    if (hasExistingDraft && loadExistingDraft) {
+      setShowDraftModal(true)
+      const draft = loadExistingDraft()
+      if (draft) {
+        setDraftData(draft)
+      }
+    }
+  }, [hasExistingDraft, loadExistingDraft])
+
+  // Auto-save functionality
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (hasUnsavedChanges && formState.isDirty) {
+        handleAutoSave()
+      }
+    }, ONBOARDING_CONSTANTS.AUTO_SAVE_INTERVAL)
+
+    return () => clearInterval(interval)
+  }, [hasUnsavedChanges, formState.isDirty, handleAutoSave])
 
   const handleManualSave = () => {
     if (!isLocalStorageSupported() || !formState.isDirty) return

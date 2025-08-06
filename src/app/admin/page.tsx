@@ -12,7 +12,7 @@ export default function AdminDashboardPage() {
   const router = useRouter()
   const [userData, setUserData] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [_error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -70,12 +70,12 @@ export default function AdminDashboardPage() {
     )
   }
 
-  if (error) {
+  if (_error) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="text-destructive mb-4">⚠️</div>
-          <p className="text-destructive mb-4">{error}</p>
+          <p className="text-destructive mb-4">{_error}</p>
           <Link href="/" className="text-primary hover:underline">
             Return to home
           </Link>
