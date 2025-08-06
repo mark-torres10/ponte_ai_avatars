@@ -1,4 +1,4 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { clerkMiddleware } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 // Define protected routes and their required roles
@@ -27,16 +27,12 @@ const onboardingRoutes = [
   '/onboard-client',
 ];
 
-const isProtectedRoute = createRouteMatcher(protectedRoutes);
-const isPublicRoute = createRouteMatcher(publicRoutes);
-const isOnboardingRoute = createRouteMatcher(onboardingRoutes);
-
 export default clerkMiddleware(async (auth, req) => {
   const { userId } = await auth();
   const { pathname } = req.nextUrl;
 
   // Allow public routes
-  if (isPublicRoute(pathname)) {
+  if (publicRoutes.includes(pathname)) {
     return NextResponse.next();
   }
 
@@ -48,12 +44,12 @@ export default clerkMiddleware(async (auth, req) => {
   }
 
   // For onboarding routes, allow access
-  if (isOnboardingRoute(pathname)) {
+  if (onboardingRoutes.includes(pathname)) {
     return NextResponse.next();
   }
 
   // For protected routes, check user role
-  if (isProtectedRoute(pathname)) {
+  if (Object.keys(protectedRoutes).includes(pathname)) {
     try {
       // Fetch user role from API
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
