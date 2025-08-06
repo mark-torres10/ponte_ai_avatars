@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useUser, SignOutButton } from '@clerk/nextjs'
 import { UserRole } from '@/types/user'
@@ -12,8 +12,73 @@ export default function RoleSelectionPage() {
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isCheckingRole, setIsCheckingRole] = useState(true)
 
-  if (!isLoaded) {
+  // Check if user already has a role assigned
+  useEffect(() => {
+    console.log('🔍 useEffect triggered - isLoaded:', isLoaded, 'user:', !!user)
+    
+    const checkExistingRole = async () => {
+      if (!isLoaded || !user) {
+        console.log('🔍 Early return - isLoaded:', isLoaded, 'user:', !!user)
+        return
+      }
+
+      console.log('🔍 Checking existing role for user:', user.id)
+      console.log('🔍 User email:', user.emailAddresses[0]?.emailAddress)
+
+      try {
+        console.log('🔍 Making API call to:', `/api/users/${user.id}`)
+        const response = await fetch(`/api/users/${user.id}`, {
+          // Remove Authorization header - Clerk will handle authentication automatically
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+
+        console.log('🔍 API Response status:', response.status)
+        console.log('🔍 API Response ok:', response.ok)
+        console.log('🔍 API Response headers:', Object.fromEntries(response.headers.entries()))
+
+        if (response.ok) {
+          const userData = await response.json()
+          console.log('🔍 User data received:', userData)
+          const userRole = userData.data?.role
+
+          if (userRole) {
+            console.log('🔍 User has role:', userRole, '- redirecting to dashboard')
+            // User already has a role, redirect to appropriate dashboard
+            switch (userRole) {
+              case 'talent':
+                router.push('/talent')
+                break
+              case 'client':
+                router.push('/client')
+                break
+              case 'admin':
+                router.push('/admin')
+                break
+            }
+            return
+          } else {
+            console.log('🔍 User exists but has no role assigned')
+          }
+        } else {
+          const errorData = await response.json()
+          console.log('🔍 API Error:', errorData)
+        }
+      } catch (error) {
+        console.error('🔍 Error checking user role:', error)
+      } finally {
+        console.log('🔍 Setting isCheckingRole to false')
+        setIsCheckingRole(false)
+      }
+    }
+
+    checkExistingRole()
+  }, [isLoaded, user, router])
+
+  if (!isLoaded || isCheckingRole) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
