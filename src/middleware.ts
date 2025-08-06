@@ -60,19 +60,50 @@ export default clerkMiddleware(async (auth, req) => {
     console.log('🔍 Middleware: User ID:', userId);
     
     try {
-      // Fetch user role from API
+      // Fetch user role from API with retry logic
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
       const apiUrl = `${baseUrl}/api/users/${userId}`;
       console.log('🔍 Middleware: Making API call to:', apiUrl);
       
-      const response = await fetch(apiUrl, {
-        // No Authorization header needed - Clerk handles authentication in middleware context
-      });
+      let response;
+      let retryCount = 0;
+      const maxRetries = 2;
+      
+      while (retryCount <= maxRetries) {
+        try {
+          response = await fetch(apiUrl, {
+            // No Authorization header needed - Clerk handles authentication in middleware context
+          });
+          
+          console.log('🔍 Middleware: API Response status:', response.status);
+          console.log('🔍 Middleware: API Response ok:', response.ok);
+          
+          if (response.ok) {
+            break; // Success, exit retry loop
+          }
+          
+          if (response.status === 404 && retryCount < maxRetries) {
+            // User might not exist yet, wait a bit and retry
+            console.log('🔍 Middleware: User not found, retrying...');
+            await new Promise(resolve => setTimeout(resolve, 500));
+            retryCount++;
+            continue;
+          }
+          
+          break; // Exit retry loop for other errors
+        } catch (fetchError) {
+          console.error('🔍 Middleware: Fetch error:', fetchError);
+          if (retryCount < maxRetries) {
+            console.log('🔍 Middleware: Fetch failed, retrying...');
+            await new Promise(resolve => setTimeout(resolve, 500));
+            retryCount++;
+            continue;
+          }
+          throw fetchError;
+        }
+      }
 
-      console.log('🔍 Middleware: API Response status:', response.status);
-      console.log('🔍 Middleware: API Response ok:', response.ok);
-
-      if (response.ok) {
+      if (response && response.ok) {
         const userData = await response.json();
         console.log('🔍 Middleware: User data received:', userData);
         const userRole = userData.data?.role;
@@ -100,16 +131,17 @@ export default clerkMiddleware(async (auth, req) => {
           return NextResponse.redirect(roleSelectionUrl);
         }
       } else {
-        // User doesn't exist in database, redirect to role selection
-        console.log('🔍 Middleware: ❌ User not found in database, redirecting to role selection');
-        const roleSelectionUrl = new URL('/role-selection', req.url);
-        return NextResponse.redirect(roleSelectionUrl);
+        // User doesn't exist in database or API failed
+        // Instead of immediately redirecting to role selection, allow the route
+        // The client-side will handle the role checking and redirect if needed
+        console.log('🔍 Middleware: User not found, allowing route for client-side handling');
+        return NextResponse.next();
       }
     } catch (error) {
       console.error('🔍 Middleware: Error checking user role:', error);
-      // On error, redirect to role selection
-      const roleSelectionUrl = new URL('/role-selection', req.url);
-      return NextResponse.redirect(roleSelectionUrl);
+      // On error, allow the route and let client-side handle it
+      console.log('🔍 Middleware: Error occurred, allowing route for client-side handling');
+      return NextResponse.next();
     }
   }
 

@@ -23,11 +23,32 @@ export default function AdminDashboardPage() {
 
         if (data.success) {
           setUserData(data.data)
+          
+          // Check if user has the correct role for this page
+          if (data.data?.role && data.data.role !== 'admin') {
+            // User doesn't have admin role, redirect to appropriate dashboard
+            switch (data.data.role) {
+              case 'talent':
+                router.push('/talent')
+                break
+              case 'client':
+                router.push('/client')
+                break
+              default:
+                router.push('/role-selection')
+                break
+            }
+            return
+          }
         } else {
-          setError(data.error || 'Failed to fetch user data')
+          // User doesn't exist or has no role, redirect to role selection
+          router.push('/role-selection')
+          return
         }
       } catch {
-        setError('Failed to fetch user data')
+        // Error fetching user data, redirect to role selection
+        router.push('/role-selection')
+        return
       } finally {
         setIsLoading(false)
       }
@@ -36,7 +57,7 @@ export default function AdminDashboardPage() {
     if (isLoaded && user) {
       fetchUserData()
     }
-  }, [user, isLoaded])
+  }, [user, isLoaded, router])
 
   if (!isLoaded) {
     return (
@@ -59,7 +80,7 @@ export default function AdminDashboardPage() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-foreground/60">Loading your dashboard...</p>
+          <p className="text-foreground/60">Loading your admin dashboard...</p>
         </div>
       </div>
     )

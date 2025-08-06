@@ -23,11 +23,32 @@ export default function ClientDashboardPage() {
 
         if (data.success) {
           setUserData(data.data)
+          
+          // Check if user has the correct role for this page
+          if (data.data?.role && data.data.role !== 'client') {
+            // User doesn't have client role, redirect to appropriate dashboard
+            switch (data.data.role) {
+              case 'admin':
+                router.push('/admin')
+                break
+              case 'talent':
+                router.push('/talent')
+                break
+              default:
+                router.push('/role-selection')
+                break
+            }
+            return
+          }
         } else {
-          setError(data.error || 'Failed to fetch user data')
+          // User doesn't exist or has no role, redirect to role selection
+          router.push('/role-selection')
+          return
         }
       } catch {
-        setError('Failed to fetch user data')
+        // Error fetching user data, redirect to role selection
+        router.push('/role-selection')
+        return
       } finally {
         setIsLoading(false)
       }
@@ -36,7 +57,7 @@ export default function ClientDashboardPage() {
     if (isLoaded && user) {
       fetchUserData()
     }
-  }, [user, isLoaded])
+  }, [user, isLoaded, router])
 
   if (!isLoaded) {
     return (
