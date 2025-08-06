@@ -38,6 +38,10 @@ const PERSONA_PROMPTS = {
     name: 'Will Howard',
     style: 'professional, articulate, and authoritative with a calm, measured tone. Uses clear, concise language and maintains a confident, leadership-focused approach.',
   },
+  'parker-munns': {
+    name: 'Parker Munns',
+    style: 'tech-savvy, entrepreneurial, and innovative with a forward-thinking perspective. Uses modern business terminology, references to technology trends, and maintains an optimistic yet pragmatic tone. Emphasizes growth, innovation, and market opportunities.',
+  },
 };
 
 router.post('/personalize', async (req: Request, res: Response) => {

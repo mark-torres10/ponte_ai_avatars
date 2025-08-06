@@ -18,6 +18,7 @@ const validateConfig = (): EnvironmentConfig => {
       DID_API_KEY: process.env['DID_API_KEY'] || 'test-did-key',
       ELEVENLABS_TERRY_CREWS_VOICE_ID: process.env['ELEVENLABS_TERRY_CREWS_VOICE_ID'] || 'test-terry-crews-voice-id',
       ELEVENLABS_WILL_HOWARD_VOICE_ID: process.env['ELEVENLABS_WILL_HOWARD_VOICE_ID'] || 'test-will-howard-voice-id',
+      ELEVENLABS_PARKER_MUNNS_VOICE_ID: process.env['ELEVENLABS_PARKER_MUNNS_VOICE_ID'] || 'test-parker-munns-voice-id',
       SUPABASE_URL: process.env['SUPABASE_URL'] || 'https://test.supabase.co',
       SUPABASE_ANON_KEY: process.env['SUPABASE_ANON_KEY'] || 'test-anon-key',
       SUPABASE_SERVICE_ROLE_KEY: process.env['SUPABASE_SERVICE_ROLE_KEY'] || 'test-service-role-key',
@@ -73,6 +74,7 @@ const validateConfig = (): EnvironmentConfig => {
     // ElevenLabs voice IDs - TODO: These will eventually be fetched from Supabase database
     ELEVENLABS_TERRY_CREWS_VOICE_ID: process.env['ELEVENLABS_TERRY_CREWS_VOICE_ID'],
     ELEVENLABS_WILL_HOWARD_VOICE_ID: process.env['ELEVENLABS_WILL_HOWARD_VOICE_ID'],
+    ELEVENLABS_PARKER_MUNNS_VOICE_ID: process.env['ELEVENLABS_PARKER_MUNNS_VOICE_ID'],
     // Supabase Configuration
     SUPABASE_URL: process.env['SUPABASE_URL'],
     SUPABASE_ANON_KEY: process.env['SUPABASE_ANON_KEY'],

@@ -1,4 +1,4 @@
-# Ponte AI Production App MVP
+# Ponte AI - AI Avatar Marketplace
 
 A professional Next.js application for Ponte AI's AI avatar marketplace, designed to replace their manual email-based booking process with a streamlined web interface for client demos and fundraising.
 
@@ -96,7 +96,7 @@ ponte_ai/
 ├── tailwind.config.js           # Tailwind config with brand colors
 ├── package.json                 # Frontend dependencies and scripts
 ├── projects/                    # Project management files
-│   ├── ponte-ai-production-app-mvp/
+│   ├── ponte-ai-talent-hub/
 │   │   ├── README.md            # Project documentation
 │   │   ├── spec.md              # Project specification
 │   │   └── tickets/             # Linear tickets
@@ -227,13 +227,13 @@ The application uses a modern full-stack deployment architecture:
 - **Project Management**: See `projects/` directory for specifications and tickets
 
 ### Development Resources
-- **Linear Project**: [Ponte AI Production App MVP](https://linear.app/metresearch/project/production-app-mvp-for-client-demos-and-fundraising-8ade99e55da3)
+- **Linear Project**: [Ponte AI - AI Avatar Marketplace](https://linear.app/metresearch/project/production-app-mvp-for-client-demos-and-fundraising-8ade99e55da3)
 - **Avatar Demo Project**: [Avatar Generation Demo Implementation](https://linear.app/metresearch/project/avatar-generation-demo-implementation-62ab6967b5e8)
 - **Backend API**: Railway deployment with health endpoints
 - **Frontend**: Vercel deployment with Ponte AI branding
 
 ### Contact
-For questions or issues with the Ponte AI Production App MVP, please refer to the project documentation or contact the development team.
+For questions or issues with the Ponte AI - AI Avatar Marketplace, please refer to the project documentation or contact the development team.
 
 ---
 
