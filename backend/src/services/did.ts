@@ -38,6 +38,19 @@ const VOICE_ACTOR_CONFIG = {
       '/voice_actor_b/pic4.jpeg',
       '/voice_actor_b/pic5.jpeg'
     ]
+  },
+  voiceActorC: {
+    id: 'voice_actor_c',
+    name: 'Parker Munns',
+    imageUrl: 'https://d-id-public-bucket.s3.amazonaws.com/parker.jpg',
+    // Alternative images for variety
+    images: [
+      '/voice_actor_c/pic1.jpeg',
+      '/voice_actor_c/pic2.jpeg',
+      '/voice_actor_c/pic3.jpeg',
+      '/voice_actor_c/pic4.jpeg',
+      '/voice_actor_c/pic5.jpeg'
+    ]
   }
 };
 
@@ -380,7 +393,7 @@ class DidService {
    */
   async generateVideo(params: {
     scriptText: string;
-    voiceActorId?: 'voice_actor_a' | 'voice_actor_b';
+    voiceActorId?: 'voice_actor_a' | 'voice_actor_b' | 'voice_actor_c';
     sourceUrl?: string;
     sourceImageId?: string;
     audioUrl?: string;
@@ -508,6 +521,12 @@ class DidService {
         name: VOICE_ACTOR_CONFIG.voiceActorB.name, 
         imageUrl: VOICE_ACTOR_CONFIG.voiceActorB.imageUrl,
         images: VOICE_ACTOR_CONFIG.voiceActorB.images
+      },
+      { 
+        id: VOICE_ACTOR_CONFIG.voiceActorC.id, 
+        name: VOICE_ACTOR_CONFIG.voiceActorC.name, 
+        imageUrl: VOICE_ACTOR_CONFIG.voiceActorC.imageUrl,
+        images: VOICE_ACTOR_CONFIG.voiceActorC.images
       }
     ];
   }

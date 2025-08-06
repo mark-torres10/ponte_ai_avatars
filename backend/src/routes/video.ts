@@ -183,14 +183,18 @@ router.post('/generate', async (req: Request, res: Response) => {
           const match = avatarImageUrl.match(/pic(\d+)\.jpeg/);
           if (match) {
             const imageNumber = match[1];
-            const folder = personaId === 'terry-crews' ? 'voice_actor_a' : 'voice_actor_b';
+            const folder = personaId === 'terry-crews' ? 'voice_actor_a' : 
+                          personaId === 'will-howard' ? 'voice_actor_b' : 
+                          personaId === 'parker-munns' ? 'voice_actor_c' : 'voice_actor_a';
             imagePath = `avatar_assets/${folder}/static/pic${imageNumber}.jpeg`;
           } else {
             throw new Error('Could not determine image path from URL');
           }
         } else {
           // Fallback to first image if no specific image selected
-          const folder = personaId === 'terry-crews' ? 'voice_actor_a' : 'voice_actor_b';
+          const folder = personaId === 'terry-crews' ? 'voice_actor_a' : 
+                        personaId === 'will-howard' ? 'voice_actor_b' : 
+                        personaId === 'parker-munns' ? 'voice_actor_c' : 'voice_actor_a';
           imagePath = `avatar_assets/${folder}/static/pic1.jpeg`;
         }
         
@@ -213,7 +217,9 @@ router.post('/generate', async (req: Request, res: Response) => {
         const didService = getDidService();
         
         // Map persona ID to voice actor ID
-        const voiceActorId = personaId === 'terry-crews' ? 'voice_actor_a' : 'voice_actor_b';
+        const voiceActorId = personaId === 'terry-crews' ? 'voice_actor_a' : 
+                           personaId === 'will-howard' ? 'voice_actor_b' : 
+                           personaId === 'parker-munns' ? 'voice_actor_c' : 'voice_actor_a';
         
         // Create signed URL for audio file
         logger.info('Creating signed URL for audio file', { requestId, audioUrl });

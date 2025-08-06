@@ -37,7 +37,8 @@ async function loadAvatarImages(): Promise<PersonaImages> {
     // Define the persona configurations
     const personas = [
       { id: 'terry-crews', folder: 'voice_actor_a' },
-      { id: 'will-howard', folder: 'voice_actor_b' }
+      { id: 'will-howard', folder: 'voice_actor_b' },
+      { id: 'parker-munns', folder: 'voice_actor_c' }
     ];
 
     for (const persona of personas) {
@@ -88,8 +89,22 @@ async function loadAvatarImages(): Promise<PersonaImages> {
  * Create fallback image for a specific persona and index
  */
 function createFallbackImage(personaId: string, index: number): AvatarImage {
-  const randomSeed = personaId === 'terry-crews' ? index : index + 5;
-  const personaName = personaId === 'terry-crews' ? 'Terry Crews' : 'Will Howard';
+  let randomSeed: number;
+  let personaName: string;
+  
+  if (personaId === 'terry-crews') {
+    randomSeed = index;
+    personaName = 'Terry Crews';
+  } else if (personaId === 'will-howard') {
+    randomSeed = index + 5;
+    personaName = 'Will Howard';
+  } else if (personaId === 'parker-munns') {
+    randomSeed = index + 10;
+    personaName = 'Parker Munns';
+  } else {
+    randomSeed = index;
+    personaName = 'Unknown';
+  }
   
   return {
     url: `https://picsum.photos/300/300?random=${randomSeed}&blur=2`,
@@ -104,7 +119,8 @@ function createFallbackImage(personaId: string, index: number): AvatarImage {
 function getFallbackImages(): PersonaImages {
   return {
     'terry-crews': Array.from({ length: 5 }, (_, i) => createFallbackImage('terry-crews', i + 1)),
-    'will-howard': Array.from({ length: 5 }, (_, i) => createFallbackImage('will-howard', i + 1))
+    'will-howard': Array.from({ length: 5 }, (_, i) => createFallbackImage('will-howard', i + 1)),
+    'parker-munns': Array.from({ length: 5 }, (_, i) => createFallbackImage('parker-munns', i + 1))
   };
 }
 
