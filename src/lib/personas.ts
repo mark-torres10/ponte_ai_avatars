@@ -23,6 +23,13 @@ export const PERSONAS: Persona[] = [
     images: [], // Start with empty images array - will be populated when loaded
     selected: false,
   },
+  {
+    id: 'parker-munns',
+    name: 'Parker Munns',
+    description: 'Tech & Marketing Entrepreneur Parker Munns',
+    images: [], // Start with empty images array - will be populated when loaded
+    selected: false,
+  },
 ];
 
 export const getPersonaById = (id: string): Persona | undefined => {
