@@ -87,6 +87,7 @@ export interface EnvironmentConfig {
   // ElevenLabs voice IDs - TODO: These will eventually be fetched from Supabase database
   ELEVENLABS_TERRY_CREWS_VOICE_ID: string | undefined;
   ELEVENLABS_WILL_HOWARD_VOICE_ID: string | undefined;
+  ELEVENLABS_PARKER_MUNNS_VOICE_ID: string | undefined;
   // Supabase Configuration
   SUPABASE_URL: string | undefined;
   SUPABASE_ANON_KEY: string | undefined;
