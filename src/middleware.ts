@@ -6,8 +6,6 @@ const protectedRoutes = {
   '/talent': ['talent', 'admin'],
   '/client': ['client', 'admin'],
   '/admin': ['admin'],
-  '/onboard-talent': ['talent'],
-  '/onboard-client': ['client'],
 };
 
 // Define public routes that don't require authentication
@@ -23,8 +21,6 @@ const publicRoutes = [
 // Define onboarding routes
 const onboardingRoutes = [
   '/role-selection',
-  '/onboard-talent',
-  '/onboard-client',
 ];
 
 export default clerkMiddleware(async (auth, req) => {

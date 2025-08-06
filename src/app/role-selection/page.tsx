@@ -119,13 +119,13 @@ export default function RoleSelectionPage() {
       const data = await response.json()
 
       if (data.success) {
-        // Redirect to appropriate onboarding or dashboard
+        // Redirect to appropriate dashboard
         switch (role) {
           case 'talent':
-            router.push('/onboard-talent')
+            router.push('/talent')
             break
           case 'client':
-            router.push('/onboard-client')
+            router.push('/client')
             break
           case 'admin':
             router.push('/admin')

@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { SignOutButton } from '@clerk/nextjs'
 
 interface AdminNavbarProps {
@@ -11,9 +11,19 @@ interface AdminNavbarProps {
 
 export default function AdminNavbar({ userEmail }: AdminNavbarProps) {
   const pathname = usePathname()
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState<'dashboard' | 'avatar'>(
     pathname.includes('/generate-avatar') ? 'avatar' : 'dashboard'
   )
+
+  // Sync active tab with current pathname
+  useEffect(() => {
+    if (pathname.includes('/generate-avatar')) {
+      setActiveTab('avatar')
+    } else {
+      setActiveTab('dashboard')
+    }
+  }, [pathname])
 
   return (
     <div className="border-b border-border">
@@ -29,7 +39,10 @@ export default function AdminNavbar({ userEmail }: AdminNavbarProps) {
           {/* Navigation Tabs */}
           <div className="flex items-center space-x-1 bg-secondary rounded-lg p-1">
             <button
-              onClick={() => setActiveTab('dashboard')}
+              onClick={() => {
+                setActiveTab('dashboard')
+                router.push('/admin')
+              }}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                 activeTab === 'dashboard'
                   ? 'bg-background text-foreground shadow-sm'
@@ -39,7 +52,10 @@ export default function AdminNavbar({ userEmail }: AdminNavbarProps) {
               Client Dashboard
             </button>
             <button
-              onClick={() => setActiveTab('avatar')}
+              onClick={() => {
+                setActiveTab('avatar')
+                router.push('/generate-avatar')
+              }}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                 activeTab === 'avatar'
                   ? 'bg-background text-foreground shadow-sm'
