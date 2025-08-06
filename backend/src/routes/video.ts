@@ -24,6 +24,7 @@ const router = Router();
 const PERSONA_IMAGES = {
   'terry-crews': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face',
   'will-howard': 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face',
+  'parker-munns': 'https://d-id-public-bucket.s3.amazonaws.com/parker.jpg',
 };
 
 // Video generation request interface

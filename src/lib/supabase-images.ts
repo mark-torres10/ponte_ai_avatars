@@ -67,6 +67,11 @@ const getFallbackImages = (): PersonaImages => {
       url: `https://picsum.photos/300/300?random=${i + 6}&blur=2`,
       alt: `Will Howard - Image ${i + 1}`,
       index: i + 1
+    })),
+    'parker-munns': Array.from({ length: 5 }, (_, i) => ({
+      url: `https://picsum.photos/300/300?random=${i + 11}&blur=2`,
+      alt: `Parker Munns - Image ${i + 1}`,
+      index: i + 1
     }))
   };
 }; 
