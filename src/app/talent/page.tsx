@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useUser } from '@clerk/nextjs'
+import { useUser, SignOutButton } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { User } from '@/types/user'
@@ -95,12 +95,11 @@ export default function TalentDashboardPage() {
               <span className="text-sm text-foreground/60">
                 Welcome, {user.firstName || user.emailAddresses[0]?.emailAddress}
               </span>
-              <Link
-                href="/api/auth/signout"
-                className="text-sm text-foreground/60 hover:text-foreground"
-              >
-                Sign Out
-              </Link>
+              <SignOutButton>
+                <button className="text-sm text-foreground/60 hover:text-foreground transition-colors">
+                  Sign Out
+                </button>
+              </SignOutButton>
             </div>
           </div>
         </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useUser } from '@clerk/nextjs'
+import { useUser, SignOutButton } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { User } from '@/types/user'
@@ -95,12 +95,11 @@ export default function ClientDashboardPage() {
               <span className="text-sm text-foreground/60">
                 Welcome, {user.firstName || user.emailAddresses[0]?.emailAddress}
               </span>
-              <Link
-                href="/api/auth/signout"
-                className="text-sm text-foreground/60 hover:text-foreground"
-              >
-                Sign Out
-              </Link>
+              <SignOutButton>
+                <button className="text-sm text-foreground/60 hover:text-foreground transition-colors">
+                  Sign Out
+                </button>
+              </SignOutButton>
             </div>
           </div>
         </div>
@@ -133,15 +132,6 @@ export default function ClientDashboardPage() {
             <div className="card-ponte p-6 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-foreground/60">Total Bookings</p>
-                  <p className="text-2xl font-bold">0</p>
-                </div>
-                <div className="text-2xl">📊</div>
-              </div>
-            </div>
-            <div className="card-ponte p-6 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div>
                   <p className="text-sm text-foreground/60">Total Spent</p>
                   <p className="text-2xl font-bold">$0</p>
                 </div>
@@ -151,10 +141,19 @@ export default function ClientDashboardPage() {
             <div className="card-ponte p-6 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-foreground/60">Favorites</p>
+                  <p className="text-sm text-foreground/60">Avatars Booked</p>
                   <p className="text-2xl font-bold">0</p>
                 </div>
-                <div className="text-2xl">❤️</div>
+                <div className="text-2xl">🎭</div>
+              </div>
+            </div>
+            <div className="card-ponte p-6 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-foreground/60">Projects</p>
+                  <p className="text-2xl font-bold">0</p>
+                </div>
+                <div className="text-2xl">📁</div>
               </div>
             </div>
           </div>
@@ -164,14 +163,14 @@ export default function ClientDashboardPage() {
             <div className="card-ponte p-8 rounded-lg">
               <h3 className="text-2xl font-bold mb-4">Browse Avatars</h3>
               <p className="text-foreground/70 mb-6">
-                Discover and book AI avatars from celebrities, athletes, and creators.
+                Discover and book AI avatars for your marketing campaigns and content creation.
               </p>
               <div className="space-y-3">
                 <Link
                   href="/request-talent"
                   className="block w-full btn-primary-ponte text-center py-3 rounded-md font-medium"
                 >
-                  Browse Marketplace
+                  Browse Avatars
                 </Link>
                 <button className="block w-full btn-secondary-ponte py-3 rounded-md font-medium">
                   View Favorites
@@ -182,7 +181,7 @@ export default function ClientDashboardPage() {
             <div className="card-ponte p-8 rounded-lg">
               <h3 className="text-2xl font-bold mb-4">Campaign Management</h3>
               <p className="text-foreground/70 mb-6">
-                Create and manage your marketing campaigns with AI avatars.
+                Create and manage your marketing campaigns with AI avatar endorsements.
               </p>
               <div className="space-y-3">
                 <button className="block w-full btn-primary-ponte py-3 rounded-md font-medium">
@@ -195,33 +194,6 @@ export default function ClientDashboardPage() {
             </div>
           </div>
 
-          {/* Featured Avatars */}
-          <div className="card-ponte p-8 rounded-lg mb-12">
-            <h3 className="text-2xl font-bold mb-6">Featured AI Avatars</h3>
-            <div className="grid md:grid-cols-3 gap-6">
-              {[
-                { name: 'Alex Thompson', role: 'Tech Influencer', price: '$2,500 - $15,000' },
-                { name: 'Sarah Martinez', role: 'Celebrity Chef', price: '$3,000 - $20,000' },
-                { name: 'Marcus Johnson', role: 'Professional Athlete', price: '$5,000 - $35,000' }
-              ].map((avatar, index) => (
-                <div key={index} className="p-4 border border-border rounded-lg">
-                  <div className="w-full h-32 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg mb-3 flex items-center justify-center">
-                    <span className="text-white font-semibold">{avatar.name}</span>
-                  </div>
-                  <h4 className="font-semibold mb-1">{avatar.name}</h4>
-                  <p className="text-sm text-foreground/60 mb-2">{avatar.role}</p>
-                  <p className="text-sm font-medium text-primary">{avatar.price}</p>
-                  <Link
-                    href={`/request-talent?avatar=${index + 1}`}
-                    className="block w-full mt-3 btn-primary-ponte text-center py-2 rounded-md text-sm font-medium"
-                  >
-                    Book Avatar
-                  </Link>
-                </div>
-              ))}
-            </div>
-          </div>
-
           {/* Recent Activity */}
           <div className="card-ponte p-8 rounded-lg">
             <h3 className="text-2xl font-bold mb-6">Recent Activity</h3>
@@ -229,7 +201,7 @@ export default function ClientDashboardPage() {
               <div className="text-4xl mb-4">🏢</div>
               <p className="text-foreground/60 mb-4">No recent activity</p>
               <p className="text-sm text-foreground/40">
-                Start browsing avatars to see your activity here
+                Start browsing avatars to create your first campaign
               </p>
             </div>
           </div>

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useUser } from '@clerk/nextjs'
+import { useUser, SignOutButton } from '@clerk/nextjs'
 import { UserRole } from '@/types/user'
 import Link from 'next/link'
 
@@ -129,6 +129,11 @@ export default function RoleSelectionPage() {
               <span className="text-sm text-foreground/60">
                 Welcome, {user.firstName || user.emailAddresses[0]?.emailAddress}
               </span>
+              <SignOutButton>
+                <button className="text-sm text-foreground/60 hover:text-foreground transition-colors">
+                  Sign Out
+                </button>
+              </SignOutButton>
             </div>
           </div>
         </div>
