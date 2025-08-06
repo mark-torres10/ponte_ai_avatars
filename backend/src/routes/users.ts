@@ -16,12 +16,34 @@ interface UpdateUserRequest {
 }
 
 // GET /api/users - Get all users (admin only)
-router.get('/', async (_req: Request, res: Response) => {
+router.get('/', async (req: Request, res: Response) => {
   try {
-    // TODO: Add proper authentication/authorization
-    // For now, allow all requests for development
+    // Get user ID from authorization header
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({
+        success: false,
+        error: 'Unauthorized - Missing or invalid authorization header',
+      });
+    }
+    
+    const clerkUserId = authHeader.replace('Bearer ', '');
     
     const supabase = getSupabaseClient();
+    
+    // Check if the authenticated user is an admin
+    const { data: currentUser } = await supabase
+      .from('users')
+      .select('role')
+      .eq('clerk_user_id', clerkUserId)
+      .single();
+    
+    if (!currentUser || currentUser.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        error: 'Forbidden - Admin access required',
+      });
+    }
     
     const { data: users, error } = await supabase
       .from('users')
