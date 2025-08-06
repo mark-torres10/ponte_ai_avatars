@@ -23,32 +23,15 @@ export default function TalentDashboardPage() {
 
         if (data.success) {
           setUserData(data.data)
-          
-          // Check if user has the correct role for this page
-          if (data.data?.role && data.data.role !== 'talent') {
-            // User doesn't have talent role, redirect to appropriate dashboard
-            switch (data.data.role) {
-              case 'admin':
-                router.push('/admin')
-                break
-              case 'client':
-                router.push('/client')
-                break
-              default:
-                router.push('/role-selection')
-                break
-            }
-            return
-          }
+          // Remove role checking - middleware handles this
+          // Just set the user data and continue
         } else {
-          // User doesn't exist or has no role, redirect to role selection
-          router.push('/role-selection')
-          return
+          // User doesn't exist, but don't redirect - let middleware handle this
+          setError('User data not found')
         }
-      } catch {
-        // Error fetching user data, redirect to role selection
-        router.push('/role-selection')
-        return
+      } catch (error) {
+        // Error fetching user data, but don't redirect - let middleware handle this
+        setError('Failed to load user data')
       } finally {
         setIsLoading(false)
       }

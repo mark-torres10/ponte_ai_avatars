@@ -12,7 +12,6 @@ const protectedRoutes = {
 
 // Define public routes that don't require authentication
 const publicRoutes = [
-  '/',
   '/login',
   '/sign-up',
   '/generate-avatar',
@@ -32,18 +31,24 @@ export default clerkMiddleware(async (auth, req) => {
   const { userId } = await auth();
   const { pathname } = req.nextUrl;
 
+  console.log('🔍 Middleware: Processing request for pathname:', pathname);
+  console.log('🔍 Middleware: User ID:', userId);
+
   // Allow public routes
   if (publicRoutes.includes(pathname)) {
+    console.log('🔍 Middleware: Allowing public route:', pathname);
     return NextResponse.next();
   }
   
   // Allow API routes that start with /api/users (for role checking)
   if (pathname.startsWith('/api/users/')) {
+    console.log('🔍 Middleware: Allowing API route:', pathname);
     return NextResponse.next();
   }
 
   // If user is not authenticated, redirect to login
   if (!userId) {
+    console.log('🔍 Middleware: User not authenticated, redirecting to login');
     const signInUrl = new URL('/login', req.url);
     signInUrl.searchParams.set('redirect_url', pathname);
     return NextResponse.redirect(signInUrl);
@@ -56,12 +61,17 @@ export default clerkMiddleware(async (auth, req) => {
     try {
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
       const apiUrl = `${baseUrl}/api/users/${userId}`;
+      console.log('🔍 Middleware: Making API call to:', apiUrl);
       
       const response = await fetch(apiUrl);
+      console.log('🔍 Middleware: API Response status:', response.status);
+      console.log('🔍 Middleware: API Response ok:', response.ok);
       
       if (response.ok) {
         const userData = await response.json();
+        console.log('🔍 Middleware: User data received:', userData);
         const userRole = userData.data?.role;
+        console.log('🔍 Middleware: User role:', userRole);
         
         if (userRole) {
           // User has a role, redirect to their dashboard
