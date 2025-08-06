@@ -1,23 +1,46 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import Navigation from "@/components/navigation"
+import { useState, useCallback, useEffect } from 'react';
 import Link from "next/link"
+import { useUser } from '@clerk/nextjs'
 import PersonaSelection from "@/components/PersonaSelection"
 import TextInput from "@/components/TextInput"
 import VoiceGeneration from "@/components/VoiceGeneration"
 import VideoGeneration from "@/components/VideoGeneration"
 import CollapsibleBackendStatus from "@/components/CollapsibleBackendStatus"
 import LocalTestingMode from "@/components/LocalTestingMode"
+import AdminNavbar from "@/components/AdminNavbar"
 import { Persona } from "@/lib/personas"
 
 export default function GenerateAvatarPage() {
+  const { user, isLoaded } = useUser()
   const [selectedPersona, setSelectedPersona] = useState<Persona | null>(null);
   const [currentText, setCurrentText] = useState('');
   const [currentAudioUrl, setCurrentAudioUrl] = useState<string | null>(null);
   const [originalText, setOriginalText] = useState('');
   const [personalizedText, setPersonalizedText] = useState('');
   const [isUsingPersonalized, setIsUsingPersonalized] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      if (!user) return;
+
+      try {
+        const response = await fetch(`/api/users/${user.id}`);
+        const data = await response.json();
+        if (data.success) {
+          setUserRole(data.data?.role);
+        }
+      } catch (error) {
+        console.error('Failed to fetch user role:', error);
+      }
+    };
+
+    if (isLoaded && user) {
+      fetchUserRole();
+    }
+  }, [user, isLoaded]);
 
   const handlePersonaSelect = useCallback((persona: Persona | null) => {
     setSelectedPersona(persona);
@@ -36,8 +59,6 @@ export default function GenerateAvatarPage() {
     setCurrentAudioUrl(audioUrl);
     console.log('Voice generated:', audioUrl);
   }, []);
-
-
 
   const handleScriptChange = useCallback((text: string, isPersonalized: boolean) => {
     setCurrentText(text);
@@ -64,9 +85,45 @@ export default function GenerateAvatarPage() {
     }
   }, [currentText, originalText, personalizedText, isUsingPersonalized, selectedPersona]);
 
+  // Show loading state while checking user role
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-foreground/60">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
-      <Navigation />
+      {/* Use AdminNavbar for admin users, regular navigation for others */}
+      {userRole === 'admin' ? (
+        <AdminNavbar userEmail={user?.emailAddresses[0]?.emailAddress} />
+      ) : (
+        <div className="border-b border-border">
+          <div className="container mx-auto px-4 py-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <Link href="/" className="text-2xl font-bold text-primary">
+                  Ponte AI
+                </Link>
+                <span className="text-sm text-foreground/60">Avatar Generation</span>
+              </div>
+              <div className="flex items-center space-x-4">
+                <Link
+                  href="/"
+                  className="text-sm text-foreground/60 hover:text-foreground transition-colors"
+                >
+                  Return to Home
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       
       <div className="pt-24 pb-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">

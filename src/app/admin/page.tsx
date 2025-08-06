@@ -1,10 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useUser, SignOutButton } from '@clerk/nextjs'
+import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { User } from '@/types/user'
+import AdminNavbar from '@/components/AdminNavbar'
 
 export default function AdminDashboardPage() {
   const { user, isLoaded } = useUser()
@@ -85,29 +86,7 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b border-border">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Link href="/" className="text-2xl font-bold text-primary">
-                Ponte AI
-              </Link>
-              <span className="text-sm text-foreground/60">Admin Dashboard</span>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-foreground/60">
-                Welcome, {user.firstName || user.emailAddresses[0]?.emailAddress}
-              </span>
-              <SignOutButton>
-                <button className="text-sm text-foreground/60 hover:text-foreground transition-colors">
-                  Sign Out
-                </button>
-              </SignOutButton>
-            </div>
-          </div>
-        </div>
-      </div>
+      <AdminNavbar userEmail={user.emailAddresses[0]?.emailAddress} />
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-12">
@@ -115,24 +94,15 @@ export default function AdminDashboardPage() {
           {/* Welcome Section */}
           <div className="mb-12">
             <h1 className="text-4xl font-bold mb-4">
-              Welcome to Admin Dashboard
+              Client Dashboard
             </h1>
             <p className="text-lg text-foreground/70">
-              Manage the platform, monitor user activity, and handle support requests.
+              Browse AI avatars, manage campaigns, and create compelling marketing content.
             </p>
           </div>
 
           {/* Stats Cards */}
           <div className="grid md:grid-cols-4 gap-6 mb-12">
-            <div className="card-ponte p-6 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-foreground/60">Total Users</p>
-                  <p className="text-2xl font-bold">0</p>
-                </div>
-                <div className="text-2xl">👥</div>
-              </div>
-            </div>
             <div className="card-ponte p-6 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
@@ -145,19 +115,28 @@ export default function AdminDashboardPage() {
             <div className="card-ponte p-6 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-foreground/60">Support Tickets</p>
-                  <p className="text-2xl font-bold">0</p>
+                  <p className="text-sm text-foreground/60">Total Spent</p>
+                  <p className="text-2xl font-bold">$0</p>
                 </div>
-                <div className="text-2xl">🎫</div>
+                <div className="text-2xl">💰</div>
               </div>
             </div>
             <div className="card-ponte p-6 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-foreground/60">Platform Revenue</p>
-                  <p className="text-2xl font-bold">$0</p>
+                  <p className="text-sm text-foreground/60">Avatars Booked</p>
+                  <p className="text-2xl font-bold">0</p>
                 </div>
-                <div className="text-2xl">💰</div>
+                <div className="text-2xl">🎭</div>
+              </div>
+            </div>
+            <div className="card-ponte p-6 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-foreground/60">Projects</p>
+                  <p className="text-2xl font-bold">0</p>
+                </div>
+                <div className="text-2xl">📁</div>
               </div>
             </div>
           </div>
@@ -165,31 +144,34 @@ export default function AdminDashboardPage() {
           {/* Quick Actions */}
           <div className="grid md:grid-cols-2 gap-8 mb-12">
             <div className="card-ponte p-8 rounded-lg">
-              <h3 className="text-2xl font-bold mb-4">User Management</h3>
+              <h3 className="text-2xl font-bold mb-4">Browse Avatars</h3>
               <p className="text-foreground/70 mb-6">
-                Manage user accounts, roles, and permissions across the platform.
+                Discover and book AI avatars for your marketing campaigns and content creation.
               </p>
               <div className="space-y-3">
-                <button className="block w-full btn-primary-ponte py-3 rounded-md font-medium">
-                  View All Users
-                </button>
+                <Link
+                  href="/request-talent"
+                  className="block w-full btn-primary-ponte text-center py-3 rounded-md font-medium"
+                >
+                  Browse Avatars
+                </Link>
                 <button className="block w-full btn-secondary-ponte py-3 rounded-md font-medium">
-                  Manage Roles
+                  View Favorites
                 </button>
               </div>
             </div>
 
             <div className="card-ponte p-8 rounded-lg">
-              <h3 className="text-2xl font-bold mb-4">Platform Analytics</h3>
+              <h3 className="text-2xl font-bold mb-4">Campaign Management</h3>
               <p className="text-foreground/70 mb-6">
-                Monitor platform performance, user engagement, and business metrics.
+                Create and manage your marketing campaigns with AI avatar endorsements.
               </p>
               <div className="space-y-3">
                 <button className="block w-full btn-primary-ponte py-3 rounded-md font-medium">
-                  View Analytics
+                  Create Campaign
                 </button>
                 <button className="block w-full btn-secondary-ponte py-3 rounded-md font-medium">
-                  Generate Reports
+                  View Campaigns
                 </button>
               </div>
             </div>
@@ -199,10 +181,10 @@ export default function AdminDashboardPage() {
           <div className="card-ponte p-8 rounded-lg">
             <h3 className="text-2xl font-bold mb-6">Recent Activity</h3>
             <div className="text-center py-12">
-              <div className="text-4xl mb-4">⚙️</div>
+              <div className="text-4xl mb-4">🏢</div>
               <p className="text-foreground/60 mb-4">No recent activity</p>
               <p className="text-sm text-foreground/40">
-                Platform activity will appear here as users join and interact
+                Start browsing avatars to create your first campaign
               </p>
             </div>
           </div>

@@ -5,6 +5,7 @@ import { useUser, SignOutButton } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { User } from '@/types/user'
+import OnboardingWizard from '@/components/OnboardingWizard'
 
 export default function TalentDashboardPage() {
   const { user, isLoaded } = useUser()
@@ -63,7 +64,7 @@ export default function TalentDashboardPage() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-foreground/60">Loading your dashboard...</p>
+          <p className="text-foreground/60">Loading your talent onboarding...</p>
         </div>
       </div>
     )
@@ -93,7 +94,7 @@ export default function TalentDashboardPage() {
               <Link href="/" className="text-2xl font-bold text-primary">
                 Ponte AI
               </Link>
-              <span className="text-sm text-foreground/60">Talent Dashboard</span>
+              <span className="text-sm text-foreground/60">Talent Onboarding</span>
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-foreground/60">
@@ -109,134 +110,21 @@ export default function TalentDashboardPage() {
         </div>
       </div>
 
-      {/* Main Content */}
+      {/* Main Content - Onboarding Wizard */}
       <div className="container mx-auto px-4 py-12">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           {/* Welcome Section */}
-          <div className="mb-12">
+          <div className="mb-12 text-center">
             <h1 className="text-4xl font-bold mb-4">
-              Welcome to Your Talent Dashboard
+              Complete Your Talent Profile
             </h1>
             <p className="text-lg text-foreground/70">
-              Manage your AI avatar profile, track bookings, and grow your brand partnerships.
+              Set up your AI avatar profile to start receiving booking requests from brands.
             </p>
           </div>
 
-          {/* Stats Cards */}
-          <div className="grid md:grid-cols-4 gap-6 mb-12">
-            <div className="card-ponte p-6 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-foreground/60">Total Bookings</p>
-                  <p className="text-2xl font-bold">0</p>
-                </div>
-                <div className="text-2xl">📊</div>
-              </div>
-            </div>
-            <div className="card-ponte p-6 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-foreground/60">Active Campaigns</p>
-                  <p className="text-2xl font-bold">0</p>
-                </div>
-                <div className="text-2xl">🎬</div>
-              </div>
-            </div>
-            <div className="card-ponte p-6 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-foreground/60">Total Earnings</p>
-                  <p className="text-2xl font-bold">$0</p>
-                </div>
-                <div className="text-2xl">💰</div>
-              </div>
-            </div>
-            <div className="card-ponte p-6 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-foreground/60">Profile Views</p>
-                  <p className="text-2xl font-bold">0</p>
-                </div>
-                <div className="text-2xl">👁️</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Actions */}
-          <div className="grid md:grid-cols-2 gap-8 mb-12">
-            <div className="card-ponte p-8 rounded-lg">
-              <h3 className="text-2xl font-bold mb-4">Profile Management</h3>
-              <p className="text-foreground/70 mb-6">
-                Update your AI avatar profile, set pricing, and manage your availability.
-              </p>
-              <div className="space-y-3">
-                <Link
-                  href="/onboard-talent"
-                  className="block w-full btn-primary-ponte text-center py-3 rounded-md font-medium"
-                >
-                  Complete Profile Setup
-                </Link>
-                <button className="block w-full btn-secondary-ponte py-3 rounded-md font-medium">
-                  Edit Profile
-                </button>
-              </div>
-            </div>
-
-            <div className="card-ponte p-8 rounded-lg">
-              <h3 className="text-2xl font-bold mb-4">Booking Management</h3>
-              <p className="text-foreground/70 mb-6">
-                View and manage incoming booking requests from brands and agencies.
-              </p>
-              <div className="space-y-3">
-                <button className="block w-full btn-primary-ponte py-3 rounded-md font-medium">
-                  View Bookings
-                </button>
-                <button className="block w-full btn-secondary-ponte py-3 rounded-md font-medium">
-                  Set Availability
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Recent Activity */}
-          <div className="card-ponte p-8 rounded-lg">
-            <h3 className="text-2xl font-bold mb-6">Recent Activity</h3>
-            <div className="text-center py-12">
-              <div className="text-4xl mb-4">🎭</div>
-              <p className="text-foreground/60 mb-4">No recent activity</p>
-              <p className="text-sm text-foreground/40">
-                Complete your profile setup to start receiving booking requests
-              </p>
-            </div>
-          </div>
-
-          {/* User Info */}
-          <div className="mt-12 p-6 bg-secondary/20 rounded-lg">
-            <h4 className="text-lg font-semibold mb-4">Account Information</h4>
-            <div className="grid md:grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="text-foreground/60">Email:</span>
-                <span className="ml-2">{user.emailAddresses[0]?.emailAddress}</span>
-              </div>
-              <div>
-                <span className="text-foreground/60">Role:</span>
-                <span className="ml-2 capitalize">{userData?.role || 'Not assigned'}</span>
-              </div>
-              <div>
-                <span className="text-foreground/60">Member Since:</span>
-                <span className="ml-2">
-                  {userData?.created_at 
-                    ? new Date(userData.created_at).toLocaleDateString()
-                    : 'Unknown'
-                  }
-                </span>
-              </div>
-              <div>
-                <span className="text-foreground/60">Status:</span>
-                <span className="ml-2 text-green-500">Active</span>
-              </div>
-            </div>
-          </div>
+          {/* Onboarding Wizard */}
+          <OnboardingWizard />
         </div>
       </div>
     </div>

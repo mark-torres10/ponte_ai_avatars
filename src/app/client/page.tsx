@@ -12,6 +12,14 @@ export default function ClientDashboardPage() {
   const [userData, setUserData] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [formData, setFormData] = useState({
+    companyName: '',
+    industry: '',
+    budget: '',
+    projectType: '',
+    timeline: '',
+    description: ''
+  })
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -42,6 +50,20 @@ export default function ClientDashboardPage() {
     }
   }, [user, isLoaded, router])
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    // Handle form submission logic here
+    console.log('Client onboarding form submitted:', formData)
+  }
+
   if (!isLoaded) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -63,7 +85,7 @@ export default function ClientDashboardPage() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-foreground/60">Loading your dashboard...</p>
+          <p className="text-foreground/60">Loading your client onboarding...</p>
         </div>
       </div>
     )
@@ -93,7 +115,7 @@ export default function ClientDashboardPage() {
               <Link href="/" className="text-2xl font-bold text-primary">
                 Ponte AI
               </Link>
-              <span className="text-sm text-foreground/60">Client Dashboard</span>
+              <span className="text-sm text-foreground/60">Client Onboarding</span>
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-foreground/60">
@@ -109,133 +131,178 @@ export default function ClientDashboardPage() {
         </div>
       </div>
 
-      {/* Main Content */}
+      {/* Main Content - Client Onboarding Form */}
       <div className="container mx-auto px-4 py-12">
-        <div className="max-w-6xl mx-auto">
-          {/* Welcome Section */}
-          <div className="mb-12">
+        <div className="max-w-2xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-12">
             <h1 className="text-4xl font-bold mb-4">
-              Welcome to Your Client Dashboard
+              Complete Your Client Profile
             </h1>
             <p className="text-lg text-foreground/70">
-              Browse AI avatars, manage your campaigns, and create compelling marketing content.
+              Tell us about your company and project requirements to get started with AI avatar campaigns.
             </p>
           </div>
 
-          {/* Stats Cards */}
-          <div className="grid md:grid-cols-4 gap-6 mb-12">
-            <div className="card-ponte p-6 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-foreground/60">Active Campaigns</p>
-                  <p className="text-2xl font-bold">0</p>
-                </div>
-                <div className="text-2xl">🎬</div>
-              </div>
+          {/* Progress Indicator */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium">Profile Setup Progress</span>
+              <span className="text-sm text-foreground/60">Step 1 of 2</span>
             </div>
-            <div className="card-ponte p-6 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-foreground/60">Total Spent</p>
-                  <p className="text-2xl font-bold">$0</p>
-                </div>
-                <div className="text-2xl">💰</div>
-              </div>
-            </div>
-            <div className="card-ponte p-6 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-foreground/60">Avatars Booked</p>
-                  <p className="text-2xl font-bold">0</p>
-                </div>
-                <div className="text-2xl">🎭</div>
-              </div>
-            </div>
-            <div className="card-ponte p-6 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-foreground/60">Projects</p>
-                  <p className="text-2xl font-bold">0</p>
-                </div>
-                <div className="text-2xl">📁</div>
-              </div>
+            <div className="w-full bg-secondary rounded-full h-2">
+              <div className="bg-primary h-2 rounded-full" style={{ width: '50%' }}></div>
             </div>
           </div>
 
-          {/* Quick Actions */}
-          <div className="grid md:grid-cols-2 gap-8 mb-12">
-            <div className="card-ponte p-8 rounded-lg">
-              <h3 className="text-2xl font-bold mb-4">Browse Avatars</h3>
-              <p className="text-foreground/70 mb-6">
-                Discover and book AI avatars for your marketing campaigns and content creation.
-              </p>
-              <div className="space-y-3">
-                <Link
-                  href="/request-talent"
-                  className="block w-full btn-primary-ponte text-center py-3 rounded-md font-medium"
-                >
-                  Browse Avatars
-                </Link>
-                <button className="block w-full btn-secondary-ponte py-3 rounded-md font-medium">
-                  View Favorites
-                </button>
-              </div>
-            </div>
-
-            <div className="card-ponte p-8 rounded-lg">
-              <h3 className="text-2xl font-bold mb-4">Campaign Management</h3>
-              <p className="text-foreground/70 mb-6">
-                Create and manage your marketing campaigns with AI avatar endorsements.
-              </p>
-              <div className="space-y-3">
-                <button className="block w-full btn-primary-ponte py-3 rounded-md font-medium">
-                  Create Campaign
-                </button>
-                <button className="block w-full btn-secondary-ponte py-3 rounded-md font-medium">
-                  View Campaigns
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Recent Activity */}
+          {/* Client Onboarding Form */}
           <div className="card-ponte p-8 rounded-lg">
-            <h3 className="text-2xl font-bold mb-6">Recent Activity</h3>
-            <div className="text-center py-12">
-              <div className="text-4xl mb-4">🏢</div>
-              <p className="text-foreground/60 mb-4">No recent activity</p>
-              <p className="text-sm text-foreground/40">
-                Start browsing avatars to create your first campaign
-              </p>
-            </div>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Company Name */}
+              <div>
+                <label htmlFor="companyName" className="block text-sm font-medium mb-2">
+                  Company Name *
+                </label>
+                <input
+                  type="text"
+                  id="companyName"
+                  name="companyName"
+                  value={formData.companyName}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  placeholder="Enter your company name"
+                />
+              </div>
+
+              {/* Industry */}
+              <div>
+                <label htmlFor="industry" className="block text-sm font-medium mb-2">
+                  Industry *
+                </label>
+                <select
+                  id="industry"
+                  name="industry"
+                  value={formData.industry}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                >
+                  <option value="">Select your industry</option>
+                  <option value="technology">Technology</option>
+                  <option value="healthcare">Healthcare</option>
+                  <option value="finance">Finance</option>
+                  <option value="retail">Retail</option>
+                  <option value="education">Education</option>
+                  <option value="entertainment">Entertainment</option>
+                  <option value="automotive">Automotive</option>
+                  <option value="food-beverage">Food & Beverage</option>
+                  <option value="fashion">Fashion</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              {/* Budget */}
+              <div>
+                <label htmlFor="budget" className="block text-sm font-medium mb-2">
+                  Budget Range *
+                </label>
+                <select
+                  id="budget"
+                  name="budget"
+                  value={formData.budget}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                >
+                  <option value="">Select budget range</option>
+                  <option value="under-5k">Under $5,000</option>
+                  <option value="5k-15k">$5,000 - $15,000</option>
+                  <option value="15k-50k">$15,000 - $50,000</option>
+                  <option value="50k-100k">$50,000 - $100,000</option>
+                  <option value="over-100k">Over $100,000</option>
+                </select>
+              </div>
+
+              {/* Project Type */}
+              <div>
+                <label htmlFor="projectType" className="block text-sm font-medium mb-2">
+                  Project Type *
+                </label>
+                <select
+                  id="projectType"
+                  name="projectType"
+                  value={formData.projectType}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                >
+                  <option value="">Select project type</option>
+                  <option value="commercial">Commercial/Advertisement</option>
+                  <option value="training">Training Video</option>
+                  <option value="social-media">Social Media Content</option>
+                  <option value="product-launch">Product Launch</option>
+                  <option value="brand-awareness">Brand Awareness</option>
+                  <option value="educational">Educational Content</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              {/* Timeline */}
+              <div>
+                <label htmlFor="timeline" className="block text-sm font-medium mb-2">
+                  Project Timeline *
+                </label>
+                <select
+                  id="timeline"
+                  name="timeline"
+                  value={formData.timeline}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                >
+                  <option value="">Select timeline</option>
+                  <option value="urgent">Urgent (1-2 weeks)</option>
+                  <option value="standard">Standard (1-2 months)</option>
+                  <option value="flexible">Flexible (2-6 months)</option>
+                  <option value="long-term">Long-term (6+ months)</option>
+                </select>
+              </div>
+
+              {/* Project Description */}
+              <div>
+                <label htmlFor="description" className="block text-sm font-medium mb-2">
+                  Project Description *
+                </label>
+                <textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  required
+                  rows={4}
+                  className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  placeholder="Describe your project, goals, and any specific requirements..."
+                />
+              </div>
+
+              {/* Submit Button */}
+              <div className="pt-6">
+                <button
+                  type="submit"
+                  className="w-full btn-primary-ponte py-3 rounded-md font-medium"
+                >
+                  Complete Profile Setup
+                </button>
+              </div>
+            </form>
           </div>
 
-          {/* User Info */}
-          <div className="mt-12 p-6 bg-secondary/20 rounded-lg">
-            <h4 className="text-lg font-semibold mb-4">Account Information</h4>
-            <div className="grid md:grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="text-foreground/60">Email:</span>
-                <span className="ml-2">{user.emailAddresses[0]?.emailAddress}</span>
-              </div>
-              <div>
-                <span className="text-foreground/60">Role:</span>
-                <span className="ml-2 capitalize">{userData?.role || 'Not assigned'}</span>
-              </div>
-              <div>
-                <span className="text-foreground/60">Member Since:</span>
-                <span className="ml-2">
-                  {userData?.created_at 
-                    ? new Date(userData.created_at).toLocaleDateString()
-                    : 'Unknown'
-                  }
-                </span>
-              </div>
-              <div>
-                <span className="text-foreground/60">Status:</span>
-                <span className="ml-2 text-green-500">Active</span>
-              </div>
-            </div>
+          {/* Footer */}
+          <div className="mt-8 text-center text-sm text-foreground/60">
+            <p>
+              You can update your profile details later from your dashboard.
+            </p>
           </div>
         </div>
       </div>
