@@ -97,308 +97,257 @@ cat .env.local
 - `SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
 
-### Phase 2: Talent Flow Testing
+### Phase 2: Basic Functionality Testing
 
-#### 2.1 Create Talent Account via Email
-1. **Navigate to**: `http://localhost:3000`
-2. **Click**: "Get Started" → "Sign Up"
-3. **Use Email**: `talent-test@example.com`
-4. **Complete Sign Up**: Verify email if required
-5. **Expected Result**: Redirected to `/role-selection`
+#### 2.1 Test Home Page (Unauthenticated)
+- [ ] **Navigate to**: `http://localhost:3000`
+- [ ] **Expected**: Should show landing page with "Get Started" button
+- [ ] **Verify**: No NEXT_REDIRECT errors in browser console (F12 → Console tab)
+- [ ] **Check**: Page loads without any JavaScript errors
 
-#### 2.2 Role Selection for Talent
-1. **On Role Selection Page**: Select "Talent & Creators"
-2. **Click**: "Select Role"
-3. **Expected Result**: 
-   - Role saved to database
-   - Redirected to `/onboard-talent`
+#### 2.2 Test Home Page (Authenticated)
+- [ ] **Sign in** to the application
+- [ ] **Navigate to**: `http://localhost:3000`
+- [ ] **Expected**: Should show landing page with "Go to Dashboard" button
+- [ ] **Verify**: No NEXT_REDIRECT errors in browser console
+- [ ] **Check**: Button should link to role selection if no role assigned
 
-#### 2.3 Talent Onboarding
-1. **Fill Form**:
-   - Full Name: `Test Talent User`
-   - Bio: `Professional AI avatar talent for testing`
-   - Expertise: `Tech Influencer, Content Creator`
-   - Pricing: `$2,500 - $15,000 per campaign`
-   - Availability: `Available for bookings`
-2. **Click**: "Complete Profile Setup"
-3. **Expected Result**: Redirected to `/talent` dashboard
+### Phase 3: Sign-out Functionality Testing
 
-#### 2.4 Verify Talent Dashboard Access
-1. **Check Dashboard**: Should show talent-specific content
-2. **Test Navigation**: Verify talent-specific menu items
-3. **Test Protected Routes**:
-   - ✅ `/talent` - Should be accessible
-   - ❌ `/client` - Should redirect to `/talent`
-   - ❌ `/admin` - Should redirect to `/talent`
+#### 3.1 Test Sign-out from Role Selection Page
+- [ ] **Navigate to**: `http://localhost:3000/role-selection`
+- [ ] **Look for**: "Sign Out" button in the top-right header area
+- [ ] **Click**: "Sign Out" button
+- [ ] **Expected**: Should sign out and redirect to home page (not 404 error)
+- [ ] **Verify**: You're now on the landing page and can sign in again
 
-#### 2.5 API Testing for Talent User
+#### 3.2 Test Sign-out from Talent Dashboard
+- [ ] **Sign in and select "Talent & Creators" role**
+- [ ] **Navigate to**: `http://localhost:3000/talent`
+- [ ] **Look for**: "Sign Out" button in the top-right header area
+- [ ] **Click**: "Sign Out" button
+- [ ] **Expected**: Should sign out and redirect to home page
+- [ ] **Verify**: You're signed out and can sign in again
 
-**Get User Data:**
-```bash
-# Replace CLERK_USER_ID with actual user ID from Clerk dashboard
-curl -X GET "http://localhost:3000/api/users/CLERK_USER_ID" \
-  -H "Authorization: Bearer CLERK_USER_ID" \
-  -H "Content-Type: application/json"
-```
+#### 3.3 Test Sign-out from Client Dashboard
+- [ ] **Sign in and select "Brands & Agencies" role**
+- [ ] **Navigate to**: `http://localhost:3000/client`
+- [ ] **Look for**: "Sign Out" button in the top-right header area
+- [ ] **Click**: "Sign Out" button
+- [ ] **Expected**: Should sign out and redirect to home page
+- [ ] **Verify**: You're signed out and can sign in again
 
-**Expected Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "id": "uuid",
-    "clerk_user_id": "CLERK_USER_ID",
-    "email": "talent-test@example.com",
-    "role": "talent",
-    "created_at": "2025-01-XX...",
-    "updated_at": "2025-01-XX..."
-  }
-}
-```
+#### 3.4 Test Sign-out from Admin Dashboard
+- [ ] **Sign in and select "Administrator" role**
+- [ ] **Navigate to**: `http://localhost:3000/admin`
+- [ ] **Look for**: "Sign Out" button in the top-right header area
+- [ ] **Click**: "Sign Out" button
+- [ ] **Expected**: Should sign out and redirect to home page
+- [ ] **Verify**: You're signed out and can sign in again
 
-### Phase 3: Client Flow Testing
+### Phase 4: Role Selection Flow Testing
 
-#### 3.1 Create Client Account via Google OAuth
-1. **Navigate to**: `http://localhost:3000`
-2. **Click**: "Get Started" → "Sign Up"
-3. **Choose**: "Continue with Google"
-4. **Complete OAuth**: Use your Google account
-5. **Expected Result**: Redirected to `/role-selection`
+#### 4.1 Test Role Selection Page Access
+- [ ] **Navigate to**: `http://localhost:3000/role-selection`
+- [ ] **Expected**: Should show role selection page with three cards:
+  - [ ] **Talent & Creators** card with 🎭 icon
+  - [ ] **Brands & Agencies** card with 🏢 icon
+  - [ ] **Administrator** card with ⚙️ icon
+- [ ] **Verify**: Each card has proper descriptions and feature lists
+- [ ] **Check**: "Sign Out" button is visible in header
 
-#### 3.2 Role Selection for Client
-1. **On Role Selection Page**: Select "Brands & Agencies"
-2. **Click**: "Select Role"
-3. **Expected Result**: 
-   - Role saved to database
-   - Redirected to `/onboard-client` (or `/client` if no onboarding)
+#### 4.2 Test Talent Role Selection
+- [ ] **On Role Selection Page**: Click on "Talent & Creators" card
+- [ ] **Expected**: Card should highlight/select
+- [ ] **Click**: "Select Role" button
+- [ ] **Expected**: Should redirect to `/onboard-talent` or `/talent`
+- [ ] **Verify**: Role is saved and you're on appropriate page
 
-#### 3.3 Verify Client Dashboard Access
-1. **Check Dashboard**: Should show client-specific content
-2. **Test Navigation**: Verify client-specific menu items
-3. **Test Protected Routes**:
-   - ❌ `/talent` - Should redirect to `/client`
-   - ✅ `/client` - Should be accessible
-   - ❌ `/admin` - Should redirect to `/client`
+#### 4.3 Test Client Role Selection
+- [ ] **Navigate back to**: `http://localhost:3000/role-selection`
+- [ ] **Click on**: "Brands & Agencies" card
+- [ ] **Expected**: Card should highlight/select
+- [ ] **Click**: "Select Role" button
+- [ ] **Expected**: Should redirect to `/onboard-client` or `/client`
+- [ ] **Verify**: Role is saved and you're on appropriate page
 
-#### 3.4 API Testing for Client User
+#### 4.4 Test Admin Role Selection
+- [ ] **Navigate back to**: `http://localhost:3000/role-selection`
+- [ ] **Click on**: "Administrator" card
+- [ ] **Expected**: Card should highlight/select
+- [ ] **Click**: "Select Role" button
+- [ ] **Expected**: Should redirect to `/admin`
+- [ ] **Verify**: Role is saved and you're on admin dashboard
 
-**Get User Data:**
-```bash
-# Replace CLERK_USER_ID with actual user ID from Clerk dashboard
-curl -X GET "http://localhost:3000/api/users/CLERK_USER_ID" \
-  -H "Authorization: Bearer CLERK_USER_ID" \
-  -H "Content-Type: application/json"
-```
+### Phase 5: Dashboard Access Testing
 
-**Expected Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "id": "uuid",
-    "clerk_user_id": "CLERK_USER_ID",
-    "email": "your-google-email@gmail.com",
-    "role": "client",
-    "created_at": "2025-01-XX...",
-    "updated_at": "2025-01-XX..."
-  }
-}
-```
+#### 5.1 Test Talent Dashboard Access
+- [ ] **Sign in and select "Talent & Creators" role**
+- [ ] **Navigate to**: `http://localhost:3000/talent`
+- [ ] **Expected**: Should show talent dashboard with:
+  - [ ] "Welcome to Your Talent Dashboard" heading
+  - [ ] Stats cards (Total Bookings, Active Campaigns, etc.)
+  - [ ] Quick action buttons
+  - [ ] "Sign Out" button in header
+- [ ] **Verify**: Page loads without errors
 
-### Phase 4: Admin Flow Testing
+#### 5.2 Test Client Dashboard Access
+- [ ] **Sign in and select "Brands & Agencies" role**
+- [ ] **Navigate to**: `http://localhost:3000/client`
+- [ ] **Expected**: Should show client dashboard with:
+  - [ ] "Welcome to Your Client Dashboard" heading
+  - [ ] Stats cards (Active Campaigns, Total Spent, etc.)
+  - [ ] Quick action buttons
+  - [ ] "Sign Out" button in header
+- [ ] **Verify**: Page loads without errors
 
-#### 4.1 Create Admin Account
-1. **Navigate to**: `http://localhost:3000`
-2. **Sign Up**: Use a third email address
-3. **Role Selection**: Select "Administrator"
-4. **Expected Result**: Redirected to `/admin` dashboard
+#### 5.3 Test Admin Dashboard Access
+- [ ] **Sign in and select "Administrator" role**
+- [ ] **Navigate to**: `http://localhost:3000/admin`
+- [ ] **Expected**: Should show admin dashboard with:
+  - [ ] "Welcome to Admin Dashboard" heading
+  - [ ] Stats cards (Total Users, Active Campaigns, etc.)
+  - [ ] Quick action buttons
+  - [ ] "Sign Out" button in header
+- [ ] **Verify**: Page loads without errors
 
-#### 4.2 Verify Admin Dashboard Access
-1. **Check Dashboard**: Should show admin-specific content
-2. **Test Navigation**: Verify admin-specific menu items
-3. **Test Protected Routes**:
-   - ✅ `/talent` - Should be accessible (admin can access all)
-   - ✅ `/client` - Should be accessible (admin can access all)
-   - ✅ `/admin` - Should be accessible
+### Phase 6: Role-based Route Protection Testing
 
-#### 4.3 API Testing for Admin User
+#### 6.1 Test Talent User Route Protection
+- [ ] **Sign in and select "Talent & Creators" role**
+- [ ] **Try to access**: `http://localhost:3000/client`
+- [ ] **Expected**: Should redirect to `/talent` dashboard (unauthorized access blocked)
+- [ ] **Try to access**: `http://localhost:3000/admin`
+- [ ] **Expected**: Should redirect to `/talent` dashboard (unauthorized access blocked)
+- [ ] **Verify**: You stay on talent dashboard, no access to other roles
 
-**Get All Users (Admin Only):**
-```bash
-# Replace CLERK_USER_ID with admin user ID
-curl -X GET "http://localhost:3000/api/users" \
-  -H "Authorization: Bearer CLERK_USER_ID" \
-  -H "Content-Type: application/json"
-```
+#### 6.2 Test Client User Route Protection
+- [ ] **Sign in and select "Brands & Agencies" role**
+- [ ] **Try to access**: `http://localhost:3000/talent`
+- [ ] **Expected**: Should redirect to `/client` dashboard (unauthorized access blocked)
+- [ ] **Try to access**: `http://localhost:3000/admin`
+- [ ] **Expected**: Should redirect to `/client` dashboard (unauthorized access blocked)
+- [ ] **Verify**: You stay on client dashboard, no access to other roles
 
-**Expected Response:**
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": "uuid-1",
-      "clerk_user_id": "clerk-user-1",
-      "email": "talent-test@example.com",
-      "role": "talent",
-      "created_at": "2025-01-XX...",
-      "updated_at": "2025-01-XX..."
-    },
-    {
-      "id": "uuid-2", 
-      "clerk_user_id": "clerk-user-2",
-      "email": "client-test@gmail.com",
-      "role": "client",
-      "created_at": "2025-01-XX...",
-      "updated_at": "2025-01-XX..."
-    }
-  ]
-}
-```
+#### 6.3 Test Admin User Route Access
+- [ ] **Sign in and select "Administrator" role**
+- [ ] **Navigate to**: `http://localhost:3000/talent`
+- [ ] **Expected**: Should be accessible (admin can access all)
+- [ ] **Navigate to**: `http://localhost:3000/client`
+- [ ] **Expected**: Should be accessible (admin can access all)
+- [ ] **Navigate to**: `http://localhost:3000/admin`
+- [ ] **Expected**: Should be accessible
+- [ ] **Verify**: Admin can access all dashboards
 
-### Phase 5: Error Handling Testing
+### Phase 7: Unauthenticated Access Testing
 
-#### 5.1 Test Unauthorized Access
-1. **As Talent User**: Try to access `/client` or `/admin`
-2. **Expected Result**: Redirected to `/talent` dashboard
-3. **As Client User**: Try to access `/talent` or `/admin`
-4. **Expected Result**: Redirected to `/client` dashboard
+#### 7.1 Test Unauthenticated Access to Protected Routes
+- [ ] **Sign out completely** from the application
+- [ ] **Try to access**: `http://localhost:3000/talent`
+- [ ] **Expected**: Should redirect to `/login` page
+- [ ] **Try to access**: `http://localhost:3000/client`
+- [ ] **Expected**: Should redirect to `/login` page
+- [ ] **Try to access**: `http://localhost:3000/admin`
+- [ ] **Expected**: Should redirect to `/login` page
+- [ ] **Try to access**: `http://localhost:3000/role-selection`
+- [ ] **Expected**: Should redirect to `/login` page
 
-#### 5.2 Test Invalid Role Assignment
-```bash
-# Try to create user with invalid role
-curl -X POST "http://localhost:3000/api/users" \
-  -H "Authorization: Bearer CLERK_USER_ID" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "test@example.com",
-    "role": "invalid_role"
-  }'
-```
+#### 7.2 Test Unauthenticated Access to Public Routes
+- [ ] **While signed out, navigate to**: `http://localhost:3000`
+- [ ] **Expected**: Should show landing page (no redirect)
+- [ ] **Navigate to**: `http://localhost:3000/login`
+- [ ] **Expected**: Should show login page (no redirect)
+- [ ] **Navigate to**: `http://localhost:3000/sign-up`
+- [ ] **Expected**: Should show sign-up page (no redirect)
 
-**Expected Response:**
-```json
-{
-  "success": false,
-  "error": "Invalid role. Must be admin, client, or talent"
-}
-```
+### Phase 8: Error Handling Testing
 
-#### 5.3 Test Missing Authentication
-```bash
-# Try to access API without authentication
-curl -X GET "http://localhost:3000/api/users/CLERK_USER_ID" \
-  -H "Content-Type: application/json"
-```
+#### 8.1 Test Browser Console for Errors
+- [ ] **Open browser dev tools** (F12 or right-click → Inspect)
+- [ ] **Go to Console tab**
+- [ ] **Navigate through all pages**: Home → Role Selection → Dashboards
+- [ ] **Expected**: No JavaScript errors or NEXT_REDIRECT errors
+- [ ] **Check**: No failed network requests in Network tab
 
-**Expected Response:**
-```json
-{
-  "success": false,
-  "error": "Unauthorized - User not authenticated"
-}
-```
+#### 8.2 Test Network Requests
+- [ ] **In dev tools, go to Network tab**
+- [ ] **Navigate through the application**
+- [ ] **Expected**: All API calls should succeed (200 status)
+- [ ] **Check**: No 404, 500, or other error responses
 
-### Phase 6: Edge Case Testing
+#### 8.3 Test Page Loading Performance
+- [ ] **Navigate to each dashboard page**
+- [ ] **Expected**: Pages should load within 2-3 seconds
+- [ ] **Check**: No long loading times or hanging requests
 
-#### 6.1 Test User Without Role
-1. **Create User**: Sign up but don't select role
-2. **Navigate to**: `/talent` or `/client`
-3. **Expected Result**: Redirected to `/role-selection`
+### Phase 9: Edge Case Testing
 
-#### 6.2 Test Role Selection Page Access
-1. **As Authenticated User**: Navigate to `/role-selection`
-2. **Expected Result**: Should be able to select role
-3. **As User with Role**: Navigate to `/role-selection`
-4. **Expected Result**: Should redirect to appropriate dashboard
+#### 9.1 Test User Without Role Assignment
+- [ ] **Sign in but don't select a role**
+- [ ] **Navigate to**: `http://localhost:3000/talent`
+- [ ] **Expected**: Should redirect to `/role-selection`
+- [ ] **Navigate to**: `http://localhost:3000/client`
+- [ ] **Expected**: Should redirect to `/role-selection`
 
-#### 6.3 Test Logout and Re-login
-1. **Logout**: From any dashboard
-2. **Login Again**: With same credentials
-3. **Expected Result**: Redirected to appropriate dashboard based on role
+#### 9.2 Test Role Selection Page for Users with Roles
+- [ ] **Sign in and select a role** (e.g., talent)
+- [ ] **Navigate to**: `http://localhost:3000/role-selection`
+- [ ] **Expected**: Should redirect to appropriate dashboard (e.g., `/talent`)
 
-### Phase 7: Performance Testing
+#### 9.3 Test Logout and Re-login Flow
+- [ ] **Sign out** from any dashboard
+- [ ] **Sign in again** with same credentials
+- [ ] **Expected**: Should redirect to appropriate dashboard based on previously assigned role
+- [ ] **Verify**: Role is remembered and applied correctly
 
-#### 7.1 Test Page Load Times
-```bash
-# Test dashboard page load times
-curl -w "@curl-format.txt" -o /dev/null -s "http://localhost:3000/talent"
-curl -w "@curl-format.txt" -o /dev/null -s "http://localhost:3000/client"
-curl -w "@curl-format.txt" -o /dev/null -s "http://localhost:3000/admin"
-```
+### Phase 10: Cross-Browser Testing
 
-**Create curl-format.txt:**
-```
-     time_namelookup:  %{time_namelookup}\n
-        time_connect:  %{time_connect}\n
-     time_appconnect:  %{time_appconnect}\n
-    time_pretransfer:  %{time_pretransfer}\n
-       time_redirect:  %{time_redirect}\n
-  time_starttransfer:  %{time_starttransfer}\n
-                     ----------\n
-          time_total:  %{time_total}\n
-```
+#### 10.1 Test in Chrome
+- [ ] **Open Chrome browser**
+- [ ] **Complete all test scenarios above**
+- [ ] **Expected**: All functionality works as expected
 
-### Phase 8: Browser Testing
+#### 10.2 Test in Firefox
+- [ ] **Open Firefox browser**
+- [ ] **Complete all test scenarios above**
+- [ ] **Expected**: All functionality works as expected
 
-#### 8.1 Test Different Browsers
-- **Chrome**: Test all flows
-- **Firefox**: Test all flows  
-- **Safari**: Test all flows
-- **Edge**: Test all flows
+#### 10.3 Test in Safari
+- [ ] **Open Safari browser**
+- [ ] **Complete all test scenarios above**
+- [ ] **Expected**: All functionality works as expected
 
-#### 8.2 Test Mobile Responsiveness
-- **iPhone Safari**: Test role selection and dashboards
-- **Android Chrome**: Test role selection and dashboards
-- **Tablet**: Test responsive design
+### Phase 11: Mobile Responsiveness Testing
 
-### Phase 9: Security Testing
+#### 11.1 Test on Mobile Device
+- [ ] **Open application on mobile device or use browser dev tools mobile view**
+- [ ] **Test role selection page**: Should be responsive and usable
+- [ ] **Test dashboard pages**: Should be responsive and usable
+- [ ] **Test sign-out functionality**: Should work on mobile
+- [ ] **Expected**: All functionality works on mobile devices
 
-#### 9.1 Test Direct URL Access
-1. **Without Authentication**: Try to access `/talent`, `/client`, `/admin`
-2. **Expected Result**: Redirected to `/login`
+### Phase 12: Final Verification
 
-#### 9.2 Test API Security
-```bash
-# Test admin endpoint with non-admin user
-curl -X GET "http://localhost:3000/api/users" \
-  -H "Authorization: Bearer TALENT_USER_ID" \
-  -H "Content-Type: application/json"
-```
+#### 12.1 Complete End-to-End Flow
+- [ ] **Sign up as new user**
+- [ ] **Select role** (any role)
+- [ ] **Access dashboard**
+- [ ] **Test protected routes**
+- [ ] **Sign out**
+- [ ] **Sign back in**
+- [ ] **Expected**: Complete flow works without errors
 
-**Expected Response:**
-```json
-{
-  "success": false,
-  "error": "Forbidden - Admin access required"
-}
-```
-
-### Phase 10: Database Verification
-
-#### 10.1 Check Supabase Database
-```sql
--- Connect to Supabase and run:
-SELECT * FROM users ORDER BY created_at DESC LIMIT 10;
-```
-
-**Expected Results:**
-- All test users should be in the database
-- Roles should be correctly assigned
-- Timestamps should be properly set
-
-#### 10.2 Verify Role Constraints
-```sql
--- Test role validation
-INSERT INTO users (clerk_user_id, email, role) 
-VALUES ('test-clerk-id', 'test@example.com', 'invalid_role');
-```
-
-**Expected Result**: Should fail due to enum constraint
+#### 12.2 Verify All Requirements Met
+- [ ] **Role-based route protection**: ✅ Working
+- [ ] **Sign-out functionality**: ✅ Working
+- [ ] **Dashboard access**: ✅ Working
+- [ ] **Error handling**: ✅ Working
+- [ ] **Mobile responsiveness**: ✅ Working
+- [ ] **Cross-browser compatibility**: ✅ Working
 
 ---
 
-## Test Checklist
+## Test Checklist Summary
 
 ### ✅ Environment Setup
 - [ ] Backend server running on port 3001
@@ -406,44 +355,35 @@ VALUES ('test-clerk-id', 'test@example.com', 'invalid_role');
 - [ ] Environment variables configured
 - [ ] Database connection working
 
-### ✅ Talent Flow
-- [ ] Email signup works
-- [ ] Role selection works
-- [ ] Onboarding form works
-- [ ] Dashboard access works
-- [ ] Protected routes blocked
-- [ ] API calls work
+### ✅ Basic Functionality
+- [ ] Home page loads without errors
+- [ ] No NEXT_REDIRECT errors in console
+- [ ] Sign-out functionality works on all pages
+- [ ] Role selection page displays correctly
 
-### ✅ Client Flow  
-- [ ] Google OAuth signup works
-- [ ] Role selection works
-- [ ] Dashboard access works
-- [ ] Protected routes blocked
-- [ ] API calls work
+### ✅ Role-based Routing
+- [ ] Talent users can only access /talent
+- [ ] Client users can only access /client
+- [ ] Admin users can access all routes
+- [ ] Unauthenticated users redirected to login
 
-### ✅ Admin Flow
-- [ ] Admin signup works
-- [ ] Admin dashboard works
-- [ ] All routes accessible
-- [ ] User management API works
+### ✅ Dashboard Access
+- [ ] Talent dashboard loads correctly
+- [ ] Client dashboard loads correctly
+- [ ] Admin dashboard loads correctly
+- [ ] All dashboards have sign-out buttons
 
 ### ✅ Error Handling
-- [ ] Unauthorized access blocked
-- [ ] Invalid roles handled
-- [ ] Missing auth handled
-- [ ] Edge cases handled
+- [ ] No JavaScript errors in console
+- [ ] No failed network requests
+- [ ] Unauthorized access properly blocked
+- [ ] Edge cases handled gracefully
 
-### ✅ Performance & Security
-- [ ] Page load times acceptable
-- [ ] Mobile responsive
-- [ ] Cross-browser compatible
-- [ ] Security measures working
-
-### ✅ Database
-- [ ] Users created correctly
-- [ ] Roles assigned correctly
-- [ ] Constraints working
-- [ ] Data integrity maintained
+### ✅ User Experience
+- [ ] Smooth page transitions
+- [ ] Fast loading times
+- [ ] Mobile responsive design
+- [ ] Cross-browser compatibility
 
 ## Dependencies
 - Depends on: `ticket-001` (Clerk integration)
