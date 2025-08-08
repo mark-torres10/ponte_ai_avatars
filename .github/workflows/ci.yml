@@ -37,6 +37,24 @@ jobs:
         npm run build
         
     - name: Run backend tests
+      env:
+        NODE_ENV: test
+        PORT: 3002
+        CORS_ORIGIN: http://localhost:3000
+        OPENAI_API_KEY: test-openai-key
+        ELEVENLABS_API_KEY: test-elevenlabs-key
+        DID_API_KEY: test-did-key
+        ELEVENLABS_TERRY_CREWS_VOICE_ID: test-terry-crews-voice-id
+        ELEVENLABS_WILL_HOWARD_VOICE_ID: test-will-howard-voice-id
+        ELEVENLABS_PARKER_MUNNS_VOICE_ID: test-parker-munns-voice-id
+        SUPABASE_URL: https://test.supabase.co
+        SUPABASE_ANON_KEY: test-anon-key
+        SUPABASE_SERVICE_ROLE_KEY: test-service-role-key
+        STORAGE_BUCKET: test-bucket-ponteai
+        DEFAULT_REQUESTER_ID: test_user_id
+        RATE_LIMIT_WINDOW_MS: 900000
+        RATE_LIMIT_MAX_REQUESTS: 100
+        LOG_LEVEL: error
       run: |
         cd backend
         npm test
