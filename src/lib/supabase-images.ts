@@ -58,16 +58,6 @@ export const loadAvatarImages = async (): Promise<PersonaImages> => {
 const getFallbackImages = (): PersonaImages => {
   console.log('Frontend: Using fallback images');
   return {
-    'terry-crews': Array.from({ length: 5 }, (_, i) => ({
-      url: `https://picsum.photos/300/300?random=${i + 1}&blur=2`,
-      alt: `Terry Crews - Image ${i + 1}`,
-      index: i + 1
-    })),
-    'will-howard': Array.from({ length: 5 }, (_, i) => ({
-      url: `https://picsum.photos/300/300?random=${i + 6}&blur=2`,
-      alt: `Will Howard - Image ${i + 1}`,
-      index: i + 1
-    })),
     'parker-munns': Array.from({ length: 5 }, (_, i) => ({
       url: `https://picsum.photos/300/300?random=${i + 11}&blur=2`,
       alt: `Parker Munns - Image ${i + 1}`,

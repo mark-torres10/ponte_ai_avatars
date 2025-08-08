@@ -10,20 +10,6 @@ export interface Persona {
 
 export const PERSONAS: Persona[] = [
   {
-    id: 'terry-crews',
-    name: 'Terry Crews',
-    description: 'Actor & Ex-Athlete Terry Crews',
-    images: [], // Start with empty images array - will be populated when loaded
-    selected: false,
-  },
-  {
-    id: 'will-howard',
-    name: 'Will Howard',
-    description: 'NFL Quarterback Will Howard',
-    images: [], // Start with empty images array - will be populated when loaded
-    selected: false,
-  },
-  {
     id: 'parker-munns',
     name: 'Parker Munns',
     description: 'Tech & Marketing Entrepreneur Parker Munns',

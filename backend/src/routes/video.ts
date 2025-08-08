@@ -22,8 +22,6 @@ const router = Router();
 
 // Persona image URLs for D-ID - using publicly accessible images
 const PERSONA_IMAGES = {
-  'terry-crews': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face',
-  'will-howard': 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face',
   'parker-munns': 'https://d-id-public-bucket.s3.amazonaws.com/parker.jpg',
 };
 
@@ -184,18 +182,14 @@ router.post('/generate', async (req: Request, res: Response) => {
           const match = avatarImageUrl.match(/pic(\d+)\.jpeg/);
           if (match) {
             const imageNumber = match[1];
-            const folder = personaId === 'terry-crews' ? 'voice_actor_a' : 
-                          personaId === 'will-howard' ? 'voice_actor_b' : 
-                          personaId === 'parker-munns' ? 'voice_actor_c' : 'voice_actor_a';
+            const folder = 'voice_actor_c'; // Only Parker Munns supported
             imagePath = `avatar_assets/${folder}/static/pic${imageNumber}.jpeg`;
           } else {
             throw new Error('Could not determine image path from URL');
           }
         } else {
           // Fallback to first image if no specific image selected
-          const folder = personaId === 'terry-crews' ? 'voice_actor_a' : 
-                        personaId === 'will-howard' ? 'voice_actor_b' : 
-                        personaId === 'parker-munns' ? 'voice_actor_c' : 'voice_actor_a';
+          const folder = 'voice_actor_c'; // Only Parker Munns supported
           imagePath = `avatar_assets/${folder}/static/pic1.jpeg`;
         }
         
@@ -218,9 +212,7 @@ router.post('/generate', async (req: Request, res: Response) => {
         const didService = getDidService();
         
         // Map persona ID to voice actor ID
-        const voiceActorId = personaId === 'terry-crews' ? 'voice_actor_a' : 
-                           personaId === 'will-howard' ? 'voice_actor_b' : 
-                           personaId === 'parker-munns' ? 'voice_actor_c' : 'voice_actor_a';
+        const voiceActorId = 'voice_actor_c'; // Only Parker Munns supported
         
         // Create signed URL for audio file
         logger.info('Creating signed URL for audio file', { requestId, audioUrl });
@@ -300,7 +292,7 @@ router.post('/generate', async (req: Request, res: Response) => {
         // Generate video using the new service with signed URLs
         const videoResult: VideoGenerationResult = await didService.generateVideo({
           scriptText: text,
-          voiceActorId: voiceActorId as 'voice_actor_a' | 'voice_actor_b',
+          voiceActorId: voiceActorId as 'voice_actor_c',
           audioUrl: signedAudioUrl,
           imageUrl: publicImageUrl
         });

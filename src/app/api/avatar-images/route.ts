@@ -36,8 +36,6 @@ async function loadAvatarImages(): Promise<PersonaImages> {
     
     // Define the persona configurations
     const personas = [
-      { id: 'terry-crews', folder: 'voice_actor_a' },
-      { id: 'will-howard', folder: 'voice_actor_b' },
       { id: 'parker-munns', folder: 'voice_actor_c' }
     ];
 
@@ -105,15 +103,8 @@ function createFallbackImage(personaId: string, index: number): AvatarImage {
   let personaName: string;
   let fallbackUrl: string;
   
-  if (personaId === 'terry-crews') {
-    personaName = 'Terry Crews';
-    fallbackUrl = `https://picsum.photos/300/300?random=${index}&blur=2`;
-  } else if (personaId === 'will-howard') {
-    personaName = 'Will Howard';
-    fallbackUrl = `https://picsum.photos/300/300?random=${index + 5}&blur=2`;
-  } else if (personaId === 'parker-munns') {
+  if (personaId === 'parker-munns') {
     personaName = 'Parker Munns';
-    // Use the same stub images as Will Howard for Parker Munns
     fallbackUrl = `https://picsum.photos/300/300?random=${index + 5}&blur=2`;
   } else {
     personaName = 'Unknown';
@@ -132,8 +123,6 @@ function createFallbackImage(personaId: string, index: number): AvatarImage {
  */
 function getFallbackImages(): PersonaImages {
   return {
-    'terry-crews': Array.from({ length: 5 }, (_, i) => createFallbackImage('terry-crews', i + 1)),
-    'will-howard': Array.from({ length: 5 }, (_, i) => createFallbackImage('will-howard', i + 1)),
     'parker-munns': Array.from({ length: 5 }, (_, i) => createFallbackImage('parker-munns', i + 1))
   };
 }
