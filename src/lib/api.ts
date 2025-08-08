@@ -1,7 +1,8 @@
 // API Configuration for Railway Backend
 import { GenerateVoiceResponse } from './types';
+import { config } from './config';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ponteaiavatars-production.up.railway.app';
+const API_BASE_URL = config.api.baseUrl;
 
 export interface ApiResponse<T = unknown> {
   success: boolean;
