@@ -12,24 +12,12 @@ const PERSONA_VOICE_IDS = {
   'parker-munns': config.ELEVENLABS_PARKER_MUNNS_VOICE_ID,
 };
 
-// Debug logging to see what the config value is
-console.log('PERSONA_VOICE_IDS at module load:', PERSONA_VOICE_IDS);
-console.log('config.ELEVENLABS_PARKER_MUNNS_VOICE_ID:', config.ELEVENLABS_PARKER_MUNNS_VOICE_ID);
-
 // ElevenLabs API configuration
 const ELEVENLABS_API_BASE = 'https://api.elevenlabs.io/v1';
 
 router.post('/generate', async (req: Request, res: Response) => {
   const startTime = Date.now();
   const requestId = req.headers['x-request-id'] as string;
-
-  // Debug logging to see what PERSONA_VOICE_IDS contains
-  logger.info('PERSONA_VOICE_IDS debug info', {
-    requestId,
-    personaVoiceIds: PERSONA_VOICE_IDS,
-    keys: Object.keys(PERSONA_VOICE_IDS),
-    configVoiceId: config.ELEVENLABS_PARKER_MUNNS_VOICE_ID
-  });
 
   try {
     const { text, personaId }: GenerateVoiceRequest = req.body;
@@ -63,15 +51,6 @@ router.post('/generate', async (req: Request, res: Response) => {
         timestamp: new Date().toISOString(),
       });
     }
-
-    // Add detailed logging for debugging
-    logger.info('Voice generation request details', { 
-      requestId, 
-      personaId, 
-      voiceId,
-      personaVoiceIds: PERSONA_VOICE_IDS,
-      configVoiceId: config.ELEVENLABS_PARKER_MUNNS_VOICE_ID
-    });
 
     // Check text length limit (ElevenLabs has limits)
     if (text.length > 5000) {
@@ -108,19 +87,6 @@ router.post('/generate', async (req: Request, res: Response) => {
       personaId, 
       voiceId,
       textLength: text.length 
-    });
-
-    // Log ElevenLabs API call details
-    logger.info('ElevenLabs API call details', {
-      requestId,
-      apiUrl: `${ELEVENLABS_API_BASE}/text-to-speech/${voiceId}`,
-      voiceId,
-      textLength: text.length,
-      modelId: 'eleven_monolingual_v1',
-      voiceSettings: {
-        stability: 0.5,
-        similarity_boost: 0.5,
-      }
     });
 
     // Call ElevenLabs API
