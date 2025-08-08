@@ -11,6 +11,7 @@ process.env['ELEVENLABS_API_KEY'] = 'test-elevenlabs-key';
 process.env['DID_API_KEY'] = 'test-did-key';
 process.env['ELEVENLABS_TERRY_CREWS_VOICE_ID'] = 'test-terry-crews-voice-id';
 process.env['ELEVENLABS_WILL_HOWARD_VOICE_ID'] = 'test-will-howard-voice-id';
+process.env['ELEVENLABS_PARKER_MUNNS_VOICE_ID'] = 'test-parker-munns-voice-id';
 
 // Supabase configuration for tests
 process.env['SUPABASE_URL'] = 'https://test.supabase.co';
