@@ -55,9 +55,9 @@ export default clerkMiddleware(async (auth, req) => {
     logger.info('Middleware: Root page access, checking user role for dashboard redirect');
     
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-      const apiUrl = `${baseUrl}/api/users/${userId}`;
-      logger.debug('Middleware: Making API call', { apiUrl });
+      const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
+      const apiUrl = `${backendUrl}/api/users/${userId}`;
+      logger.debug('Middleware: Making backend API call', { apiUrl });
       
       const response = await fetch(apiUrl);
       logger.debug('Middleware: API Response received', { status: response.status, ok: response.ok });
@@ -103,10 +103,10 @@ export default clerkMiddleware(async (auth, req) => {
     logger.info('Middleware: Checking protected route', { pathname, userId });
     
     try {
-      // Fetch user role from API with retry logic
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-      const apiUrl = `${baseUrl}/api/users/${userId}`;
-      logger.debug('Middleware: Making API call', { apiUrl });
+      // Fetch user role from backend API with retry logic
+      const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
+      const apiUrl = `${backendUrl}/api/users/${userId}`;
+      logger.debug('Middleware: Making backend API call', { apiUrl });
       
       let response;
       let retryCount = 0;
