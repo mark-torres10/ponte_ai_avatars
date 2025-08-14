@@ -24,7 +24,7 @@ describe('Voice Generation API', () => {
   describe('POST /api/voice/generate', () => {
     const validRequest = {
       text: 'Hello, this is a test message for voice generation.',
-      personaId: 'terry-crews',
+      personaId: 'parker-munns',
     };
 
     it('should generate voice successfully with valid request', async () => {
@@ -38,7 +38,7 @@ describe('Voice Generation API', () => {
       expect(response.body.success).toBe(true);
       expect(response.body.data).toBeDefined();
       expect(response.body.data.audioUrl).toContain('data:audio/mpeg;base64,');
-      expect(response.body.data.personaId).toBe('terry-crews');
+      expect(response.body.data.personaId).toBe('parker-munns');
       expect(response.body.data.text).toBe(validRequest.text);
       expect(response.body.timestamp).toBeDefined();
     });
@@ -46,23 +46,23 @@ describe('Voice Generation API', () => {
     it('should work with different personas', async () => {
       (global.fetch as jest.Mock).mockResolvedValue(mockElevenLabsSuccess);
 
-      const willHowardRequest = {
-        text: 'This is Will Howard speaking.',
-        personaId: 'will-howard',
+      const parkerMunnsRequest = {
+        text: 'This is Parker Munns speaking.',
+        personaId: 'parker-munns',
       };
 
       const response = await request(app)
         .post('/api/voice/generate')
-        .send(willHowardRequest)
+        .send(parkerMunnsRequest)
         .expect(200);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.data.personaId).toBe('will-howard');
+      expect(response.body.data.personaId).toBe('parker-munns');
     });
 
     it('should handle missing text input', async () => {
       const invalidRequest = {
-        personaId: 'terry-crews',
+        personaId: 'parker-munns',
       };
 
       const response = await request(app)
@@ -107,7 +107,7 @@ describe('Voice Generation API', () => {
       const longText = 'A'.repeat(5001); // Exceeds 5000 character limit
       const invalidRequest = {
         text: longText,
-        personaId: 'terry-crews',
+        personaId: 'parker-munns',
       };
 
       const response = await request(app)
@@ -180,7 +180,7 @@ describe('Voice Generation API', () => {
     it('should handle non-string text input', async () => {
       const invalidRequest = {
         text: 123, // Number instead of string
-        personaId: 'terry-crews',
+        personaId: 'parker-munns',
       };
 
       const response = await request(app)
@@ -210,7 +210,7 @@ describe('Voice Generation API', () => {
     it('should handle empty text input', async () => {
       const invalidRequest = {
         text: '',
-        personaId: 'terry-crews',
+        personaId: 'parker-munns',
       };
 
       const response = await request(app)

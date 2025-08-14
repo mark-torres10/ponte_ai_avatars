@@ -9,8 +9,7 @@ const router = Router();
 // ElevenLabs voice IDs for each persona
 // TODO: These will eventually be fetched from Supabase database instead of environment variables
 const PERSONA_VOICE_IDS = {
-  'terry-crews': config.ELEVENLABS_TERRY_CREWS_VOICE_ID,
-  'will-howard': config.ELEVENLABS_WILL_HOWARD_VOICE_ID,
+  'parker-munns': config.ELEVENLABS_PARKER_MUNNS_VOICE_ID,
 };
 
 // ElevenLabs API configuration
@@ -74,7 +73,7 @@ router.post('/generate', async (req: Request, res: Response) => {
     }
 
     // Check if voice IDs are configured
-    if (!config.ELEVENLABS_TERRY_CREWS_VOICE_ID || !config.ELEVENLABS_WILL_HOWARD_VOICE_ID) {
+    if (!config.ELEVENLABS_PARKER_MUNNS_VOICE_ID) {
       logger.error('ElevenLabs voice IDs not configured', { requestId });
       return res.status(500).json({
         success: false,

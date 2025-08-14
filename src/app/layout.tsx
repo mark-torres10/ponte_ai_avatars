@@ -6,7 +6,7 @@ import ClerkRootWrapper from "@/components/ClerkRootWrapper"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Ponte AI - Production App",
+  title: "Ponte AI - AI Avatar Marketplace",
   description: "Professional AI avatar booking platform for Ponte AI clients and investors",
   keywords: ["AI avatars", "celebrity licensing", "marketing campaigns", "Ponte AI"],
   authors: [{ name: "Ponte AI" }],

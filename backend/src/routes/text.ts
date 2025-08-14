@@ -30,13 +30,9 @@ interface PersonalizeTextResponse {
 
 // Persona prompts for text personalization
 const PERSONA_PROMPTS = {
-  'terry-crews': {
-    name: 'Terry Crews',
-    style: 'energetic, enthusiastic, motivational, and charismatic with a strong, confident voice. Uses phrases like "Listen up!", "You got this!", and "Let\'s do this!". Maintains a positive, encouraging tone.',
-  },
-  'will-howard': {
-    name: 'Will Howard',
-    style: 'professional, articulate, and authoritative with a calm, measured tone. Uses clear, concise language and maintains a confident, leadership-focused approach.',
+  'parker-munns': {
+    name: 'Parker Munns',
+    style: 'tech-savvy, entrepreneurial, and innovative with a forward-thinking perspective. Uses modern business terminology, references to technology trends, and maintains an optimistic yet pragmatic tone. Emphasizes growth, innovation, and market opportunities.',
   },
 };
 

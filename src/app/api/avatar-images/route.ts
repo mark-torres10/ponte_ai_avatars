@@ -36,16 +36,21 @@ async function loadAvatarImages(): Promise<PersonaImages> {
     
     // Define the persona configurations
     const personas = [
-      { id: 'terry-crews', folder: 'voice_actor_a' },
-      { id: 'will-howard', folder: 'voice_actor_b' }
+      { id: 'parker-munns', folder: 'voice_actor_c' }
     ];
 
+    console.log('Backend: Starting to load images for personas:', personas.map(p => p.id));
+    console.log('Backend: Supabase URL:', supabaseUrl ? 'Available' : 'Not available');
+    console.log('Backend: Production bucket:', prodStorageBucket);
+    
     for (const persona of personas) {
+      console.log(`Backend: Loading images for persona: ${persona.id} (folder: ${persona.folder})`);
       const images: AvatarImage[] = [];
       
       // Load 5 images for each persona (pic1.jpeg through pic5.jpeg)
       for (let i = 1; i <= 5; i++) {
         const imagePath = `avatar_assets/${persona.folder}/static/pic${i}.jpeg`;
+        console.log(`Backend: Attempting to load image: ${imagePath}`);
         
         try {
           // Generate a signed URL that expires in 1 hour
@@ -55,7 +60,9 @@ async function loadAvatarImages(): Promise<PersonaImages> {
           
           if (error) {
             console.error(`Backend: Error loading image ${imagePath}:`, error);
+            console.error(`Backend: Error details:`, JSON.stringify(error, null, 2));
             // Fallback to a placeholder image
+            console.log(`Backend: Using fallback image for ${persona.id} - Image ${i}`);
             images.push(createFallbackImage(persona.id, i));
           } else if (data?.signedUrl) {
             console.log(`Backend: Successfully loaded image for ${persona.id} - Image ${i}:`, data.signedUrl.substring(0, 50) + '...');
@@ -64,14 +71,19 @@ async function loadAvatarImages(): Promise<PersonaImages> {
               alt: `${persona.id} - Image ${i}`,
               index: i
             });
+          } else {
+            console.error(`Backend: No data or signedUrl returned for ${imagePath}`);
+            images.push(createFallbackImage(persona.id, i));
           }
         } catch (error) {
           console.error(`Backend: Failed to load image ${imagePath}:`, error);
+          console.error(`Backend: Exception details:`, JSON.stringify(error, null, 2));
           // Fallback to a placeholder image
           images.push(createFallbackImage(persona.id, i));
         }
       }
       
+      console.log(`Backend: Completed loading ${images.length} images for ${persona.id}`);
       personaImages[persona.id] = images;
     }
 
@@ -88,11 +100,19 @@ async function loadAvatarImages(): Promise<PersonaImages> {
  * Create fallback image for a specific persona and index
  */
 function createFallbackImage(personaId: string, index: number): AvatarImage {
-  const randomSeed = personaId === 'terry-crews' ? index : index + 5;
-  const personaName = personaId === 'terry-crews' ? 'Terry Crews' : 'Will Howard';
+  let personaName: string;
+  let fallbackUrl: string;
+  
+  if (personaId === 'parker-munns') {
+    personaName = 'Parker Munns';
+    fallbackUrl = `https://picsum.photos/300/300?random=${index + 5}&blur=2`;
+  } else {
+    personaName = 'Unknown';
+    fallbackUrl = `https://picsum.photos/300/300?random=${index}&blur=2`;
+  }
   
   return {
-    url: `https://picsum.photos/300/300?random=${randomSeed}&blur=2`,
+    url: fallbackUrl,
     alt: `${personaName} - Image ${index}`,
     index: index
   };
@@ -103,8 +123,7 @@ function createFallbackImage(personaId: string, index: number): AvatarImage {
  */
 function getFallbackImages(): PersonaImages {
   return {
-    'terry-crews': Array.from({ length: 5 }, (_, i) => createFallbackImage('terry-crews', i + 1)),
-    'will-howard': Array.from({ length: 5 }, (_, i) => createFallbackImage('will-howard', i + 1))
+    'parker-munns': Array.from({ length: 5 }, (_, i) => createFallbackImage('parker-munns', i + 1))
   };
 }
 
