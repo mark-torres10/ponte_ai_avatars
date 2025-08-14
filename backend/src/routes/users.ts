@@ -1,4 +1,4 @@
-import { Router, Response } from 'express';
+import { Router, Request, Response } from 'express';
 import { getSupabaseClient } from '../utils/supabase';
 import { logger } from '../utils/logger';
 import { 
@@ -127,11 +127,9 @@ router.post('/',
   }
 );
 
-// GET /api/users/:clerkUserId - Get user by Clerk user ID
+// GET /api/users/:clerkUserId - Get user by Clerk user ID (public for role checking)
 router.get('/:clerkUserId', 
-  authenticateUser,
-  requireUserAccess,
-  async (req: AuthenticatedRequest, res: Response) => {
+  async (req: Request, res: Response) => {
     try {
       const { clerkUserId } = req.params;
       

@@ -75,7 +75,7 @@ export async function GET(
       );
     }
     
-    // No authentication required for this endpoint - backend is public
+    // No authentication required for this endpoint - backend is public for role checking
     const response = await fetch(`${BACKEND_URL}/api/users/${clerkUserId}`, {
       method: 'GET',
       headers: {
