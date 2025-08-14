@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { UserRole } from '@/types/user';
 import { logger } from '@/lib/logger';
 import { VALID_USER_ROLES } from '@/lib/auth-utils';
+import { normalizeBackendUrl } from '@/lib/utils';
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
+const BACKEND_URL = normalizeBackendUrl(process.env.BACKEND_URL || 'http://localhost:3001');
 
 // Bearer token validation regex - allows alphanumeric, dots, underscores, and hyphens
 const BEARER_TOKEN_REGEX = /^[a-zA-Z0-9._-]+$/;
