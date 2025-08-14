@@ -12,6 +12,7 @@ const protectedRoutes = {
 
 // Define public routes that don't require authentication
 const publicRoutes = [
+  '/',
   '/login',
   '/sign-up',
   '/generate-avatar',
@@ -51,48 +52,7 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.redirect(signInUrl);
   }
 
-  // Special handling for root page - redirect authenticated users to appropriate dashboard
-  if (pathname === '/') {
-    logger.info('Middleware: Root page access, checking user role for dashboard redirect');
-    
-    try {
-      const backendUrl = normalizeBackendUrl(process.env.BACKEND_URL || 'http://localhost:3001');
-      const apiUrl = `${backendUrl}/api/users/${userId}`;
-      logger.debug('Middleware: Making backend API call', { apiUrl });
-      
-      const response = await fetch(apiUrl);
-      logger.debug('Middleware: API Response received', { status: response.status, ok: response.ok });
-      
-      if (response.ok) {
-        const userData = await response.json();
-        logger.debug('Middleware: User data received', { userData });
-        const userRole = userData.data?.role;
-        logger.info('Middleware: User role retrieved', { userRole });
-        
-        if (userRole) {
-          // User has a role, redirect to their dashboard
-          logger.info('Middleware: Redirecting user to dashboard', { userRole });
-          const dashboardUrl = new URL(`/${userRole}`, req.url);
-          return NextResponse.redirect(dashboardUrl);
-        } else {
-          // User has no role, redirect to role selection
-          logger.info('Middleware: User has no role, redirecting to role selection');
-          const roleSelectionUrl = new URL('/role-selection', req.url);
-          return NextResponse.redirect(roleSelectionUrl);
-        }
-      } else {
-        // User doesn't exist, redirect to role selection
-        logger.info('Middleware: User not found, redirecting to role selection');
-        const roleSelectionUrl = new URL('/role-selection', req.url);
-        return NextResponse.redirect(roleSelectionUrl);
-      }
-    } catch (error) {
-      logger.error('Middleware: Error checking user role for root page', { error });
-      // On error, redirect to role selection
-      const roleSelectionUrl = new URL('/role-selection', req.url);
-      return NextResponse.redirect(roleSelectionUrl);
-    }
-  }
+
 
   // For onboarding routes, allow access
   if (onboardingRoutes.includes(pathname)) {

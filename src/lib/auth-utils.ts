@@ -1,9 +1,10 @@
 import { NextRequest } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { logger } from './logger'
+import { VALID_USER_ROLES } from './user-constants'
 
-// Shared constant for valid user roles
-export const VALID_USER_ROLES = ['admin', 'client', 'talent'] as const;
+// Re-export for backward compatibility
+export { VALID_USER_ROLES }
 
 /**
  * Centralized authentication utility for API routes
