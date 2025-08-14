@@ -1,7 +1,7 @@
 import { SignUp } from "@clerk/nextjs";
 import { ClerkWrapper } from "@/components/ClerkWrapper";
 
-export default function SignUpPage() {
+export default function SignUpCatchallPage() {
   return (
     <ClerkWrapper>
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -38,4 +38,4 @@ export default function SignUpPage() {
       </div>
     </ClerkWrapper>
   );
-} 
+}
