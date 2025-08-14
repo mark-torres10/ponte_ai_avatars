@@ -3,6 +3,7 @@ import { getSupabaseClient } from '../utils/supabase';
 import { logger } from '../utils/logger';
 import { 
   authenticateUser, 
+  authenticateClerkUser,
   requireRole, 
   requireUserAccess, 
   requireAdminForRoleChanges,
@@ -59,7 +60,7 @@ router.get('/',
 
 // POST /api/users - Create a new user
 router.post('/', 
-  authenticateUser,
+  authenticateClerkUser,
   async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { email, role }: CreateUserRequest = req.body;

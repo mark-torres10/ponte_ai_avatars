@@ -6,7 +6,7 @@ import { logger } from '../utils/logger';
 export interface AuthenticatedRequest extends Request {
   authenticatedUser?: {
     clerkUserId: string;
-    role: 'admin' | 'client' | 'talent';
+    role: 'admin' | 'client' | 'talent' | 'pending';
     email?: string | null;
   };
 }
@@ -79,6 +79,65 @@ export const authenticateUser = async (
 };
 
 /**
+ * Clerk-only authentication middleware for user creation
+ * Validates Clerk user ID without requiring user to exist in Supabase
+ * Used specifically for POST /api/users to allow recreation of deleted users
+ */
+export const authenticateClerkUser = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    // Get user ID from authorization header
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      res.status(401).json({
+        success: false,
+        error: 'Unauthorized - Missing or invalid authorization header',
+      });
+      return;
+    }
+    
+    const clerkUserId = authHeader.replace('Bearer ', '');
+    
+    if (!clerkUserId) {
+      res.status(401).json({
+        success: false,
+        error: 'Unauthorized - Invalid user ID',
+      });
+      return;
+    }
+
+    // Validate Clerk user ID format (should start with 'user_')
+    if (!clerkUserId.startsWith('user_')) {
+      res.status(401).json({
+        success: false,
+        error: 'Unauthorized - Invalid Clerk user ID format',
+      });
+      return;
+    }
+
+    // Add Clerk user ID to request object (without Supabase data)
+    req.authenticatedUser = {
+      clerkUserId: clerkUserId,
+      role: 'pending', // Will be set after user creation
+      email: null, // Will be provided in request body
+    };
+
+    logger.info(`Clerk user authenticated for creation: ${clerkUserId}`);
+    next();
+  } catch (error) {
+    logger.error(`Clerk authentication error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error during Clerk authentication',
+    });
+    return;
+  }
+};
+
+/**
  * Authorization middleware that checks if the authenticated user has the required role
  */
 export const requireRole = (requiredRoles: ('admin' | 'client' | 'talent')[]) => {
@@ -91,7 +150,17 @@ export const requireRole = (requiredRoles: ('admin' | 'client' | 'talent')[]) =>
       return;
     }
 
-    if (!requiredRoles.includes(req.authenticatedUser.role)) {
+    // Handle pending role specifically - users with pending role should not access protected routes
+    if (req.authenticatedUser.role === 'pending') {
+      logger.warn(`Access denied: User ${req.authenticatedUser.clerkUserId} has pending role and cannot access protected routes`);
+      res.status(403).json({
+        success: false,
+        error: 'Forbidden - User account is pending role assignment',
+      });
+      return;
+    }
+
+    if (!requiredRoles.includes(req.authenticatedUser.role as 'admin' | 'client' | 'talent')) {
       logger.warn(`Access denied: User ${req.authenticatedUser.clerkUserId} (${req.authenticatedUser.role}) attempted to access route requiring roles: ${requiredRoles.join(', ')}`);
       res.status(403).json({
         success: false,
