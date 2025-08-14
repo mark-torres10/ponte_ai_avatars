@@ -20,6 +20,12 @@ const publicRoutes = [
   '/api/users',
 ];
 
+// Define public route patterns that don't require authentication
+const publicRoutePatterns = [
+  '/sign-up/', // All sign-up sub-routes including SSO callbacks
+  '/login/',   // All login sub-routes including SSO callbacks
+];
+
 // Define onboarding routes
 const onboardingRoutes = [
   '/role-selection',
@@ -34,6 +40,12 @@ export default clerkMiddleware(async (auth, req) => {
   // Allow public routes
   if (publicRoutes.includes(pathname)) {
     logger.info('Middleware: Allowing public route', { pathname });
+    return NextResponse.next();
+  }
+  
+  // Allow public route patterns (e.g., /sign-up/*, /login/*)
+  if (publicRoutePatterns.some(pattern => pathname.startsWith(pattern))) {
+    logger.info('Middleware: Allowing public route pattern', { pathname });
     return NextResponse.next();
   }
   
