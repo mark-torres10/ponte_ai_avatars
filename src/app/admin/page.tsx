@@ -153,7 +153,7 @@ export default function AdminDashboardPage() {
               </p>
               <div className="space-y-3">
                 <Link
-                  href="/request-talent"
+                  href="/client"
                   className="block w-full btn-primary-ponte text-center py-3 rounded-md font-medium"
                 >
                   Browse Avatars

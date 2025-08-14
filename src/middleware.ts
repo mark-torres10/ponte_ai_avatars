@@ -16,7 +16,6 @@ const publicRoutes = [
   '/login',
   '/sign-up',
   '/generate-avatar',
-  '/request-talent',
   '/api/auth/signout',
   '/api/users',
 ];

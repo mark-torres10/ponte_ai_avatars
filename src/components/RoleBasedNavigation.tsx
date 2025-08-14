@@ -37,7 +37,6 @@ export default function RoleBasedNavigation() {
       case 'client':
         return [
           { href: '/client', label: 'Dashboard' },
-          { href: '/request-talent', label: 'Browse Avatars' },
           { href: '/client/campaigns', label: 'Campaigns' },
           { href: '/client/bookings', label: 'My Bookings' },
         ]

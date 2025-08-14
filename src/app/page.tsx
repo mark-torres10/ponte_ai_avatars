@@ -122,7 +122,7 @@ export default function HomePage() {
                   </div>
                   
                   <Link
-                    href={`/request-talent?avatar=${avatar.id}`}
+                    href="/client"
                     className="btn-primary-ponte w-full text-sm py-2 rounded-md font-medium mt-3"
                   >
                     Book Avatar

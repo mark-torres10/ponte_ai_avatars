@@ -185,7 +185,7 @@ export default function GenerateAvatarPage() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
-                href="/request-talent"
+                href="/client"
                 className="btn-primary-ponte text-base px-6 py-3 rounded-md font-medium"
               >
                 Book an Avatar
