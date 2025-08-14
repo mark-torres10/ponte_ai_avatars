@@ -52,6 +52,55 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.redirect(signInUrl);
   }
 
+  // Special handling for authenticated users - redirect to appropriate dashboard  
+  // This ensures users go directly to their dashboard without seeing intermediate pages
+  if (pathname === '/role-selection' || pathname === '/') {
+    logger.info('Middleware: Authenticated user accessing entry point, checking role for direct redirect');
+    
+    try {
+      const backendUrl = normalizeBackendUrl(process.env.BACKEND_URL || 'http://localhost:3001');
+      const apiUrl = `${backendUrl}/api/users/${userId}`;
+      logger.debug('Middleware: Making backend API call', { apiUrl });
+      
+      const response = await fetch(apiUrl);
+      logger.debug('Middleware: API Response received', { status: response.status, ok: response.ok });
+      
+      if (response.ok) {
+        const userData = await response.json();
+        logger.debug('Middleware: User data received', { userData });
+        const userRole = userData.data?.role;
+        logger.info('Middleware: User role retrieved', { userRole });
+        
+        if (userRole) {
+          // User has a role, redirect directly to their dashboard
+          logger.info('Middleware: Redirecting user directly to dashboard', { userRole });
+          const dashboardUrl = new URL(`/${userRole}`, req.url);
+          return NextResponse.redirect(dashboardUrl);
+        } else if (pathname === '/') {
+          // User has no role and is on landing page - allow them to stay
+          return NextResponse.next();
+        } else {
+          // User has no role and is on role-selection - let them choose
+          return NextResponse.next();
+        }
+      } else if (pathname === '/') {
+        // API failed but user is on landing page - allow access
+        return NextResponse.next();
+      } else {
+        // API failed and user is on role-selection - let them proceed
+        return NextResponse.next();
+      }
+    } catch (error) {
+      logger.error('Middleware: Error checking user role', { error });
+      if (pathname === '/') {
+        // Error but user is on landing page - allow access  
+        return NextResponse.next();
+      } else {
+        // Error and user is on role-selection - let them proceed
+        return NextResponse.next();
+      }
+    }
+  }
 
 
   // For onboarding routes, allow access
