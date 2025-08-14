@@ -134,7 +134,7 @@ export default function HomePage() {
 
           <div className="text-center">
             <Link
-              href="/request-talent"
+              href="/login"
               className="btn-secondary-ponte text-base px-6 py-3 rounded-md font-medium"
             >
               View All 200+ Avatars
