@@ -6,7 +6,6 @@ import {
   Pause, 
   XCircle 
 } from 'lucide-react'
-import { type TalentStatus } from '@/types/talent'
 
 export const STATUS_CONFIG = {
   draft: { label: 'Draft', icon: Clock, color: 'text-gray-500 bg-gray-100 border-gray-200' },
