@@ -1,41 +1,14 @@
 import Link from "next/link"
-import { auth } from "@clerk/nextjs/server"
+import Image from "next/image"
 import { sampleAvatars } from "@/lib/sampleData"
+import GetStartedButton from "@/components/GetStartedButton"
+import LandingPageHeader from "@/components/LandingPageHeader"
 
-export default async function HomePage() {
-  const { userId } = await auth();
-  
+export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="border-b border-border">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <span className="text-2xl font-bold text-primary">
-                Ponte AI
-              </span>
-            </div>
-            <div className="flex items-center space-x-4">
-              {userId ? (
-                <Link
-                  href="/role-selection"
-                  className="text-sm text-foreground/60 hover:text-foreground transition-colors"
-                >
-                  Go to Dashboard
-                </Link>
-              ) : (
-                <Link
-                  href="/login"
-                  className="text-sm text-foreground/60 hover:text-foreground transition-colors"
-                >
-                  Sign In
-                </Link>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+      <LandingPageHeader />
       
       {/* Hero Section */}
       <section className="relative pt-24 pb-16 overflow-hidden">
@@ -64,21 +37,7 @@ export default async function HomePage() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              {userId ? (
-                <Link
-                  href="/role-selection"
-                  className="btn-primary-ponte text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 rounded-md font-medium w-full sm:w-auto"
-                >
-                  Go to Dashboard
-                </Link>
-              ) : (
-                <Link
-                  href="/login"
-                  className="btn-primary-ponte text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 rounded-md font-medium w-full sm:w-auto"
-                >
-                  Get Started
-                </Link>
-              )}
+              <GetStartedButton />
               <Link
                 href="/generate-avatar"
                 className="btn-secondary-ponte text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 rounded-md font-medium w-full sm:w-auto"
@@ -125,8 +84,15 @@ export default async function HomePage() {
             {sampleAvatars.map((avatar) => (
               <div key={avatar.id} className="avatar-card avatar-card-portrait">
                 <div className="relative mb-4">
-                  <div className="w-full h-48 bg-gradient-to-br from-ponte-pink-400 to-ponte-pink-600 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-semibold">{avatar.name}</span>
+                  <div className="w-full h-48 rounded-lg overflow-hidden bg-gradient-to-br from-ponte-pink-400 to-ponte-pink-600 relative">
+                    <Image
+                      src={avatar.image}
+                      alt={`${avatar.name} - ${avatar.role}`}
+                      width={300}
+                      height={400}
+                      className="w-full h-full object-cover"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 20vw"
+                    />
                   </div>
                   <div className="absolute top-2 right-2 bg-black/60 hover:bg-black/80 backdrop-blur-sm text-primary-foreground text-xs px-2 py-1 rounded">
                     {avatar.rating}
@@ -156,7 +122,7 @@ export default async function HomePage() {
                   </div>
                   
                   <Link
-                    href={`/request-talent?avatar=${avatar.id}`}
+                    href="/client"
                     className="btn-primary-ponte w-full text-sm py-2 rounded-md font-medium mt-3"
                   >
                     Book Avatar
@@ -168,7 +134,7 @@ export default async function HomePage() {
 
           <div className="text-center">
             <Link
-              href="/request-talent"
+              href="/login"
               className="btn-secondary-ponte text-base px-6 py-3 rounded-md font-medium"
             >
               View All 200+ Avatars

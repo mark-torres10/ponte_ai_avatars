@@ -8,7 +8,7 @@ export const sampleAvatars = [
     bookings: "1,250",
     price: "$2,500 - $15,000",
     tags: ["Product Launches", "Training Videos"],
-    image: "/api/placeholder/300/400"
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?fit=crop&crop=faces&auto=format&q=80"
   },
   {
     id: 2,
@@ -18,7 +18,7 @@ export const sampleAvatars = [
     bookings: "890",
     price: "$3,000 - $20,000",
     tags: ["Food Campaigns", "Cooking Tutorials"],
-    image: "/api/placeholder/300/400"
+    image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?fit=crop&crop=faces&auto=format&q=80"
   },
   {
     id: 3,
@@ -28,7 +28,7 @@ export const sampleAvatars = [
     bookings: "2,100",
     price: "$5,000 - $35,000",
     tags: ["Sports Marketing", "Motivational Content"],
-    image: "/api/placeholder/300/400"
+    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?fit=crop&crop=faces&auto=format&q=80"
   },
   {
     id: 4,
@@ -38,7 +38,7 @@ export const sampleAvatars = [
     bookings: "675",
     price: "$1,800 - $12,000",
     tags: ["Interview Style", "Educational Content"],
-    image: "/api/placeholder/300/400"
+    image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?fit=crop&crop=faces&auto=format&q=80"
   },
   {
     id: 5,
@@ -48,6 +48,6 @@ export const sampleAvatars = [
     bookings: "1,450",
     price: "$2,200 - $18,000",
     tags: ["Fitness Content", "Wellness Campaigns"],
-    image: "/api/placeholder/300/400"
+    image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?fit=crop&crop=faces&auto=format&q=80"
   }
 ] 

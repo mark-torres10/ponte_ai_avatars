@@ -1,7 +1,7 @@
-import { VALID_USER_ROLES } from '@/lib/auth-utils';
+import { VALID_USER_ROLES, UserRole } from '@/lib/user-constants';
 
-// User role type
-export type UserRole = 'admin' | 'client' | 'talent';
+// Re-export UserRole type for backwards compatibility
+export type { UserRole };
 
 // User interface matching the database schema
 export interface User {

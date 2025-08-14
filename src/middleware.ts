@@ -12,10 +12,10 @@ const protectedRoutes = {
 
 // Define public routes that don't require authentication
 const publicRoutes = [
+  '/',
   '/login',
   '/sign-up',
   '/generate-avatar',
-  '/request-talent',
   '/api/auth/signout',
   '/api/users',
 ];
@@ -51,9 +51,10 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.redirect(signInUrl);
   }
 
-  // Special handling for root page - redirect authenticated users to appropriate dashboard
-  if (pathname === '/') {
-    logger.info('Middleware: Root page access, checking user role for dashboard redirect');
+  // Special handling for authenticated users - redirect to appropriate dashboard  
+  // This ensures users go directly to their dashboard without seeing intermediate pages
+  if (pathname === '/role-selection' || pathname === '/') {
+    logger.info('Middleware: Authenticated user accessing entry point, checking role for direct redirect');
     
     try {
       const backendUrl = normalizeBackendUrl(process.env.BACKEND_URL || 'http://localhost:3001');
@@ -70,29 +71,36 @@ export default clerkMiddleware(async (auth, req) => {
         logger.info('Middleware: User role retrieved', { userRole });
         
         if (userRole) {
-          // User has a role, redirect to their dashboard
-          logger.info('Middleware: Redirecting user to dashboard', { userRole });
+          // User has a role, redirect directly to their dashboard
+          logger.info('Middleware: Redirecting user directly to dashboard', { userRole });
           const dashboardUrl = new URL(`/${userRole}`, req.url);
           return NextResponse.redirect(dashboardUrl);
+        } else if (pathname === '/') {
+          // User has no role and is on landing page - allow them to stay
+          return NextResponse.next();
         } else {
-          // User has no role, redirect to role selection
-          logger.info('Middleware: User has no role, redirecting to role selection');
-          const roleSelectionUrl = new URL('/role-selection', req.url);
-          return NextResponse.redirect(roleSelectionUrl);
+          // User has no role and is on role-selection - let them choose
+          return NextResponse.next();
         }
+      } else if (pathname === '/') {
+        // API failed but user is on landing page - allow access
+        return NextResponse.next();
       } else {
-        // User doesn't exist, redirect to role selection
-        logger.info('Middleware: User not found, redirecting to role selection');
-        const roleSelectionUrl = new URL('/role-selection', req.url);
-        return NextResponse.redirect(roleSelectionUrl);
+        // API failed and user is on role-selection - let them proceed
+        return NextResponse.next();
       }
     } catch (error) {
-      logger.error('Middleware: Error checking user role for root page', { error });
-      // On error, redirect to role selection
-      const roleSelectionUrl = new URL('/role-selection', req.url);
-      return NextResponse.redirect(roleSelectionUrl);
+      logger.error('Middleware: Error checking user role', { error });
+      if (pathname === '/') {
+        // Error but user is on landing page - allow access  
+        return NextResponse.next();
+      } else {
+        // Error and user is on role-selection - let them proceed
+        return NextResponse.next();
+      }
     }
   }
+
 
   // For onboarding routes, allow access
   if (onboardingRoutes.includes(pathname)) {

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { User, UserRole } from '@/types/user'
 import { useClerkUser } from './useClerkUser'
-import { VALID_USER_ROLES } from './auth-utils'
+import { VALID_USER_ROLES } from './user-constants'
 
 interface UseUserRoleReturn {
   userData: User | null
