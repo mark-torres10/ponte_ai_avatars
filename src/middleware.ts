@@ -1,6 +1,7 @@
 import { clerkMiddleware } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
+import { normalizeBackendUrl } from "@/lib/utils";
 
 // Define protected routes and their required roles
 const protectedRoutes = {
@@ -55,7 +56,7 @@ export default clerkMiddleware(async (auth, req) => {
     logger.info('Middleware: Root page access, checking user role for dashboard redirect');
     
     try {
-      const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
+      const backendUrl = normalizeBackendUrl(process.env.BACKEND_URL || 'http://localhost:3001');
       const apiUrl = `${backendUrl}/api/users/${userId}`;
       logger.debug('Middleware: Making backend API call', { apiUrl });
       
@@ -104,7 +105,7 @@ export default clerkMiddleware(async (auth, req) => {
     
     try {
       // Fetch user role from backend API with retry logic
-      const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
+      const backendUrl = normalizeBackendUrl(process.env.BACKEND_URL || 'http://localhost:3001');
       const apiUrl = `${backendUrl}/api/users/${userId}`;
       logger.debug('Middleware: Making backend API call', { apiUrl });
       

@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateRequest, validateUserRole } from '@/lib/auth-utils';
 import { logger } from '@/lib/logger';
+import { normalizeBackendUrl } from '@/lib/utils';
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
+const BACKEND_URL = normalizeBackendUrl(process.env.BACKEND_URL || 'http://localhost:3001');
 
 // GET /api/users - Get all users (admin only)
 export async function GET(request: NextRequest): Promise<NextResponse> {
