@@ -31,3 +31,10 @@
 - "bookmark this prompt for your next ad campaign" X thread: https://x.com/VibeMarketer_/status/1945161737629561130
 - "Generic Consulting Proposal Worksheet": https://567-labs.notion.site/Generic-Consulting-Proposal-Worksheet-10438b66e91580dc9889c98c68a0660f
 - "A guide for technical professionals looking to start consulting": https://github.com/sdg-1/consulting-handbook
+- HubSpot Playbooks are a powerful tool designed to help sales, marketing, and customer service teams streamline their workflows, ensure consistency across the sales process, and drive success across various business functions. They provide a structured approach to managing key processes, making it easier for teams to deliver results with precision.
+ - https://www.marketveep.com/blog/boost-sales-with-hubspot-playbooks-a-step-by-step-guide
+- ElevenLabs music: for permissively-licensed music: https://elevenlabs.io/docs/capabilities/music
+- Shortimize: "The #1 Tracking Solution to Operate YouTube Shorts, Reels & TikTok Marketing. All your data, metrics, and reports for scalable strategies in one place"
+ - https://www.shortimize.com/
+- SocialGrowthEngineers resource dump: https://www.socialgrowthengineers.com/resources
+- 
