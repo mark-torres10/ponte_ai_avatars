@@ -1,0 +1,33 @@
+# Dump of resources and quick notes if related.
+- postel.app: "Create X content so good it gets you clients"
+- Flow by Google: https://labs.google/flow/about?https://labs.google/flow/about
+ - "Flow is an AI filmmaking tool built with and for creatives."
+- MakeUGC: https://www.makeugc.ai/
+- "The New Designer Playbook" X thread: https://x.com/felixhhaas/status/1957090942948958462
+- Higgsfield AI
+- ComfyUI
+- "This is how I would design a marketing team from scratch" X thread: https://x.com/boringmarketer/status/1955683193132118036
+- "How to start a lean, AI-native startup in 2025" (with plenty of tools): https://henrythe9th.substack.com/p/14194ed3-f99c-4a26-8737-bee951953823?free_preview=true
+- SuperDesign: Cursor for Design: https://github.com/superdesigndev/superdesign
+- OpenCreator AI: https://opencreator.io/
+ - "#1 Unified Gen-AI Workstation For Content Creators" 
+- IgnytLabs: good example of AI studio (something I can consider later)
+- "Using Claude Code to rank #2 in Google for 'mobile diesel repair'" X thread: https://x.com/gregisenberg/status/1952493070240604166
+- Magic Patterns (looks like vibe coding for design?): https://www.magicpatterns.com/
+- "AI, Ads, & Apps" (good X page for analyzing onboarding flows): https://x.com/AIAdsApps/status/1951312911084953653
+- "Here's how you can turn ChatGPT into a TikTok Content Specialist" X thread: https://x.com/lachy_eddy/status/1948403342805442734
+- "you can now use this JSON prompt to create studio level commercial with" X thread: https://x.com/EHuanglu/status/1947705425874587689
+- LTX Studio - the storytelling platform to give form to your imagination: https://x.com/LTXStudio
+- "This guy created a Claude prompt that can literally validate any SaaS idea in 10 minutes." X thread: https://x.com/ginacostag_/status/1947148673227604454
+- Social Growth Engineers (actually a really good resource to learn about social growth TBH): https://www.socialgrowthengineers.com/resources/beginnerguide
+- Veo3
+- "Using Veo 3 to create AI-generated music videos, like a Tiny Desk concert with Notorious B.I.G."
+ - https://www.youtube.com/watch?v=x6EZyVxyRB4
+- "This is how you build FAST with AI" X thread: https://x.com/PrajwalTomar_/status/1956333050272547047
+ - https://x.com/uxpilotai
+- "Steal our viral ad formula that got us 100M views in a month": https://pjace.beehiiv.com/p/steal-our-viral-ad-formula-that-got-us-100m-views-in-a-month-e7742bdae1e74b81
+- "The Vibe Marketer: These builders automated what agencies charge $10K for": https://thevibemarketer.beehiiv.com/p/these-builders-automated-what-agencies-charge-10k-for
+- "I automated an instagram account on full autopilot. Here are the results" Reddit thread: https://www.reddit.com/r/automation/comments/1lekudj/i_automated_an_instagram_account_on_full/
+- "bookmark this prompt for your next ad campaign" X thread: https://x.com/VibeMarketer_/status/1945161737629561130
+- "Generic Consulting Proposal Worksheet": https://567-labs.notion.site/Generic-Consulting-Proposal-Worksheet-10438b66e91580dc9889c98c68a0660f
+- "A guide for technical professionals looking to start consulting": https://github.com/sdg-1/consulting-handbook
