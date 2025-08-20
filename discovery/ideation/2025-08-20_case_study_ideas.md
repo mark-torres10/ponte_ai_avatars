@@ -68,3 +68,75 @@ Demonstrate how a wellness influencer avatar drives a product launch for a zero-
   - Always-available influencer presence.  
   - Interactive demos increase conversion rates.  
   - Shoppable moments embedded across TikTok, IG, website.  
+
+---
+# 📦 Case Study Campaign 1: Event Appearance – Virtual Keynote Intro
+
+## 🎥 Hero Script: Virtual Keynote Intro
+
+**Length:** ~45 seconds  
+**Tone:** Energetic, professional, hype-building  
+
+**[Opening – 5s]**  
+"Hello everyone! It’s such an honor to be here with you at [Summit 2025] — even though I can’t be there in person, I’m thrilled to welcome you virtually."
+
+**[Sponsor Callout – 10s]**  
+"Today’s event is proudly presented by [Nike], a brand that inspires innovation and excellence on and off the field."
+
+**[Engagement – 20s]**  
+"We’re going to dive into some incredible stories, ideas, and breakthroughs. This summit is all about pushing boundaries, and I know you’re going to leave here feeling inspired."
+
+**[Closing – 10s]**  
+"So let’s get things started — thank you for having me, enjoy the event, and let’s make it an unforgettable experience!"
+
+---
+
+## 🎥 TikTok/Reel Variations
+
+**15s Teaser #1 – Hype Promo**  
+"Big news — I’ll be joining [Summit 2025] virtually! Proudly presented by [Nike]. You don’t want to miss it — see you there!"
+
+**15s Teaser #2 – Sponsor Shoutout**  
+"Excited to partner with [Nike] at [Summit 2025]! I’ll be there virtually to welcome you — let’s kick things off in style."
+
+**15s Teaser #3 – Call to Action**  
+"Summit 2025 is almost here, powered by [Nike]! I’ll see you virtually on day one. Don’t miss it!"
+
+---
+
+# 📦 Case Study Campaign 2: Consumer Product Launch – Wellness Drink
+
+## 🎥 Hero Script: Wellness Drink Launch
+
+**Length:** ~45–60 seconds  
+**Tone:** Friendly, approachable, lifestyle-oriented  
+
+**[Opening – 5s]**  
+"Hey everyone! I’ve been trying out these amazing [zero-calorie wellness drops], and I want to show you how simple and refreshing they are."
+
+**[Demo – 20s]**  
+"Just take a glass of sparkling water, add a few drops... and that’s it. No sugar, no carbs, no extra calories. It’s light, crisp, and honestly feels like a mocktail you can enjoy any time of day."
+
+**[FAQ Insert – 10s]**  
+"And I know the big question: does it taste sweet? Nope — it’s clean and refreshing, like flavored water with a twist."
+
+**[Closing – 10–15s]**  
+"Whether you’re winding down after the gym, hanging out with friends, or just looking for a healthier option, these drops make it easy. Always on, always refreshing. Cheers to wellness made simple!"
+
+---
+
+## 🎥 TikTok/Reel Variations
+
+**15s Demo #1 – Quick Mix**  
+"Grab a glass of sparkling water, add a few drops… done. Zero sugar, zero carbs, and it tastes amazing. Wellness made simple!"
+
+**15s Demo #2 – Lifestyle Angle**  
+"Post-gym? Rooftop party? These zero-calorie drops fit anywhere. Refreshing mocktail vibes without the guilt."
+
+**15s Demo #3 – Recipe Hack**  
+"Mix these drops with lemon + mint = instant mocktail. Zero calories, 100% flavor. Cheers!"
+
+**15s Demo #4 – FAQ Response**  
+"Does it taste sweet? Nope — just crisp, light, and refreshing. Like flavored water with a healthy twist!"
+
+---
