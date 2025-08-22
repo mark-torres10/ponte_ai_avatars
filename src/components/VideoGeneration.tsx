@@ -468,17 +468,7 @@ export default function VideoGeneration({
           </div>
         )}
 
-        {/* Video Generation Info */}
-        <div className="p-4 bg-muted/30 rounded-lg">
-          <h3 className="font-medium mb-2">Video Generation Features:</h3>
-          <ul className="text-sm text-foreground/70 space-y-1">
-            <li>• Uses D-ID API for avatar video generation</li>
-            <li>• Combines generated voice with persona images</li>
-            <li>• High-quality talking avatar videos</li>
-            <li>• Automatic caching and storage in Supabase</li>
-            <li>• Local testing mode for quick demos</li>
-          </ul>
-        </div>
+
       </div>
     </div>
   );

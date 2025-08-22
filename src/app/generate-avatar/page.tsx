@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from 'react';
 import Link from "next/link"
 import { useClerkUser } from '@/lib/useClerkUser'
 import PersonaSelection from "@/components/PersonaSelection"
-import TextInput from "@/components/TextInput"
+import QuestionInput from "@/components/QuestionInput"
 import VoiceGeneration from "@/components/VoiceGeneration"
 import VideoGeneration from "@/components/VideoGeneration"
 import CollapsibleBackendStatus from "@/components/CollapsibleBackendStatus"
@@ -47,12 +47,17 @@ export default function GenerateAvatarPage() {
     console.log('Selected persona:', persona);
   }, []);
 
-  const handleTextChange = useCallback((text: string, isPersonalized: boolean = false, original?: string, personalized?: string) => {
-    setCurrentText(text);
-    setIsUsingPersonalized(isPersonalized);
-    if (original) setOriginalText(original);
-    if (personalized) setPersonalizedText(personalized);
-    console.log('Current text:', text, 'Using personalized:', isPersonalized);
+  const handleQuestionChange = useCallback((question: string) => {
+    setCurrentText(question);
+    setOriginalText(question);
+    console.log('Question changed:', question);
+  }, []);
+
+  const handleResponseGenerated = useCallback((response: string) => {
+    setCurrentText(response);
+    setPersonalizedText(response);
+    setIsUsingPersonalized(true);
+    console.log('AI response generated:', response);
   }, []);
 
   const handleVoiceGenerated = useCallback((audioUrl: string) => {
@@ -65,25 +70,6 @@ export default function GenerateAvatarPage() {
     setIsUsingPersonalized(isPersonalized);
     console.log('Script changed to:', isPersonalized ? 'AI Personalized' : 'Original');
   }, []);
-
-  const handleManualSave = useCallback(() => {
-    // Save the current text state to localStorage or other storage
-    const saveData = {
-      currentText,
-      originalText,
-      personalizedText,
-      isUsingPersonalized,
-      selectedPersona: selectedPersona?.id,
-      timestamp: Date.now()
-    };
-    
-    try {
-      localStorage.setItem('avatar-generation-draft', JSON.stringify(saveData));
-      console.log('Avatar generation data saved');
-    } catch (error) {
-      console.error('Failed to save avatar generation data:', error);
-    }
-  }, [currentText, originalText, personalizedText, isUsingPersonalized, selectedPersona]);
 
   // Show loading state while checking user role
   if (!isLoaded) {
@@ -146,13 +132,13 @@ export default function GenerateAvatarPage() {
               <PersonaSelection onPersonaSelect={handlePersonaSelect} />
             </div>
 
-            {/* Text Input and AI Personalization */}
+            {/* Question Input and AI Response Generation */}
             {selectedPersona && (
               <div className="card-ponte p-8 rounded-lg mb-8">
-                <TextInput 
+                <QuestionInput 
                   selectedPersona={selectedPersona} 
-                  onTextChange={handleTextChange}
-                  onManualSave={handleManualSave}
+                  onQuestionChange={handleQuestionChange}
+                  onResponseGenerated={handleResponseGenerated}
                 />
               </div>
             )}

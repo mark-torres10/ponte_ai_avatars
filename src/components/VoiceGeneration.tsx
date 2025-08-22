@@ -349,16 +349,7 @@ export default function VoiceGeneration({
           </div>
         )}
 
-        {/* Voice Generation Info */}
-        <div className="p-4 bg-muted/30 rounded-lg">
-          <h3 className="font-medium mb-2">Voice Generation Features:</h3>
-          <ul className="text-sm text-foreground/70 space-y-1">
-            <li>• Uses ElevenLabs AI voice synthesis</li>
-            <li>• Custom voice models for each persona</li>
-            <li>• High-quality, natural-sounding speech</li>
-            <li>• Supports up to 5000 characters per generation</li>
-          </ul>
-        </div>
+
       </div>
     </div>
   );
