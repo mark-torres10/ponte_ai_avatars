@@ -37,4 +37,6 @@
 - Shortimize: "The #1 Tracking Solution to Operate YouTube Shorts, Reels & TikTok Marketing. All your data, metrics, and reports for scalable strategies in one place"
  - https://www.shortimize.com/
 - SocialGrowthEngineers resource dump: https://www.socialgrowthengineers.com/resources
-- 
+- https://web.descript.com/: looks like a promising resource for all-in-one socials generation.
+- Blotato (for creating TikTok content and plugging into n8n): https://community.n8n.io/t/how-i-automated-all-my-social-media-posts-with-n8n-and-blotato/
+- https://www.ceros.com/industries-hub/agency/: another interesting possible resource (also looks like I have a mutual connection who works there? Riley Zuccarello?)
