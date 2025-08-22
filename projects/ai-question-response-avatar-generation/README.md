@@ -6,6 +6,7 @@ Transform the existing avatar generation flow from script-based input to interac
 
 ## Quick Links
 
+- **Linear Project**: [AI Question-to-Response Avatar Generation](https://linear.app/metresearch/project/ai-question-to-response-avatar-generation-e4537ea88f10)
 - **Specification**: [`spec.md`](./spec.md)
 - **Planning**: [`plan_ai_question_response.md`](./plan_ai_question_response.md)
 - **Todo**: [`todo.md`](./todo.md)
