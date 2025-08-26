@@ -1,5 +1,8 @@
 # AI Avatar Browser Extension - Linear Project
 
+**Linear Project ID**: 279f1ea5-1fc4-4ece-a82a-ad027e7043a3  
+**Linear Project URL**: https://linear.app/metresearch/project/ai-avatar-browser-extension-proactive-sports-commentary-mvp-1efe1316af16
+
 ## Project Title
 AI Avatar Browser Extension - Proactive Sports Commentary MVP
 

@@ -46,6 +46,12 @@ projects/ai-avatar-browser-extension/
     └── README.md             # Retrospective guide
 ```
 
+## Linear Project
+
+**Project**: [AI Avatar Browser Extension - Proactive Sports Commentary MVP](https://linear.app/metresearch/project/ai-avatar-browser-extension-proactive-sports-commentary-mvp-1efe1316af16)  
+**Team**: PonteAI  
+**Status**: Active Development
+
 ## Development Timeline
 
 **Total Duration**: 1 week

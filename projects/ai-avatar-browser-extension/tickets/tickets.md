@@ -1,5 +1,13 @@
 # AI Avatar Browser Extension - Project Tickets
 
+**Linear Project**: [AI Avatar Browser Extension - Proactive Sports Commentary MVP](https://linear.app/metresearch/project/ai-avatar-browser-extension-proactive-sports-commentary-mvp-1efe1316af16)
+
+## Ticket 001: Extension Foundation and ESPN Detection
+**Linear ID**: [PON-76](https://linear.app/metresearch/issue/PON-76/extension-foundation-and-espn-detection)  
+**Priority**: High  
+**Estimate**: 2 days  
+**Dependencies**: None
+
 ## Ticket 001: Extension Foundation and ESPN Detection
 **Priority**: High  
 **Estimate**: 2 days  
@@ -31,6 +39,7 @@ Set up the basic Chrome extension structure and implement ESPN NBA boxscore page
 ---
 
 ## Ticket 002: Backend API Development
+**Linear ID**: [PON-77](https://linear.app/metresearch/issue/PON-77/backend-api-development)  
 **Priority**: High  
 **Estimate**: 2 days  
 **Dependencies**: Ticket 001  
@@ -63,6 +72,7 @@ Create the backend API that will handle OpenAI, Wikipedia, and ElevenLabs integr
 ---
 
 ## Ticket 003: Avatar UI and Audio Integration
+**Linear ID**: [PON-78](https://linear.app/metresearch/issue/PON-78/avatar-ui-and-audio-integration)  
 **Priority**: High  
 **Estimate**: 2 days  
 **Dependencies**: Ticket 001, Ticket 002  
@@ -94,6 +104,7 @@ Create the avatar UI component and integrate it with the audio system.
 ---
 
 ## Ticket 004: Content Detection and Team Name Extraction
+**Linear ID**: [PON-79](https://linear.app/metresearch/issue/PON-79/content-detection-and-team-name-extraction)  
 **Priority**: Medium  
 **Estimate**: 1 day  
 **Dependencies**: Ticket 001  
@@ -122,6 +133,7 @@ Implement logic to extract team names and relevant information from ESPN NBA box
 ---
 
 ## Ticket 005: Testing, Refinement, and Deployment
+**Linear ID**: [PON-80](https://linear.app/metresearch/issue/PON-80/testing-refinement-and-deployment)  
 **Priority**: Medium  
 **Estimate**: 1 day  
 **Dependencies**: Ticket 001, Ticket 002, Ticket 003, Ticket 004  
