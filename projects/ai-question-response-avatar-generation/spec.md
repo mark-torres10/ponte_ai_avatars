@@ -29,30 +29,52 @@
 
 ## 3. Scope Boundaries and Technical Requirements
 
-**In Scope:**
-1. **Question Input Interface**
+**Phase 1: Basic Talking Head Avatar System**
+1. **Avatar Creation & Management**
+   - Upload photos/videos to create custom talking head avatars
+   - Basic avatar customization (appearance, style)
+   - Avatar management system
+
+2. **Text-to-Speech Integration**
+   - Convert text input to natural speech for avatars
+   - Integration with existing ElevenLabs API
+   - Basic voice customization options
+
+3. **Talking Head Video Generation**
+   - Generate talking head videos using D-ID API
+   - Real-time video generation from text input
+   - Basic video output and display
+
+**Phase 2: AI Question-to-Response Integration**
+4. **Question Input Interface**
    - Text input field for custom questions
    - 4 pre-selected, persona-specific professional questions
    - Pre-selected questions overwrite current text when clicked
    - Maintain existing character limits and validation
 
-2. **AI Response Generation**
-   - Use existing generic OpenAI endpoint (`/api/openai/prompt`) (but remove mock responses)
+5. **AI Response Generation**
+   - Use existing generic OpenAI endpoint (`/api/openai/prompt`)
    - Create new specialized endpoint for persona question responses
    - Generate persona-specific responses to questions
    - Display responses in read-only text area
    - Handle API errors gracefully
 
-3. **Flow Integration**
+**Phase 3: Enhanced Avatar Generation Flow**
+6. **Flow Integration**
    - AI response becomes the text passed to ElevenLabs for voice generation
    - AI response becomes the text passed to D-ID for video generation
    - Maintain existing voice and video generation flow unchanged
 
-4. **UI Updates**
+7. **UI Updates**
    - Transform TextInput component from script input to question input
    - Add pre-selected question buttons above text input
    - Add AI response display area below text input
    - Update component labels and descriptions
+
+8. **Complete System Integration**
+   - Full integration with existing avatar generation workflow
+   - Persona-based avatar customization
+   - Professional avatar generation experience
 
 **Out of Scope:**
 - Modifying ElevenLabs or D-ID integrations
@@ -87,16 +109,16 @@
 ## 5. Technical Feasibility and Estimation
 
 **Technical Approach:**
-- **Frontend**: Modify existing TextInput component to handle questions and display responses
-- **Backend**: Enhance existing OpenAI personalization endpoint to generate responses to questions
-- **Integration**: Minimal changes to existing voice/video generation flow
-- **State Management**: Add response state and modify text flow
+- **Phase 1**: Integrate D-ID API for talking head generation, create basic avatar management
+- **Phase 2**: Enhance existing OpenAI endpoint for persona responses, add question interface
+- **Phase 3**: Integrate with existing voice/video generation flow, complete system integration
+- **State Management**: Incremental state management updates for each phase
 
 **Implementation Effort:**
-- **Frontend Changes**: 4-6 hours (TextInput component transformation, UI updates)
-- **Backend Changes**: 2-3 hours (OpenAI prompt modification, response handling)
-- **Testing & Integration**: 2-3 hours (end-to-end flow testing)
-- **Total Estimate**: 8-12 hours
+- **Phase 1**: 8-10 hours (D-ID integration, avatar management, basic TTS)
+- **Phase 2**: 6-8 hours (AI response generation, question interface)
+- **Phase 3**: 4-6 hours (system integration, workflow completion)
+- **Total Estimate**: 18-24 hours across 3 phases
 
 **Technical Risks:**
 - OpenAI API reliability and response quality
@@ -111,15 +133,25 @@
 
 ## 6. Success Validation
 
-**Functional Requirements:**
+**Phase 1 Requirements:**
+- [ ] Users can upload photos to create talking head avatars
+- [ ] Basic avatar customization options are available
+- [ ] Text input generates talking head videos via D-ID API
+- [ ] Basic TTS integration works with ElevenLabs
+- [ ] Avatar management system functions properly
+
+**Phase 2 Requirements:**
 - [ ] Users can type custom questions in the text input
 - [ ] Pre-selected questions appear as clickable buttons
 - [ ] Clicking pre-selected questions overwrites current text input
 - [ ] AI generates persona-specific responses to questions
 - [ ] Responses are displayed in read-only format
+
+**Phase 3 Requirements:**
 - [ ] AI response text is used for voice generation
 - [ ] AI response text is used for video generation
 - [ ] All existing functionality continues to work
+- [ ] Complete avatar generation workflow is functional
 
 **User Experience Requirements:**
 - [ ] Question input is intuitive and clear
