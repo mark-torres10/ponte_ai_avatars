@@ -45,24 +45,26 @@ function createAvatarPlaceholder(): HTMLElement {
   const avatar = document.createElement('div');
   avatar.id = 'ai-avatar-placeholder';
   avatar.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    width: 80px;
-    height: 80px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 50%;
-    z-index: 10000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-family: Arial, sans-serif;
-    font-size: 12px;
-    text-align: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    cursor: pointer;
-    transition: transform 0.2s ease;
+    position: fixed !important;
+    top: 20px !important;
+    right: 20px !important;
+    width: 80px !important;
+    height: 80px !important;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border-radius: 50% !important;
+    z-index: 2147483647 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: white !important;
+    font-family: Arial, sans-serif !important;
+    font-size: 12px !important;
+    text-align: center !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important;
+    cursor: pointer !important;
+    transition: transform 0.2s ease !important;
+    pointer-events: auto !important;
+    transform: translateZ(0) !important;
   `;
   
   avatar.innerHTML = 'AI<br>Avatar';
@@ -99,7 +101,19 @@ function initializeContentScript() {
   
   // Create and inject avatar placeholder
   const avatar = createAvatarPlaceholder();
+  
+  // Ensure the avatar is added to the document body and has highest priority
   document.body.appendChild(avatar);
+  
+  // Force the avatar to stay on top by setting additional properties
+  avatar.style.setProperty('position', 'fixed', 'important');
+  avatar.style.setProperty('z-index', '2147483647', 'important');
+  avatar.style.setProperty('top', '20px', 'important');
+  avatar.style.setProperty('right', '20px', 'important');
+  
+  // Add a CSS class for additional styling if needed
+  avatar.classList.add('ai-avatar-extension');
+  
   state.avatarVisible = true;
   
   // Notify background script
@@ -157,3 +171,24 @@ observer.observe(document.body, {
   childList: true,
   subtree: true
 });
+
+// Ensure avatar stays visible on scroll and other events
+function ensureAvatarVisibility() {
+  const avatar = document.getElementById('ai-avatar-placeholder');
+  if (avatar && state.avatarVisible) {
+    // Force the avatar to stay on top
+    avatar.style.setProperty('position', 'fixed', 'important');
+    avatar.style.setProperty('z-index', '2147483647', 'important');
+    avatar.style.setProperty('top', '20px', 'important');
+    avatar.style.setProperty('right', '20px', 'important');
+    avatar.style.setProperty('display', 'flex', 'important');
+  }
+}
+
+// Add event listeners to ensure avatar stays visible
+window.addEventListener('scroll', ensureAvatarVisibility);
+window.addEventListener('resize', ensureAvatarVisibility);
+window.addEventListener('load', ensureAvatarVisibility);
+
+// Periodically check avatar visibility (fallback)
+setInterval(ensureAvatarVisibility, 2000);
