@@ -40,7 +40,7 @@ function analyzeESPNPage(): ESPNPageInfo | null {
   };
 }
 
-// Create avatar placeholder (will be enhanced in future tickets)
+// Create avatar with Parker's image
 function createAvatarPlaceholder(): HTMLElement {
   const avatar = document.createElement('div');
   avatar.id = 'ai-avatar-placeholder';
@@ -50,24 +50,31 @@ function createAvatarPlaceholder(): HTMLElement {
     right: 20px !important;
     width: 80px !important;
     height: 80px !important;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
     border-radius: 50% !important;
     z-index: 2147483647 !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    color: white !important;
-    font-family: Arial, sans-serif !important;
-    font-size: 12px !important;
-    text-align: center !important;
     box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important;
     cursor: pointer !important;
     transition: transform 0.2s ease !important;
     pointer-events: auto !important;
     transform: translateZ(0) !important;
+    overflow: hidden !important;
+    border: 3px solid white !important;
   `;
   
-  avatar.innerHTML = 'AI<br>Avatar';
+  // Create image element for Parker's avatar
+  const avatarImg = document.createElement('img');
+  avatarImg.src = chrome.runtime.getURL('parker-avatar-80x80.png');
+  avatarImg.style.cssText = `
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    border-radius: 50% !important;
+  `;
+  
+  avatar.appendChild(avatarImg);
   
   // Add hover effect
   avatar.addEventListener('mouseenter', () => {

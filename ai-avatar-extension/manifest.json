@@ -31,7 +31,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["avatar-icon.png"],
+      "resources": ["avatar-icon.png", "parker_image.jpeg", "parker-avatar-80x80.png", "parker-avatar-120x120.png", "parker-avatar-160x160.png"],
       "matches": ["https://www.espn.com/*"]
     }
   ]
