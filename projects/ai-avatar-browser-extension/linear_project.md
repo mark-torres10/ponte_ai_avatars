@@ -94,3 +94,9 @@ Sports fans currently consume sports content passively on ESPN, missing contextu
 - Mobile app version
 - Monetization features
 - Partnership opportunities with sports organizations
+
+## Pull Requests
+
+| Ticket | Title | Status | PR URL | Notes |
+|--------|-------|--------|---------|-------|
+| PON-77 | Backend API Development | In Progress | [PR #43](https://github.com/mark-torres10/ponte_ai_avatars/pull/43) | Backend structure copied and ready for sports commentary endpoints |
