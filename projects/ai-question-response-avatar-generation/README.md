@@ -2,7 +2,13 @@
 
 ## Project Overview
 
-Transform the existing avatar generation flow from script-based input to interactive question-based AI responses. Users can now ask questions to AI personas and receive authentic, persona-specific responses that are automatically used for voice and video generation.
+Transform the existing avatar generation flow from script-based input to interactive question-based AI responses using a piecemeal development approach. The project is divided into three phases:
+
+1. **Phase 1**: Basic Talking Head Avatar System - D-ID integration for avatar generation
+2. **Phase 2**: AI Question-to-Response Integration - OpenAI-powered intelligent responses  
+3. **Phase 3**: Enhanced Avatar Generation Flow - Complete system integration
+
+Each phase builds upon the previous to deliver incremental, demo-able functionality while maintaining the existing system's integrity.
 
 ## Quick Links
 
@@ -15,13 +21,25 @@ Transform the existing avatar generation flow from script-based input to interac
 - **Todo**: [`todo.md`](./todo.md)
 - **Logs**: [`logs.md`](./logs.md)
 
-## Key Features
+## Development Phases
 
+### Phase 1: Basic Talking Head Avatar System
+- **D-ID Integration**: API integration for talking head video generation
+- **Avatar Management**: Photo upload and basic avatar customization
+- **Text-to-Speech**: Integration with existing ElevenLabs API
+- **Basic Video Generation**: Simple text input to talking head video workflow
+
+### Phase 2: AI Question-to-Response Integration
 - **Question Input Interface**: Transform TextInput component from script input to question input
 - **Pre-selected Questions**: 4 professional, entrepreneur-focused questions for quick access
 - **AI Response Generation**: Use existing OpenAI endpoint to generate persona-specific responses
 - **Response Display**: Show AI responses in read-only format below the input
-- **Flow Integration**: AI responses automatically become the text for voice and video generation
+
+### Phase 3: Enhanced Avatar Generation Flow
+- **Complete Integration**: AI responses automatically become the text for voice and video generation
+- **Professional Interface**: Enhanced user experience and workflow
+- **Advanced Features**: Avatar customization and personality options
+- **Production Ready**: Complete system for stakeholder demos
 
 ## Pre-selected Questions
 
@@ -32,36 +50,56 @@ Transform the existing avatar generation flow from script-based input to interac
 
 ## Technical Approach
 
-- **Frontend**: Modify existing TextInput component to handle questions and display responses
-- **Backend**: Enhance existing OpenAI personalization endpoint for question-to-response generation
-- **Integration**: Minimal changes to existing voice/video generation flow
-- **State Management**: Add response state and modify text flow
+- **Phase 1**: D-ID API integration, avatar management, basic TTS
+- **Phase 2**: Enhanced OpenAI endpoint, question interface, AI response display
+- **Phase 3**: Complete system integration, enhanced user experience, production features
 
 ## Implementation Effort
 
-- **Frontend Changes**: 4-6 hours
-- **Backend Changes**: 2-3 hours
-- **Testing & Integration**: 2-3 hours
-- **Total Estimate**: 8-12 hours
+- **Phase 1**: 8-10 hours (D-ID integration, avatar management, basic TTS)
+- **Phase 2**: 6-8 hours (AI response generation, question interface)
+- **Phase 3**: 4-6 hours (system integration, workflow completion)
+- **Total Estimate**: 18-24 hours across 3 phases
 
 ## Success Criteria
 
-- Users can complete the full flow: persona selection → question input → AI response → voice generation → video generation
-- Pre-selected questions work correctly and overwrite custom input
-- AI responses maintain persona authenticity and are suitable for voice generation
-- All existing functionality (voice/video generation) continues to work unchanged
-- Response generation is reliable and handles errors gracefully
+### Phase 1 Success
+- Working talking head avatar system with D-ID integration
+- Basic avatar creation and management functionality
+- Text-to-video generation workflow operational
+
+### Phase 2 Success
+- AI question-to-response system functional
+- Question input interface and pre-selected questions working
+- AI responses generated and displayed correctly
+
+### Phase 3 Success
+- Complete avatar generation workflow integrated
+- AI responses flow to voice and video generation
+- Professional interface and enhanced user experience
+- Production-ready system for stakeholder demos
 
 ## Dependencies
 
-- Existing OpenAI personalization endpoint
-- Existing voice and video generation flow
-- Current persona selection system
-- TextInput component (to be modified)
+### Phase 1 Dependencies
+- D-ID API for talking head video generation
+- Existing ElevenLabs API for text-to-speech
+- Basic avatar management system
+
+### Phase 2 Dependencies
+- Enhanced OpenAI endpoint for persona responses
+- Question input interface components
+- AI response display system
+
+### Phase 3 Dependencies
+- Complete system integration
+- Enhanced user experience components
+- Production-ready interface and workflow
 
 ## Risk Mitigation
 
-- **Demo Risk**: Implement fallback scenarios for OpenAI API failures
-- **State Management**: Careful integration of new AI response state
-- **Component Transformation**: Maintain existing component dependencies
-- **Testing**: Comprehensive end-to-end flow testing
+- **Phase 1 Risk**: D-ID API integration and avatar management complexity
+- **Phase 2 Risk**: AI response generation quality and reliability
+- **Phase 3 Risk**: Complete system integration and performance
+- **Demo Risk**: Each phase delivers demo-able functionality for early validation
+- **Testing**: Comprehensive testing at each phase to ensure quality
