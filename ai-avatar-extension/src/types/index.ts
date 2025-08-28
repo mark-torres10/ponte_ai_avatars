@@ -46,6 +46,12 @@ export interface AvatarConfig {
 // Content script state
 export interface ContentScriptState {
   isActive: boolean;
-  pageInfo: ESPNPageInfo | null;
+  pageInfo: EnhancedESPNPageInfo | null;
   avatarVisible: boolean;
+  // Commentary-related state
+  commentaryGenerating: boolean;
+  commentaryOverlay: HTMLElement | null;
+  commentaryContent: string | null;
+  lastGeneratedAt: Date | null;
+  loadingState: 'idle' | 'loading' | 'success' | 'error';
 }

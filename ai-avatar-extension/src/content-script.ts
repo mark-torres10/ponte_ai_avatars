@@ -1,10 +1,19 @@
 import { ExtensionMessage, ContentScriptState, EnhancedESPNPageInfo } from './types';
+import { generateSportsCommentary, reinitializeService } from './services/openai';
+import { saveEnvironmentConfig, loadEnvironmentConfig } from './utils/config';
+import { API_KEYS } from './config/keys';
 
 // Content script state
 const state: ContentScriptState = {
   isActive: false,
   pageInfo: null,
-  avatarVisible: false
+  avatarVisible: false,
+  // Commentary-related state
+  commentaryGenerating: false,
+  commentaryOverlay: null,
+  commentaryContent: null,
+  lastGeneratedAt: null,
+  loadingState: 'idle'
 };
 
 // ESPN page content analysis
@@ -523,12 +532,419 @@ function createAvatarPlaceholder(): HTMLElement {
     avatar.style.transform = 'scale(1)';
   });
   
-  // Add click handler for future functionality
-  avatar.addEventListener('click', () => {
-    console.log('Avatar clicked - future functionality will be added');
+  // Add click handler for commentary generation
+  avatar.addEventListener('click', async () => {
+    if (state.commentaryGenerating) {
+      console.log('Commentary generation already in progress');
+      return;
+    }
+    
+    console.log('Avatar clicked, generating commentary');
+    
+    // Update state
+    state.commentaryGenerating = true;
+    state.loadingState = 'loading';
+    
+    // Show loading state on avatar
+    avatar.style.transform = 'scale(1.1)';
+    avatar.style.filter = 'brightness(1.2)';
+    
+    try {
+      // Show overlay with loading state
+      showCommentaryOverlay();
+      
+      // Show loading indicator
+      if (state.commentaryOverlay) {
+        const loadingIndicator = state.commentaryOverlay.querySelector('.loading-indicator');
+        const commentaryContent = state.commentaryOverlay.querySelector('.commentary-content');
+        
+        if (loadingIndicator) (loadingIndicator as HTMLElement).style.display = 'block';
+        if (commentaryContent) (commentaryContent as HTMLElement).style.display = 'none';
+      }
+      
+      // Generate commentary using OpenAI service
+      const commentary = await generateCommentary();
+      
+      // Update state
+      state.commentaryContent = commentary;
+      state.lastGeneratedAt = new Date();
+      state.loadingState = 'success';
+      
+      // Display commentary
+      displayCommentary(commentary);
+      
+      console.log('Commentary generated and displayed successfully');
+      
+    } catch (error) {
+      console.error('Error generating commentary:', error);
+      
+      // Update state
+      state.loadingState = 'error';
+      
+      // Show error message
+      displayError('Failed to generate commentary. Please try again.');
+      
+    } finally {
+      // Reset avatar state
+      avatar.style.transform = 'scale(1)';
+      avatar.style.filter = 'brightness(1)';
+      
+      // Update state
+      state.commentaryGenerating = false;
+    }
   });
   
   return avatar;
+}
+
+// Create commentary display overlay
+function createCommentaryOverlay(): HTMLElement {
+  const overlay = document.createElement('div');
+  overlay.id = 'ai-avatar-commentary';
+  overlay.className = 'commentary-overlay sports-themed responsive animated';
+  
+  // Set initial styles
+  overlay.style.cssText = `
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 90% !important;
+    max-width: 600px !important;
+    max-height: 80vh !important;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+    z-index: 2147483646 !important;
+    display: none !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    border: 2px solid #e9ecef !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  `;
+  
+  // Create header
+  const header = document.createElement('div');
+  header.className = 'commentary-header';
+  header.style.cssText = `
+    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%) !important;
+    color: white !important;
+    padding: 20px 24px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+  `;
+  
+  const title = document.createElement('h3');
+  title.textContent = '🏀 AI Sports Commentary';
+  title.style.cssText = `
+    margin: 0 !important;
+    font-size: 20px !important;
+    font-weight: 600 !important;
+    color: white !important;
+  `;
+  
+  const closeBtn = document.createElement('button');
+  closeBtn.innerHTML = '✕';
+  closeBtn.className = 'close-button';
+  closeBtn.style.cssText = `
+    background: rgba(255, 255, 255, 0.2) !important;
+    border: none !important;
+    color: white !important;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important;
+    cursor: pointer !important;
+    font-size: 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: background-color 0.2s ease !important;
+  `;
+  
+  closeBtn.addEventListener('mouseenter', () => {
+    closeBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.3) !important';
+  });
+  
+  closeBtn.addEventListener('mouseleave', () => {
+    closeBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.2) !important';
+  });
+  
+  closeBtn.addEventListener('click', () => {
+    hideCommentaryOverlay();
+  });
+  
+  header.appendChild(title);
+  header.appendChild(closeBtn);
+  
+  // Create content area
+  const contentArea = document.createElement('div');
+  contentArea.className = 'commentary-content-area';
+  contentArea.style.cssText = `
+    padding: 24px !important;
+    flex: 1 !important;
+    overflow-y: auto !important;
+    background: white !important;
+  `;
+  
+  // Create loading indicator
+  const loadingIndicator = document.createElement('div');
+  loadingIndicator.className = 'loading-indicator';
+  loadingIndicator.style.cssText = `
+    display: none !important;
+    text-align: center !important;
+    padding: 40px 20px !important;
+  `;
+  
+  const spinner = document.createElement('div');
+  spinner.className = 'loading-spinner';
+  spinner.style.cssText = `
+    width: 40px !important;
+    height: 40px !important;
+    border: 4px solid #f3f3f3 !important;
+    border-top: 4px solid #ff6b35 !important;
+    border-radius: 50% !important;
+    animation: spin 1s linear infinite !important;
+    margin: 0 auto 20px !important;
+  `;
+  
+  const loadingText = document.createElement('p');
+  loadingText.textContent = 'Generating sports commentary...';
+  loadingText.style.cssText = `
+    margin: 0 !important;
+    color: #6c757d !important;
+    font-size: 16px !important;
+  `;
+  
+  loadingIndicator.appendChild(spinner);
+  loadingIndicator.appendChild(loadingText);
+  
+  // Create commentary content
+  const commentaryContent = document.createElement('div');
+  commentaryContent.className = 'commentary-content';
+  commentaryContent.style.cssText = `
+    display: none !important;
+    line-height: 1.6 !important;
+    color: #2c3e50 !important;
+    font-size: 16px !important;
+  `;
+  
+  contentArea.appendChild(loadingIndicator);
+  contentArea.appendChild(commentaryContent);
+  
+  // Create footer
+  const footer = document.createElement('div');
+  footer.className = 'commentary-footer';
+  footer.style.cssText = `
+    background: #f8f9fa !important;
+    padding: 16px 24px !important;
+    border-top: 1px solid #e9ecef !important;
+    text-align: center !important;
+    color: #6c757d !important;
+    font-size: 14px !important;
+  `;
+  
+  footer.textContent = 'Powered by AI - Real-time sports analysis';
+  
+  // Assemble overlay
+  overlay.appendChild(header);
+  overlay.appendChild(contentArea);
+  overlay.appendChild(footer);
+  
+  // Add click outside to close
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      hideCommentaryOverlay();
+    }
+  });
+  
+  return overlay;
+}
+
+// Show commentary overlay
+function showCommentaryOverlay(): void {
+  if (!state.commentaryOverlay) {
+    state.commentaryOverlay = createCommentaryOverlay();
+    document.body.appendChild(state.commentaryOverlay);
+  }
+  
+  state.commentaryOverlay.style.display = 'flex';
+  state.commentaryOverlay.style.opacity = '0';
+  
+  // Trigger entrance animation
+  requestAnimationFrame(() => {
+    if (state.commentaryOverlay) {
+      state.commentaryOverlay.style.transition = 'opacity 0.3s ease-in-out';
+      state.commentaryOverlay.style.opacity = '1';
+    }
+  });
+}
+
+// Hide commentary overlay
+function hideCommentaryOverlay(): void {
+  if (state.commentaryOverlay) {
+    state.commentaryOverlay.style.transition = 'opacity 0.3s ease-in-out';
+    state.commentaryOverlay.style.opacity = '0';
+    
+    setTimeout(() => {
+      if (state.commentaryOverlay) {
+        state.commentaryOverlay.style.display = 'none';
+      }
+    }, 300);
+  }
+}
+
+// Generate commentary using OpenAI service
+async function generateCommentary(): Promise<string> {
+  if (!state.pageInfo) {
+    throw new Error('No page information available');
+  }
+  
+  // Convert page info to game data format expected by OpenAI service
+  const gameData = {
+    teamNames: state.pageInfo.teamNames,
+    scores: state.pageInfo.scores,
+    venue: state.pageInfo.venue,
+    gameStatus: state.pageInfo.gameStatus,
+    gameTime: state.pageInfo.gameTime,
+    location: state.pageInfo.location,
+    metadata: state.pageInfo.metadata,
+    context: {
+      rivalry: false, // Could be enhanced later
+      playoffImplications: false,
+      seasonSeries: undefined,
+      keyPlayers: [],
+      recentForm: []
+    }
+  };
+  
+  try {
+    // Import and use the OpenAI service
+    const result = await generateSportsCommentary(gameData, 'post-game');
+    
+    if (result.success && result.commentary) {
+      return result.commentary;
+    } else if (result.fallbackContent) {
+      return result.fallbackContent;
+    } else {
+      throw new Error('No commentary content generated');
+    }
+  } catch (error) {
+    console.error('Error calling OpenAI service:', error);
+    throw new Error('Failed to generate commentary');
+  }
+}
+
+// Display commentary in overlay
+function displayCommentary(commentary: string): void {
+  if (!state.commentaryOverlay) return;
+  
+  const loadingIndicator = state.commentaryOverlay.querySelector('.loading-indicator');
+  const commentaryContent = state.commentaryOverlay.querySelector('.commentary-content');
+  
+  if (loadingIndicator) {
+    (loadingIndicator as HTMLElement).style.display = 'none';
+  }
+  
+  if (commentaryContent) {
+    (commentaryContent as HTMLElement).style.display = 'block';
+    (commentaryContent as HTMLElement).innerHTML = formatCommentaryText(commentary);
+  }
+}
+
+// Display error message in overlay
+function displayError(message: string): void {
+  if (!state.commentaryOverlay) return;
+  
+  const loadingIndicator = state.commentaryOverlay.querySelector('.loading-indicator');
+  const commentaryContent = state.commentaryOverlay.querySelector('.commentary-content');
+  
+  if (loadingIndicator) {
+    (loadingIndicator as HTMLElement).style.display = 'none';
+  }
+  
+  if (commentaryContent) {
+    (commentaryContent as HTMLElement).style.display = 'block';
+    (commentaryContent as HTMLElement).innerHTML = `
+      <div style="text-align: center; color: #dc3545; padding: 20px;">
+        <h4 style="margin: 0 0 10px 0; color: #dc3545;">❌ Error</h4>
+        <p style="margin: 0; color: #6c757d;">${message}</p>
+      </div>
+    `;
+  }
+}
+
+// Format commentary text with proper line breaks
+function formatCommentaryText(text: string): string {
+  // Split by sentences and add line breaks
+  const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+  return sentences.map(sentence => sentence.trim()).join('.<br><br>') + '.';
+}
+
+// Global function for testing - set configuration from console
+(window as any).setExtensionConfig = async function(openaiKey: string, elevenlabsKey: string, voiceId: string) {
+  console.log('🔧 [EXTENSION] Setting configuration...');
+  
+  try {
+    await saveEnvironmentConfig({
+      openaiApiKey: openaiKey,
+      elevenlabsApiKey: elevenlabsKey,
+      parkerMunnsVoiceId: voiceId
+    });
+    
+    console.log('✅ [EXTENSION] Configuration saved, reinitializing service...');
+    await reinitializeService();
+    console.log('✅ [EXTENSION] Service reinitialized successfully');
+    
+    return { success: true, message: 'Configuration updated successfully' };
+  } catch (error) {
+    console.error('❌ [EXTENSION] Error setting configuration:', error);
+    return { success: false, error: (error as Error).message };
+  }
+};
+
+// Global function for testing - get current configuration
+(window as any).getExtensionConfig = async function() {
+  try {
+    const config = await loadEnvironmentConfig();
+    console.log('🔍 [EXTENSION] Current configuration:', config);
+    return config;
+  } catch (error) {
+    console.error('❌ [EXTENSION] Error getting configuration:', error);
+    return null;
+  }
+};
+
+// Initialize configuration with development keys
+async function initializeConfiguration() {
+  console.log('🔧 [EXTENSION] Initializing configuration with development keys...');
+  
+  try {
+    // Check if configuration is already set
+    const currentConfig = await loadEnvironmentConfig();
+    
+    if (currentConfig.openaiApiKey && currentConfig.elevenlabsApiKey && currentConfig.parkerMunnsVoiceId) {
+      console.log('✅ [EXTENSION] Configuration already set, skipping initialization');
+      return;
+    }
+    
+    // Set the development configuration
+    await saveEnvironmentConfig({
+      openaiApiKey: API_KEYS.OPENAI_API_KEY,
+      elevenlabsApiKey: API_KEYS.ELEVENLABS_API_KEY,
+      parkerMunnsVoiceId: API_KEYS.ELEVENLABS_PARKER_MUNNS_VOICE_ID
+    });
+    
+    console.log('✅ [EXTENSION] Development configuration set successfully');
+    
+    // Reinitialize the OpenAI service with the new configuration
+    await reinitializeService();
+    console.log('✅ [EXTENSION] OpenAI service reinitialized with development keys');
+    
+  } catch (error) {
+    console.error('❌ [EXTENSION] Error initializing configuration:', error);
+  }
 }
 
 // Initialize content script
@@ -543,6 +959,9 @@ function initializeContentScript() {
   state.isActive = true;
   
   console.log('AI Avatar: ESPN NBA boxscore page detected:', pageInfo);
+  
+  // Automatically initialize configuration with development keys
+  initializeConfiguration();
   
   // Create and inject avatar placeholder
   const avatar = createAvatarPlaceholder();
