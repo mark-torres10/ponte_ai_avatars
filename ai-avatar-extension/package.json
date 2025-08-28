@@ -18,20 +18,31 @@
   "author": "PonteAI",
   "license": "UNLICENSED",
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.12",
     "@types/chrome": "^0.0.254",
     "@types/jest": "^29.5.8",
+    "autoprefixer": "^10.4.21",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.8.1",
     "html-webpack-plugin": "^5.5.3",
     "jest": "^29.7.0",
+    "postcss": "^8.5.6",
+    "postcss-loader": "^8.1.1",
     "style-loader": "^3.3.3",
+    "tailwindcss": "^4.1.12",
     "ts-loader": "^9.5.1",
     "typescript": "^5.2.2",
     "webpack": "^5.89.0",
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
+    "@shadcn/ui": "^0.0.4",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.23.12",
+    "lucide-react": "^0.542.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "tailwind-merge": "^3.3.1",
+    "zustand": "^5.0.8"
   }
 }
