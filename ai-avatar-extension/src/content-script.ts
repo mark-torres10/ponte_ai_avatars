@@ -30,11 +30,12 @@ function analyzeESPNPage(): EnhancedESPNPageInfo | null {
   const homeAway = determineHomeAwayTeams(teamNames);
   
   // Extract game context information
+  const gameInfoSection = findGameInfoSection();
   const scores = extractGameScores();
   const gameTime = extractGameTime();
   const gameStatus = extractGameStatus();
-  const venue = extractVenueInfo();
-  const metadata = extractGameMetadata();
+  const venue = extractVenueInfo(gameInfoSection);
+  const metadata = extractGameMetadata(gameInfoSection);
   
   // Determine extraction method used
   const extractionMethod = determineExtractionMethod();
@@ -73,16 +74,14 @@ function extractTeamNamesWithFallbacks(): string[] {
       if (result && result.length >= 2) {
         const validatedTeams = filterValidTeamNames(result);
         if (validatedTeams.length >= 2) {
-          console.log(`Team extraction successful using: ${strategy.name}`);
           return validatedTeams;
         }
       }
-    } catch (error) {
-      console.log(`Strategy ${strategy.name} failed:`, error);
+    } catch (_error) {
+      // Silent error handling
     }
   }
   
-  console.log('All team extraction strategies failed');
   return [];
 }
 
@@ -98,7 +97,6 @@ function extractTeamNamesFromHeading(): string[] {
       const teams = headingText.split('@').map(team => team.trim());
       if (teams.length === 2) {
         teamNames.push(...teams);
-        console.log('Teams extracted from heading:', teamNames);
         return teamNames;
       }
     }
@@ -117,69 +115,58 @@ function extractTeamNamesFromScoreboard(): string[] {
   teamElements.forEach(element => {
     const text = element.textContent?.trim();
     if (text && text.length > 0 && text.length < 50) {
-      // Filter out team abbreviations (DAL, PHI) and keep full names
-      if (text.length > 3 && !teamNames.includes(text)) {
-        teamNames.push(text);
-      }
+      teamNames.push(text);
     }
   });
   
   if (teamNames.length >= 2) {
-    console.log('Teams extracted from scoreboard:', teamNames);
     return teamNames;
   }
   
   return [];
 }
 
-// Fallback strategy: Extract from team links
+// Tertiary strategy: Extract from team links
 function extractTeamNamesFromTeamLinks(): string[] {
   const teamNames: string[] = [];
   
-  // Look for team name links in the boxscore
+  // Look for team names in team links
   const teamLinks = document.querySelectorAll('a[href*="/nba/team/_/name/"]');
   
   teamLinks.forEach(link => {
     const text = link.textContent?.trim();
     if (text && text.length > 0 && text.length < 50) {
-      // Look for full team names (not abbreviations)
-      if (text.length > 3 && !teamNames.includes(text)) {
-        teamNames.push(text);
-      }
+      teamNames.push(text);
     }
   });
   
   if (teamNames.length >= 2) {
-    console.log('Teams extracted from team links:', teamNames);
     return teamNames;
   }
   
   return [];
 }
 
-// Filter and validate team names
+// Filter out invalid team names
 function filterValidTeamNames(names: string[]): string[] {
-  const validTeams = names.filter(name => {
-    // Filter out non-team text
-    if (name.match(/^\d+$/)) return false; // Numbers only
-    if (name.length < 4 || name.length > 30) return false; // Length check
-    if (name.match(/^(Final|Live|Q\d+|OT|End|Start|starters|bench|team)/i)) return false; // Game status
-    if (name.match(/^\d+:\d+$/)) return false; // Time format
-    if (name.match(/^(Regular Season Series|Game Information|NBA News)/i)) return false; // Navigation
-    
-    return true;
+  const validNames = names.filter(name => {
+    // Filter out names that are too short, too long, or contain obvious non-team text
+    return name.length > 3 && 
+           name.length < 50 && 
+           !name.includes('Regular Season') && 
+           !name.includes('Game Information') && 
+           !name.includes('Standings') && 
+           !name.includes('NBA News') &&
+           !name.includes('Series');
   });
   
-  // Remove duplicates
-  return [...new Set(validTeams)];
+  return validNames;
 }
 
 // Determine which team is home vs away
 function determineHomeAwayTeams(teamNames: string[]): { home: string; away: string } | undefined {
-  if (teamNames.length < 2) return undefined;
-  
   try {
-    // Strategy 1: Check the main heading format "Team1 @ Team2" (Team2 is home)
+    // Strategy 1: Use the main heading format "Team1 @ Team2" (Team2 is usually home)
     const mainHeading = document.querySelector('h1');
     if (mainHeading) {
       const headingText = mainHeading.textContent?.trim();
@@ -191,7 +178,6 @@ function determineHomeAwayTeams(teamNames: string[]): { home: string; away: stri
           
           // Verify these teams are in our extracted team names
           if (teamNames.includes(awayTeam) && teamNames.includes(homeTeam)) {
-            console.log('Home/Away determined from heading:', { away: awayTeam, home: homeTeam });
             return { away: awayTeam, home: homeTeam };
           }
         }
@@ -211,19 +197,17 @@ function determineHomeAwayTeams(teamNames: string[]): { home: string; away: stri
       
       if (fullTeam1 && fullTeam2) {
         // In ESPN format, the second team is usually home
-        console.log('Home/Away determined from page title:', { away: fullTeam1, home: fullTeam2 });
         return { away: fullTeam1, home: fullTeam2 };
       }
     }
     
     // Strategy 3: Default to first team as away, second as home (common pattern)
     if (teamNames.length >= 2) {
-      console.log('Home/Away determined by order (default):', { away: teamNames[0], home: teamNames[1] });
       return { away: teamNames[0], home: teamNames[1] };
     }
     
-  } catch (error) {
-    console.log('Home/Away determination failed:', error);
+  } catch (_error) {
+    // Silent error handling
   }
   
   return undefined;
@@ -241,7 +225,6 @@ function extractGameScores(): { home: number; away: number } | undefined {
         const score = parseInt(text, 10);
         if (!isNaN(score) && score >= 0 && score <= 200) {
           // This looks like a valid game score
-          console.log('Found potential game score:', score);
         }
       }
     }
@@ -263,10 +246,8 @@ function extractGameScores(): { home: number; away: number } | undefined {
             // This is likely a team's total score
             if (awayScore === null) {
               awayScore = score;
-              console.log('Away team score:', awayScore);
             } else if (homeScore === null) {
               homeScore = score;
-              console.log('Home team score:', homeScore);
               break; // We have both scores
             }
           }
@@ -275,7 +256,6 @@ function extractGameScores(): { home: number; away: number } | undefined {
     }
     
     if (awayScore !== null && homeScore !== null) {
-      console.log('Final scores extracted:', { away: awayScore, home: homeScore });
       return { away: awayScore, home: homeScore };
     }
     
@@ -286,60 +266,53 @@ function extractGameScores(): { home: number; away: number } | undefined {
       const awayScore = parseInt(scoreMatch[1], 10);
       const homeScore = parseInt(scoreMatch[2], 10);
       if (!isNaN(awayScore) && !isNaN(homeScore)) {
-        console.log('Scores extracted from page title:', { away: awayScore, home: homeScore });
         return { away: awayScore, home: homeScore };
       }
     }
     
-  } catch (error) {
-    console.log('Score extraction failed:', error);
+  } catch (_error) {
+    // Silent error handling
   }
   
   return undefined;
 }
 
-// Extract game time and quarter information
+// Extract game time information
 function extractGameTime(): { quarter: string; timeRemaining: string } | undefined {
   try {
-    // Strategy 1: Look for game status in the main scoreboard area
-    const statusElements = document.querySelectorAll('[class*="status"], [class*="game-status"]');
+    // Strategy 1: Look for status elements that show quarter/time
+    const statusElements = document.querySelectorAll('div[class*="status"], span[class*="status"], div[class*="time"], span[class*="time"]');
     
     for (const element of statusElements) {
       const text = element.textContent?.trim();
-      if (text) {
-        // Look for patterns like "Final", "Live", "Q1", "Q2", "OT", etc.
-        if (text.match(/^(Final|Live|Q\d+|OT|End|Start)/i)) {
-          const quarter = text;
-          const timeRemaining = text === 'Final' || text === 'End' ? '0:00' : '';
-          
-          console.log('Game time extracted from status:', { quarter, timeRemaining });
-          return { quarter, timeRemaining };
-        }
-      }
-    }
-    
-    // Strategy 2: Look for game status in the main content area
-    const mainContent = document.querySelector('main');
-    if (mainContent) {
-      const statusMatch = mainContent.textContent?.match(/(Final|Live|Q\d+|OT|End|Start)/i);
-      if (statusMatch) {
-        const quarter = statusMatch[1];
-        const timeRemaining = quarter === 'Final' || quarter === 'End' ? '0:00' : '';
+      if (text && text.match(/^(Final|Q\d+|OT|End|Start)/i)) {
+        const quarter = text;
+        const timeRemaining = text === 'Final' || text === 'End' ? '0:00' : '';
         
-        console.log('Game time extracted from main content:', { quarter, timeRemaining });
         return { quarter, timeRemaining };
       }
     }
     
-    // Strategy 3: Look for status in the page title
+    // Strategy 2: Look for quarter information in the main content
+    const mainContent = document.querySelector('main') || document.body;
+    if (mainContent) {
+      const quarterMatch = mainContent.textContent?.match(/(Q\d+|OT|Final|End|Start)/i);
+      if (quarterMatch) {
+        const quarter = quarterMatch[1];
+        const timeRemaining = quarter === 'Final' || quarter === 'End' ? '0:00' : '';
+        
+        return { quarter, timeRemaining };
+      }
+    }
+    
+    // Strategy 3: Fallback to page title
     const pageTitle = document.title;
     if (pageTitle.includes('Final')) {
-      console.log('Game time extracted from title:', { quarter: 'Final', timeRemaining: '0:00' });
       return { quarter: 'Final', timeRemaining: '0:00' };
     }
     
-  } catch (error) {
-    console.log('Game time extraction failed:', error);
+  } catch (_error) {
+    // Silent error handling
   }
   
   return undefined;
@@ -348,190 +321,155 @@ function extractGameTime(): { quarter: string; timeRemaining: string } | undefin
 // Extract game status
 function extractGameStatus(): string | undefined {
   try {
-    // Strategy 1: Look for status in the main scoreboard area
-    const statusElements = document.querySelectorAll('[class*="status"], [class*="game-status"]');
+    // Strategy 1: Look for status elements
+    const statusElements = document.querySelectorAll('div[class*="status"], span[class*="status"]');
     
     for (const element of statusElements) {
       const text = element.textContent?.trim();
       if (text && text.match(/^(Final|Live|Q\d+|OT|End|Start)/i)) {
-        console.log('Game status extracted:', text);
         return text;
       }
     }
     
-    // Strategy 2: Look for status in the page title or content
+    // Strategy 2: Fallback to page title
     const pageTitle = document.title;
     if (pageTitle.includes('Final')) {
-      console.log('Game status extracted from title:', 'Final');
       return 'Final';
     }
     
-    // Strategy 3: Look for status patterns in the main content
-    const mainContent = document.querySelector('main');
+    // Strategy 3: Look in main content
+    const mainContent = document.querySelector('main') || document.body;
     if (mainContent) {
       const statusMatch = mainContent.textContent?.match(/(Final|Live|Q\d+|OT|End|Start)/i);
       if (statusMatch) {
-        console.log('Game status extracted from main content:', statusMatch[1]);
         return statusMatch[1];
       }
     }
     
-  } catch (error) {
-    console.log('Game status extraction failed:', error);
+  } catch (_error) {
+    // Silent error handling
   }
   
   return undefined;
 }
 
+// Find the Game Information section
+function findGameInfoSection(): Element | null {
+  const allH3s = Array.from(document.querySelectorAll('h3'));
+  const gameInfoHeading = allH3s.find(
+    heading => heading.textContent?.trim() === 'Game Information'
+  );
+
+  if (gameInfoHeading) {
+    // Look for the next sibling or parent that contains the actual data
+    let gameInfoSection = gameInfoHeading.nextElementSibling;
+    if (!gameInfoSection) {
+      gameInfoSection = gameInfoHeading.parentElement;
+    }
+    return gameInfoSection;
+  }
+  
+  return null;
+}
+
 // Extract venue and location information
-function extractVenueInfo(): { venue?: string; location?: string } {
+function extractVenueInfo(gameInfoSection: Element | null): { venue?: string; location?: string } {
   let venue: string | undefined;
   let location: string | undefined;
 
   try {
-    // Strategy 1: Look for Game Information section with specific heading
-    const gameInfoHeading = Array.from(document.querySelectorAll('h3')).find(
-      heading => heading.textContent?.trim() === 'Game Information'
-    );
+    if (gameInfoSection) {
+      // Look for venue name in the section text
+      const sectionText = gameInfoSection.textContent || '';
 
-    if (gameInfoHeading) {
-      const gameInfoSection = gameInfoHeading.closest('div') || gameInfoHeading.parentElement;
-      if (gameInfoSection) {
-        // Look for venue name (usually first list item)
-        const listItems = gameInfoSection.querySelectorAll('li');
-        for (const item of listItems) {
-          const text = item.textContent?.trim();
-          if (text) {
-            // Venue pattern: contains "Center", "Arena", "Stadium", etc.
-            if (!venue && (text.includes('Center') || text.includes('Arena') || text.includes('Stadium'))) {
-              venue = text;
-              console.log('Venue extracted from Game Information:', venue);
-            }
-            // Location pattern: City, State format
-            else if (!location && text.includes(',') && text.length < 50) {
-              location = text;
-              console.log('Location extracted from Game Information:', location);
-            }
-          }
-        }
+      // Extract venue using regex - look for "Wells Fargo Center" specifically
+      const venueMatch = sectionText.match(/([^,\n]+(?:Center|Arena|Stadium|Field|Coliseum))/i);
+      if (venueMatch) {
+        venue = venueMatch[1].trim();
+      }
+      
+      // Extract location using regex - look for "City, State" pattern
+      const locationMatch = sectionText.match(/([A-Za-z\s]+,\s*[A-Z]{2})/);
+      if (locationMatch) {
+        location = locationMatch[1].trim();
       }
     }
 
     // Strategy 2: Fallback to broader search if Game Information section not found
     if (!venue || !location) {
       const allListItems = document.querySelectorAll('li');
+      
       for (const item of allListItems) {
         const text = item.textContent?.trim();
         if (text) {
           if (!venue && (text.includes('Center') || text.includes('Arena') || text.includes('Stadium'))) {
             venue = text;
-            console.log('Venue extracted from fallback search:', venue);
           }
           else if (!location && text.includes(',') && text.length < 50 && !text.includes('Attendance')) {
             location = text;
-            console.log('Location extracted from fallback search:', location);
           }
         }
       }
     }
 
-  } catch (error) {
-    console.log('Error extracting venue/location:', error);
+    // Strategy 3: Direct text search in the entire page with better patterns
+    if (!venue || !location) {
+      const pageText = document.body.textContent || '';
+      
+      if (!venue) {
+        // More specific venue pattern to avoid massive text dumps
+        const venueMatch = pageText.match(/(Wells Fargo Center|Madison Square Garden|Staples Center|Chase Center|American Airlines Center|TD Garden|Fiserv Forum|Rocket Mortgage FieldHouse|State Farm Arena|Capital One Arena)/);
+        if (venueMatch) {
+          venue = venueMatch[1];
+        }
+      }
+      
+      if (!location) {
+        const locationMatch = pageText.match(/([A-Za-z\s]+,\s*[A-Z]{2})/);
+        if (locationMatch) {
+          location = locationMatch[1].trim();
+        }
+      }
+    }
+
+  } catch (_error) {
+    // Silent error handling
   }
 
   return { venue, location };
 }
 
 // Extract game metadata (date, attendance, officials)
-function extractGameMetadata(): { date?: string; attendance?: string; officials?: string[] } {
-  let date: string | undefined;
-  let attendance: string | undefined;
-  let officials: string[] = [];
-
-  try {
-    // Strategy 1: Look for Game Information section
-    const gameInfoHeading = Array.from(document.querySelectorAll('h3')).find(
-      heading => heading.textContent?.trim() === 'Game Information'
-    );
-
-    if (gameInfoHeading) {
-      const gameInfoSection = gameInfoHeading.closest('div') || gameInfoHeading.parentElement;
-      if (gameInfoSection) {
-        const listItems = gameInfoSection.querySelectorAll('li');
-        
-        for (const item of listItems) {
-          const text = item.textContent?.trim();
-          if (text) {
-            // Date pattern: contains month, day, year
-            if (!date && text.match(/\w+ \d{1,2},? \d{4}/)) {
-              date = text;
-              console.log('Date extracted from Game Information:', date);
-            }
-            // Attendance pattern: "Attendance: X"
-            else if (!attendance && text.includes('Attendance:')) {
-              const match = text.match(/Attendance:\s*([\d,]+)/);
-              if (match) {
-                attendance = match[1];
-                console.log('Attendance extracted from Game Information:', attendance);
-              }
-            }
-            // Officials pattern: individual referee names
-            else if (text.includes(',') && text.length < 30 && !text.includes('Attendance')) {
-              // Skip the "Referees:" header
-              if (!text.includes('Referees:')) {
-                // Split by comma and clean up each name
-                const names = text.split(',').map(name => name.trim()).filter(name => name.length > 0);
-                officials.push(...names);
-                console.log('Officials extracted from Game Information:', names);
-              }
-            }
-          }
-        }
-      }
-    }
-
-    // Strategy 2: Fallback to page title for date
-    if (!date) {
-      const pageTitle = document.title;
-      const dateMatch = pageTitle.match(/\(([^)]+)\)/);
-      if (dateMatch) {
-        date = dateMatch[1];
-        console.log('Date extracted from page title:', date);
-      }
-    }
-
-    // Strategy 3: Fallback to broader search for attendance and officials
-    if (!attendance || officials.length === 0) {
-      const allListItems = document.querySelectorAll('li');
-      for (const item of allListItems) {
-        const text = item.textContent?.trim();
-        if (text) {
-          if (!attendance && text.includes('Attendance:')) {
-            const match = text.match(/Attendance:\s*([\d,]+)/);
-            if (match) {
-              attendance = match[1];
-              console.log('Attendance extracted from fallback search:', attendance);
-            }
-          }
-          else if (officials.length === 0 && text.includes(',') && text.length < 30 && !text.includes('Attendance')) {
-            if (!text.includes('Referees:')) {
-              const names = text.split(',').map(name => name.trim()).filter(name => name.length > 0);
-              officials.push(...names);
-              console.log('Officials extracted from fallback search:', names);
-            }
-          }
-        }
-      }
-    }
-
-    // Clean up officials array - remove duplicates and empty strings
-    officials = [...new Set(officials)].filter(name => name.length > 0);
-
-  } catch (error) {
-    console.log('Error extracting game metadata:', error);
+function extractGameMetadata(gameInfoSection: Element | null): { date?: string; attendance?: string } {
+  const metadata: { date?: string; attendance?: string } = {};
+  
+  // Extract date from page title as fallback
+  const pageTitle = document.title;
+  const dateMatch = pageTitle.match(/(\w+ \d+), (\d{4})/);
+  if (dateMatch) {
+    metadata.date = `${dateMatch[1]}, ${dateMatch[2]}`;
   }
-
-  return { date, attendance, officials };
+  
+  // Extract from Game Information section
+  if (gameInfoSection) {
+    const sectionText = gameInfoSection.textContent || '';
+    
+    // Extract attendance
+    const attendanceMatch = sectionText.match(/Attendance:\s*([^,\n]+)/i);
+    if (attendanceMatch) {
+      metadata.attendance = attendanceMatch[1].trim();
+    }
+    
+    // Extract date from section if not found in title
+    if (!metadata.date) {
+      const dateMatch = sectionText.match(/(\w+ \d+), (\d{4})/);
+      if (dateMatch) {
+        metadata.date = `${dateMatch[1]}, ${dateMatch[2]}`;
+      }
+    }
+  }
+  
+  return metadata;
 }
 
 // Determine which extraction method was successful
@@ -632,8 +570,6 @@ function initializeContentScript() {
 
 // Handle messages from background script
 chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendResponse) => {
-  console.log('Content script received message:', message);
-  
   switch (message.type) {
     case 'PAGE_DETECTED':
       if (!state.isActive) {
@@ -641,7 +577,8 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
       }
       break;
     default:
-      console.log('Unknown message type:', message.type);
+      // Silent handling for unknown message types
+      break;
   }
   
   sendResponse({ success: true });

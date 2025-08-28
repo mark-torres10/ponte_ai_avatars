@@ -25,7 +25,6 @@ export interface EnhancedESPNPageInfo extends ESPNPageInfo {
   metadata?: {
     date?: string;
     attendance?: string;
-    officials?: string[];
   };
   extractionMethod: 'primary' | 'fallback-css' | 'fallback-text' | 'fallback-content';
   attemptedStrategies: string[];
