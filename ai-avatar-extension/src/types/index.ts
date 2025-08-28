@@ -54,4 +54,54 @@ export interface ContentScriptState {
   commentaryContent: string | null;
   lastGeneratedAt: Date | null;
   loadingState: 'idle' | 'loading' | 'success' | 'error';
+  // Enhanced state management for Phase 4
+  commentaryHistory: CommentaryEntry[];
+  userPreferences: UserPreferences;
+  performanceMetrics: PerformanceMetrics;
+  lastPageUrl: string | null;
+  sessionStartTime: Date | null;
+  // Dynamic regeneration tracking
+  lastCommentaryStyle: CommentaryStyle | null;
+  styleChangedSinceLastGeneration: boolean;
+  regenerationAvailable: boolean;
 }
+
+// Commentary history entry
+export interface CommentaryEntry {
+  id: string;
+  timestamp: Date;
+  gameInfo: {
+    teams: string[];
+    score?: string;
+    venue?: string;
+    gameStatus?: string;
+  };
+  commentary: string;
+  style: CommentaryStyle;
+  generationTime: number;
+  source: 'openai' | 'fallback';
+  pageUrl: string;
+}
+
+// User preferences for commentary
+export interface UserPreferences {
+  preferredCommentaryStyle: CommentaryStyle;
+  autoGenerateOnPageLoad: boolean;
+  enableVoiceSynthesis: boolean;
+  commentaryLength: 'short' | 'medium' | 'long';
+  showPerformanceMetrics: boolean;
+}
+
+// Performance tracking metrics
+export interface PerformanceMetrics {
+  totalCommentariesGenerated: number;
+  averageGenerationTime: number;
+  successRate: number;
+  lastError?: string;
+  lastErrorTime?: Date;
+  apiCallCount: number;
+  fallbackUsageCount: number;
+}
+
+// Commentary style types
+export type CommentaryStyle = 'play-by-play' | 'analytical' | 'color-commentary' | 'post-game' | 'pre-game' | 'halftime';
