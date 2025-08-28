@@ -6,6 +6,29 @@ export interface ESPNPageInfo {
   url: string;
 }
 
+// Enhanced ESPN page info with game context
+export interface EnhancedESPNPageInfo extends ESPNPageInfo {
+  pageType: 'nba-boxscore';
+  scores?: {
+    home: number;
+    away: number;
+  };
+  gameTime?: {
+    quarter: string;
+    timeRemaining: string;
+  };
+  gameStatus?: string;
+  venue?: string;
+  location?: string;
+  metadata?: {
+    date?: string;
+    attendance?: string;
+    officials?: string[];
+  };
+  extractionMethod: 'primary' | 'fallback-css' | 'fallback-text' | 'fallback-content';
+  attemptedStrategies: string[];
+}
+
 // Extension message types
 export interface ExtensionMessage {
   type: 'PAGE_DETECTED' | 'AVATAR_ACTIVATE' | 'AVATAR_DEACTIVATE';

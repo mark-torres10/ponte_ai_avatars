@@ -1,4 +1,4 @@
-import { ESPNPageInfo, ExtensionMessage, ContentScriptState } from './types';
+import { ExtensionMessage, ContentScriptState, EnhancedESPNPageInfo } from './types';
 
 // Content script state
 const state: ContentScriptState = {
@@ -8,8 +8,10 @@ const state: ContentScriptState = {
 };
 
 // ESPN page content analysis
-function analyzeESPNPage(): ESPNPageInfo | null {
+function analyzeESPNPage(): EnhancedESPNPageInfo | null {
   const url = window.location.href;
+  
+  // Enhanced URL pattern matching for NBA boxscore pages
   const isBoxscore = /espn\.com\/nba\/boxscore\/_\/(gameId\/\d+)/.test(url);
   
   if (!isBoxscore) return null;
@@ -18,26 +20,369 @@ function analyzeESPNPage(): ESPNPageInfo | null {
   const gameIdMatch = url.match(/gameId\/(\d+)/);
   const gameId = gameIdMatch ? gameIdMatch[1] : undefined;
   
-  // Extract team names from page content (basic implementation)
-  const teamNames: string[] = [];
-  const teamElements = document.querySelectorAll('h1, h2, h3, .team-name, [class*="team"]');
+  // Enhanced page type classification
+  const pageType = 'nba-boxscore';
   
-  teamElements.forEach(element => {
+  // Extract team names using multiple strategies
+  const teamNames = extractTeamNamesWithFallbacks();
+  
+  // Extract game context information
+  const scores = extractGameScores();
+  const gameTime = extractGameTime();
+  const gameStatus = extractGameStatus();
+  const venue = extractVenueInfo();
+  const metadata = extractGameMetadata();
+  
+  // Determine extraction method used
+  const extractionMethod = determineExtractionMethod();
+  const attemptedStrategies = ['primary', 'fallback-css', 'fallback-text', 'fallback-content'];
+  
+  return {
+    isBoxscore: true,
+    pageType,
+    gameId,
+    teamNames: teamNames.length > 0 ? teamNames : undefined,
+    scores,
+    gameTime,
+    gameStatus,
+    venue: venue.venue,
+    location: venue.location,
+    metadata,
+    extractionMethod,
+    attemptedStrategies,
+    url
+  };
+}
+
+// Enhanced team name extraction with multiple strategies
+function extractTeamNamesWithFallbacks(): string[] {
+  const strategies = [
+    extractTeamNamesWithCSS,
+    extractTeamNamesWithTextPatterns,
+    extractTeamNamesWithContentAnalysis
+  ];
+  
+  for (const strategy of strategies) {
+    try {
+      const result = strategy();
+      if (result && result.length > 0) {
+        const validatedTeams = filterValidTeamNames(result);
+        if (validatedTeams.length >= 2) {
+          console.log(`Team extraction successful using: ${strategy.name}`);
+          return validatedTeams;
+        }
+      }
+    } catch (error) {
+      console.log(`Strategy ${strategy.name} failed:`, error);
+    }
+  }
+  
+  console.log('All team extraction strategies failed');
+  return [];
+}
+
+// Primary CSS selector strategy for team names
+function extractTeamNamesWithCSS(): string[] {
+  const teamNames: string[] = [];
+  
+  // Multiple CSS selectors for team names
+  const selectors = [
+    '.team-name',
+    '.team-abbrev',
+    '[class*="team"]',
+    '.scoreboard-team-name',
+    '.gamepackage-scoreboard-team-name',
+    'h1',
+    'h2',
+    'h3'
+  ];
+  
+  selectors.forEach(selector => {
+    const elements = document.querySelectorAll(selector);
+    elements.forEach(element => {
+      const text = element.textContent?.trim();
+      if (text && text.length > 0 && text.length < 50) {
+        if (!teamNames.includes(text)) {
+          teamNames.push(text);
+        }
+      }
+    });
+  });
+  
+  return teamNames;
+}
+
+// Secondary text pattern strategy for team names
+function extractTeamNamesWithTextPatterns(): string[] {
+  const teamNames: string[] = [];
+  
+  // Look for team names in page content using text patterns
+  const pageText = document.body.textContent || '';
+  
+  // Common NBA team patterns
+  const teamPatterns = [
+    /(Lakers|Celtics|Warriors|Heat|Bulls|Knicks|Lakers|Celtics|Warriors|Heat|Bulls|Knicks|Mavericks|Suns|Nets|Clippers|Hawks|Pistons|Rockets|Thunder|Jazz|Trail Blazers|Pelicans|Kings|Timberwolves|Hornets|Magic|Wizards|Pacers|Cavaliers|Bucks|Raptors|76ers|Nuggets|Grizzlies|Spurs)/gi,
+    /(LAL|BOS|GSW|MIA|CHI|NYK|DAL|PHX|BKN|LAC|ATL|DET|HOU|OKC|UTA|POR|NOP|SAC|MIN|CHA|ORL|WAS|IND|CLE|MIL|TOR|PHI|DEN|MEM|SAS)/gi
+  ];
+  
+  teamPatterns.forEach(pattern => {
+    const matches = pageText.match(pattern);
+    if (matches) {
+      matches.forEach(match => {
+        const cleanMatch = match.trim();
+        if (cleanMatch.length > 0 && !teamNames.includes(cleanMatch)) {
+          teamNames.push(cleanMatch);
+        }
+      });
+    }
+  });
+  
+  return teamNames;
+}
+
+// Fallback content analysis strategy
+function extractTeamNamesWithContentAnalysis(): string[] {
+  const teamNames: string[] = [];
+  
+  // Analyze page structure for team information
+  const scoreElements = document.querySelectorAll('[class*="score"], [class*="team"]');
+  
+  scoreElements.forEach(element => {
     const text = element.textContent?.trim();
-    if (text && text.length > 0 && text.length < 50) {
-      // Basic filtering for potential team names
-      if (!teamNames.includes(text)) {
-        teamNames.push(text);
+    if (text) {
+      // Look for score patterns like "LAL 108 - BOS 102"
+      const scorePattern = /([A-Z]{3})\s+(\d+)\s*-\s*([A-Z]{3})\s+(\d+)/;
+      const match = text.match(scorePattern);
+      
+      if (match) {
+        const team1 = match[1];
+        const team2 = match[3];
+        
+        if (!teamNames.includes(team1)) teamNames.push(team1);
+        if (!teamNames.includes(team2)) teamNames.push(team2);
       }
     }
   });
   
-  return {
-    isBoxscore: true,
-    gameId,
-    teamNames: teamNames.length > 0 ? teamNames : undefined,
-    url
-  };
+  return teamNames;
+}
+
+// Filter and validate team names
+function filterValidTeamNames(names: string[]): string[] {
+  const validTeams = names.filter(name => {
+    // Filter out non-team text
+    if (name.match(/^\d+$/)) return false; // Numbers only
+    if (name.length < 2 || name.length > 30) return false; // Length check
+    if (name.match(/^(Final|Live|Q\d+|OT|End|Start)/i)) return false; // Game status
+    if (name.match(/^\d+:\d+$/)) return false; // Time format
+    
+    return true;
+  });
+  
+  // Remove duplicates
+  return [...new Set(validTeams)];
+}
+
+// Extract game scores
+function extractGameScores(): { home: number; away: number } | undefined {
+  try {
+    // Multiple strategies for score extraction
+    const scoreSelectors = [
+      '.score',
+      '[class*="score"]',
+      '.gamepackage-scoreboard-score',
+      '.team-score'
+    ];
+    
+    for (const selector of scoreSelectors) {
+      const elements = document.querySelectorAll(selector);
+      if (elements.length >= 2) {
+        const scores = Array.from(elements).map(el => {
+          const text = el.textContent?.trim();
+          return text ? parseInt(text, 10) : null;
+        });
+        
+        const validScores = scores.filter(score => score !== null && !isNaN(score)) as number[];
+        
+        if (validScores.length >= 2) {
+          return { home: validScores[0], away: validScores[1] };
+        }
+      }
+    }
+    
+    // Fallback: look for score patterns in text
+    const pageText = document.body.textContent || '';
+    const scorePattern = /(\d+)\s*-\s*(\d+)/;
+    const match = pageText.match(scorePattern);
+    
+    if (match) {
+      const home = parseInt(match[1], 10);
+      const away = parseInt(match[2], 10);
+      if (!isNaN(home) && !isNaN(away)) {
+        return { home, away };
+      }
+    }
+  } catch (error) {
+    console.log('Score extraction failed:', error);
+  }
+  
+  return undefined;
+}
+
+// Extract game time information
+function extractGameTime(): { quarter: string; timeRemaining: string } | undefined {
+  try {
+    const timeSelectors = [
+      '[class*="time"]',
+      '[class*="quarter"]',
+      '.game-status',
+      '.game-time'
+    ];
+    
+    for (const selector of timeSelectors) {
+      const elements = document.querySelectorAll(selector);
+      for (const element of elements) {
+        const text = element.textContent?.trim();
+        if (text) {
+          // Look for quarter patterns
+          const quarterMatch = text.match(/(Q\d+|OT|Final|Live)/i);
+          const timeMatch = text.match(/(\d+:\d+)/);
+          
+          if (quarterMatch || timeMatch) {
+            return {
+              quarter: quarterMatch ? quarterMatch[0] : 'Unknown',
+              timeRemaining: timeMatch ? timeMatch[0] : '0:00'
+            };
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.log('Game time extraction failed:', error);
+  }
+  
+  return undefined;
+}
+
+// Extract game status
+function extractGameStatus(): string | undefined {
+  try {
+    const statusSelectors = [
+      '[class*="status"]',
+      '.game-status',
+      '.game-state'
+    ];
+    
+    for (const selector of statusSelectors) {
+      const elements = document.querySelectorAll(selector);
+      for (const element of elements) {
+        const text = element.textContent?.trim();
+        if (text && text.match(/(Final|Live|Scheduled|Postponed|Cancelled)/i)) {
+          return text;
+        }
+      }
+    }
+    
+    // Fallback: infer from game time
+    const gameTime = extractGameTime();
+    if (gameTime?.quarter === 'Final') {
+      return 'Final';
+    } else if (gameTime?.quarter.startsWith('Q')) {
+      return 'Live';
+    }
+  } catch (error) {
+    console.log('Game status extraction failed:', error);
+  }
+  
+  return undefined;
+}
+
+// Extract venue information
+function extractVenueInfo(): { venue?: string; location?: string } {
+  try {
+    const venueSelectors = [
+      '[class*="venue"]',
+      '[class*="arena"]',
+      '.game-venue',
+      '.game-location'
+    ];
+    
+    for (const selector of venueSelectors) {
+      const elements = document.querySelectorAll(selector);
+      for (const element of elements) {
+        const text = element.textContent?.trim();
+        if (text && text.length > 0) {
+          // Try to separate venue and location
+          if (text.includes(',')) {
+            const parts = text.split(',');
+            return {
+              venue: parts[0].trim(),
+              location: parts.slice(1).join(',').trim()
+            };
+          } else {
+            return { venue: text };
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.log('Venue extraction failed:', error);
+  }
+  
+  return {};
+}
+
+// Extract game metadata
+function extractGameMetadata(): { date?: string; attendance?: string; officials?: string[] } {
+  try {
+    const metadata: { date?: string; attendance?: string; officials?: string[] } = {};
+    
+    // Extract date
+    const dateSelectors = [
+      '[class*="date"]',
+      '.game-date',
+      '.game-time'
+    ];
+    
+    for (const selector of dateSelectors) {
+      const elements = document.querySelectorAll(selector);
+      for (const element of elements) {
+        const text = element.textContent?.trim();
+        if (text && text.match(/\w{3}\s+\d{1,2},?\s+\d{4}/)) {
+          metadata.date = text;
+          break;
+        }
+      }
+    }
+    
+    // Extract attendance
+    const attendanceSelectors = [
+      '[class*="attendance"]',
+      '.game-attendance'
+    ];
+    
+    for (const selector of attendanceSelectors) {
+      const elements = document.querySelectorAll(selector);
+      for (const element of elements) {
+        const text = element.textContent?.trim();
+        if (text && text.match(/\d{1,3}(,\d{3})*/)) {
+          metadata.attendance = text;
+          break;
+        }
+      }
+    }
+    
+    return metadata;
+  } catch (error) {
+    console.log('Metadata extraction failed:', error);
+    return {};
+  }
+}
+
+// Determine which extraction method was successful
+function determineExtractionMethod(): 'primary' | 'fallback-css' | 'fallback-text' | 'fallback-content' {
+  // This will be enhanced in Phase 4 with actual fallback logic
+  return 'primary';
 }
 
 // Create avatar with Parker's image
