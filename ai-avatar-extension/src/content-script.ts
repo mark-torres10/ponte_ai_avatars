@@ -854,6 +854,9 @@ function createCommentaryOverlay(): HTMLElement {
 
 // Show commentary overlay
 function showCommentaryOverlay(): void {
+  // TEMPORARY: Test the new DialoguePopup component
+  // Comment out the old overlay logic for now
+  /*
   if (!state.commentaryOverlay) {
     state.commentaryOverlay = createCommentaryOverlay();
     document.body.appendChild(state.commentaryOverlay);
@@ -869,6 +872,10 @@ function showCommentaryOverlay(): void {
       state.commentaryOverlay.style.opacity = '1';
     }
   });
+  */
+  
+  // NEW: Test DialoguePopup component
+  testDialoguePopup();
 }
 
 // Hide commentary overlay
@@ -1484,5 +1491,174 @@ function loadUserPreferences() {
       }
     });
   }
+}
+
+// NEW: Test function for DialoguePopup component
+function testDialoguePopup(): void {
+  console.log('🧪 [TEST] Testing DialoguePopup component...');
+  
+  // Create a simple test container for the DialoguePopup
+  const testContainer = document.createElement('div');
+  testContainer.id = 'dialogue-test-container';
+  testContainer.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2147483647;
+    pointer-events: none;
+  `;
+  
+  // Create test content for the DialoguePopup
+  const testContent = document.createElement('div');
+  testContent.innerHTML = `
+    <div style="padding: 20px; text-align: center;">
+      <h3 style="color: #333; margin-bottom: 16px;">🧪 Testing DialoguePopup Component</h3>
+      <p style="color: #666; margin-bottom: 20px;">
+        This is a test of the new professional dialogue UI system (PON-84).
+      </p>
+      <div style="background: #f0f0f0; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+        <strong>Test Commentary:</strong><br>
+        "The Lakers are showing incredible resilience tonight, with LeBron James leading the charge. 
+        This is exactly the kind of performance that championship teams are made of."
+      </div>
+      <p style="color: #888; font-size: 14px;">
+        Click the close button to test the exit animation.
+      </p>
+    </div>
+  `;
+  
+  // Create the DialoguePopup using React
+  // For now, we'll create a simple HTML version to test the positioning and styling
+  const dialoguePopup = document.createElement('div');
+  dialoguePopup.className = 'dialogue-popup-test';
+  dialoguePopup.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 400px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border: 1px solid #e9ecef;
+    border-radius: 24px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    z-index: 2147483648;
+    pointer-events: auto;
+    overflow: hidden;
+    animation: slideInRight 0.4s ease-out;
+  `;
+  
+  // Add CSS animation
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(30px) scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+      }
+    }
+    
+    @keyframes slideOutRight {
+      from {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+      }
+      to {
+        opacity: 0;
+        transform: translateX(30px) scale(0.9);
+      }
+    }
+  `;
+  document.head.appendChild(style);
+  
+  // Create header
+  const header = document.createElement('div');
+  header.style.cssText = `
+    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+    color: white;
+    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  `;
+  
+  const title = document.createElement('div');
+  title.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div style="width: 12px; height: 12px; background: #fff; border-radius: 50%; animation: pulse 2s infinite;"></div>
+      <span style="font-weight: 600; font-size: 16px;">AI Sports Commentary</span>
+      <span style="font-size: 14px;">✨</span>
+    </div>
+  `;
+  
+  const closeBtn = document.createElement('button');
+  closeBtn.innerHTML = '✕';
+  closeBtn.style.cssText = `
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  `;
+  
+  closeBtn.addEventListener('mouseenter', () => {
+    closeBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
+    closeBtn.style.transform = 'scale(1.1)';
+  });
+  
+  closeBtn.addEventListener('mouseleave', () => {
+    closeBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+    closeBtn.style.transform = 'scale(1)';
+  });
+  
+  closeBtn.addEventListener('click', () => {
+    // Animate out
+    dialoguePopup.style.animation = 'slideOutRight 0.25s ease-in';
+    setTimeout(() => {
+      testContainer.remove();
+      style.remove();
+    }, 250);
+  });
+  
+  header.appendChild(title);
+  header.appendChild(closeBtn);
+  
+  // Create content
+  const content = document.createElement('div');
+  content.style.cssText = `
+    padding: 24px;
+    background: rgba(255, 255, 255, 0.8);
+  `;
+  content.appendChild(testContent);
+  
+  // Assemble
+  dialoguePopup.appendChild(header);
+  dialoguePopup.appendChild(content);
+  
+  // Add footer accent
+  const footer = document.createElement('div');
+  footer.style.cssText = `
+    height: 4px;
+    background: linear-gradient(90deg, #ff6b35, #4a90e2, #ff6b35);
+    opacity: 0.6;
+  `;
+  dialoguePopup.appendChild(footer);
+  
+  testContainer.appendChild(dialoguePopup);
+  document.body.appendChild(testContainer);
+  
+  console.log('✅ [TEST] DialoguePopup test component created successfully');
 }
 
