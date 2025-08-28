@@ -35,7 +35,21 @@ const state: ContentScriptState = {
   // Dynamic regeneration tracking
   lastCommentaryStyle: null,
   styleChangedSinceLastGeneration: false,
-  regenerationAvailable: false
+  regenerationAvailable: false,
+  // Dialogue UI system state (PON-84)
+  dialogueState: {
+    isVisible: false,
+    currentText: '',
+    isStreaming: false,
+    availableActions: [],
+    position: 'top-right'
+  },
+  streamingTextState: {
+    text: '',
+    currentIndex: 0,
+    isComplete: false,
+    speed: 10
+  }
 };
 
 // ESPN page content analysis
