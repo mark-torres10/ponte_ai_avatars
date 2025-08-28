@@ -6,7 +6,8 @@ module.exports = {
   entry: {
     'background-script': './src/background-script.ts',
     'content-script': './src/content-script.ts',
-    'popup': './src/popup.tsx'
+    'popup': './src/popup.tsx',
+    'test-openai': './src/test-openai.ts' // New test entry point
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -38,6 +39,11 @@ module.exports = {
       template: './src/popup.html',
       filename: 'popup.html',
       chunks: ['popup']
+    }),
+    new HtmlWebpackPlugin({
+      template: './test-openai-service.html',
+      filename: 'test-openai-service.html',
+      chunks: ['test-openai']
     }),
     new CopyWebpackPlugin({
       patterns: [

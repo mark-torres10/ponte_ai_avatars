@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenAI Service Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>OpenAI Service Test</h1>
+    
+    <div class="test-section">
+        <h3>Test 1: Service Initialization</h3>
+        <button onclick="testServiceInit()">Test Service Init</button>
+        <div id="init-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 2: Commentary Generation</h3>
+        <button onclick="testCommentaryGeneration()">Test Commentary Generation</button>
+        <div id="commentary-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 3: Fallback Content</h3>
+        <button onclick="testFallbackContent()">Test Fallback Content</button>
+        <div id="fallback-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 4: Error Handling</h3>
+        <button onclick="testErrorHandling()">Test Error Handling</button>
+        <div id="error-result"></div>
+    </div>
+
+    <!-- Webpack will inject the bundled JavaScript here -->
+</body>
+</html>
