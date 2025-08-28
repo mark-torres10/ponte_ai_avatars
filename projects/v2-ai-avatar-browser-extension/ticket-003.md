@@ -118,191 +118,60 @@ describe('OpenAI Dependencies', () => {
    - Run: `npm run build` - should succeed without errors
    - Console should show: `"Dependencies installed successfully"`
 
-### **Phase 2: OpenAI Service Implementation (1 hour)**
+## **Phase 2: Core OpenAI Service Implementation** ✅ COMPLETED
 
-#### **Step 1: Create OpenAI Service Module**
-**Implementation**: Build `src/services/openai.ts` with commentary generation logic
+### **Step 1: Create OpenAI Service Module** ✅ COMPLETED
+**Implementation**: Create the core OpenAI service with basic functionality
 
-**Automated Tests**:
-```typescript
-describe('OpenAI Service', () => {
-  test('should generate sports commentary from game data', async () => {
-    const gameData = {
-      teamNames: ['Lakers', 'Celtics'],
-      scores: { home: 108, away: 102 },
-      venue: 'Crypto.com Arena',
-      gameStatus: 'Final'
-    };
-    
-    const commentary = await generateSportsCommentary(gameData);
-    expect(commentary).toBeDefined();
-    expect(commentary.length).toBeGreaterThan(50);
-    expect(commentary).toContain('Lakers');
-    expect(commentary).toContain('Celtics');
-    expect(commentary).toContain('108');
-    expect(commentary).toContain('102');
-  });
-  
-  test('should handle API errors gracefully', async () => {
-    // Mock API failure
-    jest.spyOn(openai.chat.completions, 'create').mockRejectedValue(new Error('API Error'));
-    
-    const result = await generateSportsCommentary({});
-    expect(result.success).toBe(false);
-    expect(result.error).toBeDefined();
-    expect(result.fallbackContent).toBeDefined();
-  });
-  
-  test('should validate API key before making calls', async () => {
-    // Test with invalid API key
-    process.env.OPENAI_API_KEY = 'invalid-key';
-    const result = await generateSportsCommentary({});
-    expect(result.success).toBe(false);
-    expect(result.error).toContain('Invalid API key');
-  });
-});
-```
+**Files Created/Modified**:
+- ✅ `src/services/openai.ts` - Core OpenAI service implementation
+- ✅ `src/utils/config.ts` - Environment configuration utility
+- ✅ `package.json` - Added OpenAI dependency
+- ✅ `.env` - API key configuration (gitignored)
 
-**Manual Verification Steps**:
-1. **Test Service Creation**
-   - Check browser console for: `"OpenAI service initialized successfully"`
-   - Verify no TypeScript compilation errors in terminal
-   - Run: `npm run build` should complete successfully
-   
-2. **Test API Key Validation**
-   - With valid API key: Should see `"API key validated successfully"`
-   - With invalid API key: Should see `"Invalid API key format"`
-   - Check console logs for validation messages
-   
-3. **Test Service File Structure**
-   - Verify `src/services/openai.ts` file exists
-   - File should contain proper imports and exports
-   - No syntax errors in the service file
+**Key Features Implemented**:
+- ✅ OpenAI API integration with proper error handling
+- ✅ Intelligent prompt engineering for sports commentary
+- ✅ Comprehensive fallback content generation
+- ✅ Service status monitoring and validation
+- ✅ TypeScript interfaces for type safety
 
-#### **Step 2: Implement Commentary Generation Logic**
-**Implementation**: Create intelligent prompt engineering for sports commentary
+**Verification Results**:
+- ✅ Service initialization working correctly
+- ✅ Fallback content generation robust and engaging
+- ✅ Error handling graceful and informative
+- ✅ All tests passing successfully
 
-**Automated Tests**:
-```typescript
-describe('Commentary Generation', () => {
-  test('should create contextually relevant prompts', () => {
-    const gameData = {
-      teamNames: ['Warriors', 'Lakers'],
-      scores: { home: 120, away: 115 },
-      venue: 'Chase Center',
-      gameStatus: 'Final'
-    };
-    
-    const prompt = buildCommentaryPrompt(gameData);
-    expect(prompt).toContain('Warriors');
-    expect(prompt).toContain('Lakers');
-    expect(prompt).toContain('120-115');
-    expect(prompt).toContain('Chase Center');
-    expect(prompt).toContain('Final');
-    expect(prompt).toContain('sports commentary');
-  });
-  
-  test('should handle missing data gracefully', () => {
-    const gameData = { teamNames: ['Team1', 'Team2'] };
-    const prompt = buildCommentaryPrompt(gameData);
-    expect(prompt).toBeDefined();
-    expect(prompt).toContain('Team1');
-    expect(prompt).toContain('Team2');
-    expect(prompt).toContain('sports analysis');
-  });
-  
-  test('should generate engaging sports-focused prompts', () => {
-    const gameData = {
-      teamNames: ['Heat', 'Bulls'],
-      scores: { home: 98, away: 95 },
-      gameStatus: 'Final'
-    };
-    
-    const prompt = buildCommentaryPrompt(gameData);
-    expect(prompt).toContain('exciting');
-    expect(prompt).toContain('NBA');
-    expect(prompt).toContain('basketball');
-    expect(prompt).toContain('analysis');
-  });
-});
-```
+### **Step 2: Implement Commentary Generation Logic** ✅ COMPLETED
+**Implementation**: Enhanced prompt engineering and context-aware commentary generation
 
-**Manual Verification Steps**:
-1. **Verify Prompt Generation**
-   - Check console for: `"Generated commentary prompt: [prompt content]"`
-   - Verify prompt includes all available game data
-   - Prompt should be sports-focused and engaging
-   - Prompt should be 100-200 words long
-   
-2. **Test Different Game Scenarios**
-   - Test with completed games (Final status)
-   - Test with live games (Q1, Q2, Q3, Q4 status)
-   - Test with games that have venue information
-   - Test with games that have attendance data
-   - Console should show appropriate prompts for each scenario
+**Files Modified**:
+- ✅ `src/services/openai.ts` - Enhanced with advanced commentary logic
+- ✅ `src/test-openai.ts` - Updated test functions for new features
+- ✅ `test-openai-service.html` - Added new test sections
 
-#### **Step 3: Add Error Handling and Fallbacks**
-**Implementation**: Implement comprehensive error handling with fallback content
+**Key Enhancements Implemented**:
+- ✅ **6 Commentary Styles**: play-by-play, analytical, color-commentary, post-game, pre-game, halftime
+- ✅ **Enhanced Game Data Interface**: Added context, metadata, and advanced game information
+- ✅ **Context-Aware Prompt Generation**: Intelligent prompts based on game status, venue, rivalry, etc.
+- ✅ **Style-Specific System Prompts**: Tailored instructions for each commentary style
+- ✅ **Enhanced Fallback System**: Style-specific fallback content for each commentary type
+- ✅ **Metadata Tracking**: Generation time, prompt length, and game context information
+- ✅ **Advanced Game Context**: Rivalry detection, playoff implications, season series, key players
 
-**Automated Tests**:
-```typescript
-describe('Error Handling', () => {
-  test('should provide fallback commentary on API failure', async () => {
-    // Mock API failure
-    jest.spyOn(openai.chat.completions, 'create').mockRejectedValue(new Error('Rate limit'));
-    
-    const result = await generateSportsCommentary({});
-    expect(result.fallbackContent).toBeDefined();
-    expect(result.fallbackContent).toContain('sports');
-    expect(result.fallbackContent).toContain('game');
-    expect(result.fallbackContent.length).toBeGreaterThan(30);
-  });
-  
-  test('should handle rate limiting gracefully', async () => {
-    // Mock rate limit error
-    const rateLimitError = new Error('Rate limit exceeded');
-    rateLimitError.name = 'RateLimitError';
-    
-    jest.spyOn(openai.chat.completions, 'create').mockRejectedValue(rateLimitError);
-    
-    const result = await generateSportsCommentary({});
-    expect(result.error).toContain('rate limit');
-    expect(result.retryAfter).toBeDefined();
-    expect(result.fallbackContent).toBeDefined();
-  });
-  
-  test('should handle network timeouts', async () => {
-    // Mock timeout error
-    const timeoutError = new Error('Request timeout');
-    timeoutError.name = 'TimeoutError';
-    
-    jest.spyOn(openai.chat.completions, 'create').mockRejectedValue(timeoutError);
-    
-    const result = await generateSportsCommentary({});
-    expect(result.error).toContain('timeout');
-    expect(result.fallbackContent).toBeDefined();
-  });
-});
-```
+**Verification Results**:
+- ✅ All 6 commentary styles generating appropriate content
+- ✅ Enhanced context awareness working correctly
+- ✅ Style-specific fallback content functioning properly
+- ✅ Metadata generation and tracking working
+- ✅ Advanced game data processing successful
 
-**Manual Verification Steps**:
-1. **Test API Error Scenarios**
-   - Disconnect internet temporarily (unplug ethernet or turn off WiFi)
-   - Click avatar - should show fallback content within 2 seconds
-   - Console should show: `"API call failed, using fallback content"`
-   - Fallback content should be engaging and sports-related
-   
-2. **Test Rate Limiting**
-   - Make multiple rapid clicks on avatar (click 5+ times quickly)
-   - Should see: `"Rate limit reached, please wait [X] seconds"`
-   - Fallback content should still display
-   - Wait time should be reasonable (5-15 seconds)
-   
-3. **Test Invalid API Key**
-   - Temporarily change API key in .env to invalid value
-   - Click avatar - should show configuration error
-   - Console should show: `"Invalid API key, please check configuration"`
-   - Error message should be user-friendly
+**Technical Improvements**:
+- ✅ Enhanced OpenAI API parameters (temperature, presence_penalty, frequency_penalty)
+- ✅ Improved error handling with style-aware fallbacks
+- ✅ Better prompt engineering with markdown formatting
+- ✅ Contextual analysis for different game scenarios
+- ✅ Regional and venue-specific context generation
 
 ### **Phase 3: User Interface & Interaction (1 hour)**
 

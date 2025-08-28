@@ -12,10 +12,11 @@
         button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
         button:hover { background: #0056b3; }
         pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        input[type="text"] { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 3px; width: 300px; }
     </style>
 </head>
 <body>
-    <h1>OpenAI Service Test</h1>
+    <h1>Enhanced OpenAI Service Test</h1>
     
     <div class="test-section">
         <h3>Test 1: Service Initialization</h3>
@@ -24,21 +25,53 @@
     </div>
 
     <div class="test-section">
-        <h3>Test 2: Commentary Generation</h3>
+        <h3>Test 2: Enhanced Commentary Generation</h3>
         <button onclick="testCommentaryGeneration()">Test Commentary Generation</button>
         <div id="commentary-result"></div>
     </div>
 
     <div class="test-section">
-        <h3>Test 3: Fallback Content</h3>
+        <h3>Test 3: Enhanced Fallback Content</h3>
         <button onclick="testFallbackContent()">Test Fallback Content</button>
         <div id="fallback-result"></div>
     </div>
 
     <div class="test-section">
-        <h3>Test 4: Error Handling</h3>
+        <h3>Test 4: Enhanced Error Handling</h3>
         <button onclick="testErrorHandling()">Test Error Handling</button>
         <div id="error-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 5: Commentary Styles</h3>
+        <button onclick="testCommentaryStyles()">Test All Commentary Styles</button>
+        <div id="styles-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 6: Enhanced Context Awareness</h3>
+        <button onclick="testEnhancedContext()">Test Enhanced Context</button>
+        <div id="context-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 7: Configuration Management</h3>
+        <p>Set API Keys for testing:</p>
+        <div style="margin-bottom: 10px;">
+          <label for="openai-key">OpenAI API Key:</label><br>
+          <input type="text" id="openai-key" placeholder="Enter your OpenAI API key (sk-...)" style="width: 100%; margin-bottom: 5px;">
+        </div>
+        <div style="margin-bottom: 10px;">
+          <label for="elevenlabs-key">ElevenLabs API Key:</label><br>
+          <input type="text" id="elevenlabs-key" placeholder="Enter your ElevenLabs API key (sk_...)" style="width: 100%; margin-bottom: 5px;">
+        </div>
+        <div style="margin-bottom: 10px;">
+          <label for="voice-id">Parker Munns Voice ID:</label><br>
+          <input type="text" id="voice-id" placeholder="Enter Parker Munns voice ID" style="width: 100%; margin-bottom: 5px;">
+        </div>
+        <button onclick="setCompleteTestConfig()">Set Complete Test Config</button>
+        <button onclick="clearTestConfiguration()">Clear Test Config</button>
+        <div id="config-result"></div>
     </div>
 
     <!-- Webpack will inject the bundled JavaScript here -->
