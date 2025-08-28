@@ -1,2 +1,2 @@
-export { ActionButtons } from './ActionButtons';
-export type { ActionButtonsProps, ActionButton, ButtonLayoutConfig } from './types';
+export { ActionButtons, default as ActionButtonsDefault } from './ActionButtons';
+export type { ActionButtonsProps, ActionButton, ButtonLayoutConfig, ButtonState } from './types';

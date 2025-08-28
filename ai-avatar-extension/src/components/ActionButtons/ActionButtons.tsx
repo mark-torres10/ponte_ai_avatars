@@ -1,12 +1,23 @@
-import React, { useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { ActionButtonsProps, ButtonLayoutConfig } from './types';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Play, 
+  Square, 
+  Settings, 
+  Loader2
+} from 'lucide-react';
+import type { ActionButtonsProps, ActionButton, ButtonLayoutConfig, ButtonState } from './types';
 
 /**
  * ActionButtons Component
  * 
- * Features:
- * - Professional button system using shadcn/ui styling
+ * Creates an interactive button system that provides users with meaningful choices 
+ * and actions within the dialogue context. This component demonstrates the extension's 
+ * interactive capabilities and allows for future expansion into more complex AI avatar 
+ * interactions, moving beyond passive commentary to active user engagement.
+ * 
+ * Key Features:
+ * - Professional button system using shadcn/ui components
  * - Strategic button variant system (primary, secondary, danger)
  * - Smooth hover and click animations with Framer Motion
  * - Comprehensive keyboard navigation support (Tab, Enter, Space)
@@ -16,172 +27,331 @@ import { ActionButtonsProps, ButtonLayoutConfig } from './types';
 export const ActionButtons: React.FC<ActionButtonsProps> = ({
   buttons,
   layout = 'horizontal',
+  maxPerRow = 3,
+  showDescriptions: _showDescriptions = false,
   className = '',
-  disabled = false,
-  size = 'md'
+  enableKeyboardNav = true,
+  onButtonActivate
 }) => {
-  // Error boundary for button errors
-  const [hasError, setHasError] = React.useState(false);
+  // Component state management
+  const [buttonState, setButtonState] = useState<ButtonState>({
+    focusedIndex: 0,
+    keyboardActive: false,
+    loadingStates: {}
+  });
+
+  // Error boundary state
+  const [hasError, setHasError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
+
+  // Refs for keyboard navigation
+  const buttonRefs = React.useRef<(HTMLButtonElement | null)[]>([]);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  // Validate props
+  useEffect(() => {
+    if (!buttons || buttons.length === 0) {
+      setHasError(true);
+      setErrorMessage('No action buttons provided');
+      return;
+    }
+
+    if (maxPerRow < 1 || maxPerRow > 6) {
+      setHasError(true);
+      setErrorMessage('Invalid maxPerRow value');
+      return;
+    }
+
+    setHasError(false);
+    setErrorMessage('');
+  }, [buttons, maxPerRow]);
+
+  // Layout configuration based on props
+  const layoutConfig: ButtonLayoutConfig = useMemo(() => {
+    const config: ButtonLayoutConfig = {
+      type: layout,
+      maxPerRow: Math.min(maxPerRow, buttons.length),
+      wrap: layout === 'grid' || layout === 'horizontal',
+      spacing: layout === 'grid' ? 'tight' : 'normal'
+    };
+    return config;
+  }, [layout, maxPerRow, buttons.length]);
+
+  // Get button variant styles
+  const getButtonVariantStyles = useCallback((variant: ActionButton['variant'] = 'secondary') => {
+    const baseStyles = 'font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2';
+    
+    switch (variant) {
+      case 'primary':
+        return `${baseStyles} bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl focus:ring-blue-500`;
+      case 'danger':
+        return `${baseStyles} bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white shadow-lg hover:shadow-xl focus:ring-red-500`;
+      case 'secondary':
+      default:
+        return `${baseStyles} bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white shadow-lg hover:shadow-xl focus:ring-gray-500`;
+    }
+  }, []);
+
+  // Get layout container styles
+  const getLayoutStyles = useCallback(() => {
+    const baseStyles = 'flex gap-3';
+    
+    switch (layoutConfig.type) {
+      case 'horizontal':
+        return `${baseStyles} flex-row flex-wrap justify-start`;
+      case 'vertical':
+        return `${baseStyles} flex-col items-stretch`;
+      case 'grid':
+        return `grid grid-cols-${layoutConfig.maxPerRow} gap-3 auto-rows-fr`;
+      default:
+        return baseStyles;
+    }
+  }, [layoutConfig]);
+
+  // Handle button click with loading state
+  const handleButtonClick = useCallback(async (button: ActionButton, index: number) => {
+    if (button.disabled || button.loading) return;
+
+    try {
+      // Set loading state
+      setButtonState(prev => ({
+        ...prev,
+        loadingStates: { ...prev.loadingStates, [button.id]: true }
+      }));
+
+      // Execute button action
+      await button.action();
+      
+      // Call activation callback
+      onButtonActivate?.(button.id);
+      
+    } catch (error) {
+      console.error(`Error executing button action for ${button.label}:`, error);
+      setHasError(true);
+      setErrorMessage(`Failed to execute ${button.label} action`);
+    } finally {
+      // Clear loading state
+      setButtonState(prev => ({
+        ...prev,
+        loadingStates: { ...prev.loadingStates, [button.id]: false }
+      }));
+    }
+  }, [onButtonActivate]);
+
+  // Keyboard navigation handlers
+  const handleKeyDown = useCallback((event: React.KeyboardEvent, buttonIndex: number) => {
+    if (!enableKeyboardNav) return;
+
+    setButtonState(prev => ({ ...prev, keyboardActive: true }));
+
+    switch (event.key) {
+      case 'Tab':
+        // Let browser handle Tab navigation
+        break;
+      case 'Enter':
+      case ' ':
+        event.preventDefault();
+        if (buttons[buttonIndex]) {
+          handleButtonClick(buttons[buttonIndex], buttonIndex);
+        }
+        break;
+      case 'ArrowRight':
+        if (layoutConfig.type === 'horizontal' || layoutConfig.type === 'grid') {
+          event.preventDefault();
+          const nextIndex = (buttonIndex + 1) % buttons.length;
+          setButtonState(prev => ({ ...prev, focusedIndex: nextIndex }));
+          buttonRefs.current[nextIndex]?.focus();
+        }
+        break;
+      case 'ArrowLeft':
+        if (layoutConfig.type === 'horizontal' || layoutConfig.type === 'grid') {
+          event.preventDefault();
+          const prevIndex = buttonIndex === 0 ? buttons.length - 1 : buttonIndex - 1;
+          setButtonState(prev => ({ ...prev, focusedIndex: prevIndex }));
+          buttonRefs.current[prevIndex]?.focus();
+        }
+        break;
+      case 'ArrowDown':
+        if (layoutConfig.type === 'vertical' || layoutConfig.type === 'grid') {
+          event.preventDefault();
+          const nextIndex = (buttonIndex + 1) % buttons.length;
+          setButtonState(prev => ({ ...prev, focusedIndex: nextIndex }));
+          buttonRefs.current[nextIndex]?.focus();
+        }
+        break;
+      case 'ArrowUp':
+        if (layoutConfig.type === 'vertical' || layoutConfig.type === 'grid') {
+          event.preventDefault();
+          const prevIndex = buttonIndex === 0 ? buttons.length - 1 : buttonIndex - 1;
+          setButtonState(prev => ({ ...prev, focusedIndex: prevIndex }));
+          buttonRefs.current[prevIndex]?.focus();
+        }
+        break;
+    }
+  }, [enableKeyboardNav, buttons, layoutConfig.type, handleButtonClick]);
+
+  // Focus management
+  const handleFocus = useCallback((index: number) => {
+    setButtonState(prev => ({ ...prev, focusedIndex: index }));
+  }, []);
 
   // Error boundary effect
-  React.useEffect(() => {
-    const handleError = (error: ErrorEvent) => {
-      console.error('ActionButtons error:', error);
-      setHasError(true);
-    };
-
+  useEffect(() => {
+    const handleError = () => setHasError(true);
     window.addEventListener('error', handleError);
     return () => window.removeEventListener('error', handleError);
   }, []);
 
-  // Validate props
-  React.useEffect(() => {
-    if (!Array.isArray(buttons)) {
-      setHasError(true);
-      console.error('ActionButtons: buttons prop must be an array');
-    }
-  }, [buttons]);
-
-  // Show error state if component has errored
+  // Error state
   if (hasError) {
     return (
-      <div className="text-red-600 text-sm p-2 bg-red-50 rounded border border-red-200">
-        <strong>Error:</strong> Button component failed to load. Please refresh the page.
+      <div className="flex items-center justify-center p-4 text-red-500 bg-red-50 rounded-lg border border-red-200">
+        <span className="text-sm font-medium">
+          {errorMessage || 'Error displaying action buttons'}. Please try again.
+        </span>
       </div>
     );
   }
-  // Layout configuration for different button arrangements
-  const layoutConfig = useMemo((): ButtonLayoutConfig => {
-    const configs: Record<string, ButtonLayoutConfig> = {
-      horizontal: {
-        containerClass: 'flex flex-row items-center space-x-3',
-        buttonClass: 'flex-shrink-0',
-        spacing: 'space-x-3'
-      },
-      vertical: {
-        containerClass: 'flex flex-col items-stretch space-y-3',
-        buttonClass: 'w-full',
-        spacing: 'space-y-3'
-      },
-      grid: {
-        containerClass: 'grid grid-cols-2 gap-3',
-        buttonClass: 'w-full',
-        spacing: 'gap-3'
+
+  // Animation variants for smooth interactions
+  const buttonVariants = {
+    hidden: { opacity: 0, y: 20, scale: 0.95 },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      scale: 1,
+      transition: {
+        duration: 0.2,
+        stiffness: 300,
+        damping: 25
       }
-    };
-    
-    return configs[layout] || configs.horizontal;
-  }, [layout]);
-
-  // Size configuration for consistent button sizing
-  const sizeConfig = useMemo(() => {
-    const configs = {
-      sm: 'px-3 py-1.5 text-sm',
-      md: 'px-4 py-2 text-sm',
-      lg: 'px-6 py-3 text-base'
-    };
-    return configs[size] || configs.md;
-  }, [size]);
-
-  // Button variant styling with professional appearance
-  const getButtonVariantClasses = (variant: string = 'secondary') => {
-    const baseClasses = `
-      font-medium rounded-lg
-      transition-all duration-200
-      focus:outline-none focus:ring-2 focus:ring-offset-2
-      disabled:opacity-50 disabled:cursor-not-allowed
-      ${sizeConfig}
-    `;
-
-    const variantClasses = {
-      primary: `
-        bg-orange-500 text-white
-        hover:bg-orange-600 hover:shadow-lg
-        focus:ring-orange-500/50
-        active:bg-orange-700
-      `,
-      secondary: `
-        bg-gray-100 text-gray-700
-        hover:bg-gray-200 hover:shadow-md
-        focus:ring-gray-500/50
-        active:bg-gray-300
-        border border-gray-200
-      `,
-      danger: `
-        bg-red-500 text-white
-        hover:bg-red-600 hover:shadow-lg
-        focus:ring-red-500/50
-        active:bg-red-700
-      `
-    };
-
-    return `${baseClasses} ${variantClasses[variant as keyof typeof variantClasses] || variantClasses.secondary}`;
-  };
-
-  // Handle button click with smooth animation feedback
-  const handleButtonClick = (button: any, event: React.MouseEvent | React.KeyboardEvent) => {
-    if (button.disabled || disabled) return;
-    
-    // Prevent default for keyboard events
-    if (event.type === 'keydown') {
-      event.preventDefault();
+    },
+    hover: { 
+      scale: 1.05,
+      transition: {
+        duration: 0.15,
+        stiffness: 400
+      }
+    },
+    tap: { 
+      scale: 0.98,
+      transition: {
+        duration: 0.1
+      }
     }
-    
-    // Execute button action
-    button.action();
   };
 
-  // Handle keyboard navigation
-  const handleKeyDown = (button: any, event: React.KeyboardEvent) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      handleButtonClick(button, event);
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.3,
+        staggerChildren: 0.1
+      }
     }
   };
 
   return (
     <div 
-      data-testid="action-buttons"
-      className={`action-buttons ${layoutConfig.containerClass} ${className}`}
+      ref={containerRef}
+      className={`action-buttons ${className}`}
       role="group"
       aria-label="Action buttons"
     >
-      {buttons.map((button, index) => (
-        <motion.button
-          key={button.id}
-          id={button.id}
-          className={`${getButtonVariantClasses(button.variant)} ${layoutConfig.buttonClass}`}
-          disabled={button.disabled || disabled}
-          onClick={(e) => handleButtonClick(button, e)}
-          onKeyDown={(e) => handleKeyDown(button, e)}
-          whileHover={{ 
-            scale: button.disabled || disabled ? 1 : 1.02,
-            y: button.disabled || disabled ? 0 : -1
-          }}
-          whileTap={{ 
-            scale: button.disabled || disabled ? 1 : 0.98,
-            y: button.disabled || disabled ? 0 : 0
-          }}
-          transition={{
-            type: "spring",
-            stiffness: 400,
-            damping: 25
-          }}
-          role="button"
-          tabIndex={0}
-          aria-label={button.tooltip || button.label}
-          aria-disabled={button.disabled || disabled}
-          data-variant={button.variant}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={`${layout}-${buttons.length}`}
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          exit="hidden"
+          className={getLayoutStyles()}
         >
-          <div className="flex items-center justify-center space-x-2">
-            {button.icon && (
-              <span className="flex-shrink-0">
-                {button.icon}
-              </span>
-            )}
-            <span>{button.label}</span>
-          </div>
-        </motion.button>
-      ))}
+          {buttons.map((button, index) => (
+            <motion.button
+              key={button.id}
+              ref={(el) => { buttonRefs.current[index] = el; }}
+              variants={buttonVariants}
+              initial="hidden"
+              animate="visible"
+              whileHover="hover"
+              whileTap="tap"
+              disabled={button.disabled || button.loading}
+              onClick={() => handleButtonClick(button, index)}
+              onKeyDown={(e) => handleKeyDown(e, index)}
+              onFocus={() => handleFocus(index)}
+              className={`
+                relative px-6 py-3 rounded-lg text-sm font-semibold
+                ${getButtonVariantStyles(button.variant)}
+                ${button.disabled || button.loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                ${buttonState.focusedIndex === index && buttonState.keyboardActive ? 'ring-2 ring-blue-400 ring-offset-2' : ''}
+                transition-all duration-200 ease-out
+                min-w-[120px]
+                flex items-center justify-center gap-2
+              `}
+              aria-label={button.tooltip || button.label}
+              aria-describedby={button.tooltip ? `tooltip-${button.id}` : undefined}
+              tabIndex={enableKeyboardNav ? 0 : -1}
+            >
+              {/* Loading state */}
+              <AnimatePresence mode="wait">
+                {button.loading || buttonState.loadingStates[button.id] ? (
+                  <motion.div
+                    key="loading"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="icon"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {button.icon || getDefaultIcon(button.variant)}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Button label */}
+              <span className="whitespace-nowrap">{button.label}</span>
+
+              {/* Tooltip */}
+              {button.tooltip && (
+                <div
+                  id={`tooltip-${button.id}`}
+                  className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10"
+                  role="tooltip"
+                >
+                  {button.tooltip}
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                </div>
+              )}
+            </motion.button>
+          ))}
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 };
+
+// Helper function to get default icons based on button variant
+const getDefaultIcon = (variant?: ActionButton['variant']) => {
+  switch (variant) {
+    case 'primary':
+      return <Play className="w-4 h-4" />;
+    case 'danger':
+      return <Square className="w-4 h-4" />;
+    case 'secondary':
+    default:
+      return <Settings className="w-4 h-4" />;
+  }
+};
+
+export default ActionButtons;

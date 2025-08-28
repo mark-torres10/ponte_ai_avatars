@@ -21,5 +21,6 @@ export type {
 export type {
   ActionButtonsProps,
   ActionButton,
-  ButtonLayoutConfig
+  ButtonLayoutConfig,
+  ButtonState
 } from './ActionButtons';

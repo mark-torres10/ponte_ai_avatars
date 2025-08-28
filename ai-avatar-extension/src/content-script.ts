@@ -1546,6 +1546,16 @@ function testDialoguePopup(): void {
         margin: 8px;
         transition: all 0.2s ease;
       ">Reset</button>
+      
+      <div style="background: #f8f9fa; padding: 16px; border-radius: 8px; margin: 20px 0; border: 1px solid #e9ecef;">
+        <strong>Phase 2.3: ActionButtons Component Test</strong><br>
+        <div style="margin-top: 12px; color: #666;">
+          Test different button layouts and interactions below:
+        </div>
+        <div id="action-buttons-demo" style="margin-top: 16px;">
+          <!-- ActionButtons will be dynamically created here -->
+        </div>
+      </div>
       <p style="color: #888; font-size: 14px; margin-top: 16px;">
         Click the close button to test the exit animation.
       </p>
@@ -1776,6 +1786,149 @@ function testDialoguePopup(): void {
       resetBtn.style.transform = 'scale(1)';
       resetBtn.style.boxShadow = 'none';
     });
+  }
+  
+  // Add ActionButtons functionality for Phase 2.3 testing
+  const actionButtonsDemo = testContent.querySelector('#action-buttons-demo');
+  if (actionButtonsDemo) {
+    // Create sample action buttons
+    const createActionButton = (id: string, label: string, variant: 'primary' | 'secondary' | 'danger', action: () => void) => {
+      const button = document.createElement('button');
+      button.id = id;
+      button.textContent = label;
+      button.style.cssText = `
+        padding: 12px 20px;
+        margin: 8px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        min-width: 120px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 14px;
+      `;
+      
+      // Apply variant styles
+      switch (variant) {
+        case 'primary':
+          button.style.background = 'linear-gradient(135deg, #4a90e2 0%, #357abd 100%)';
+          button.style.color = 'white';
+          button.style.boxShadow = '0 4px 12px rgba(74, 144, 226, 0.3)';
+          break;
+        case 'secondary':
+          button.style.background = 'linear-gradient(135deg, #6c757d 0%, #5a6268 100%)';
+          button.style.color = 'white';
+          button.style.boxShadow = '0 4px 12px rgba(108, 117, 125, 0.3)';
+          break;
+        case 'danger':
+          button.style.background = 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)';
+          button.style.color = 'white';
+          button.style.boxShadow = '0 4px 12px rgba(220, 53, 69, 0.3)';
+          break;
+      }
+      
+      // Add hover effects
+      button.addEventListener('mouseenter', () => {
+        button.style.transform = 'scale(1.05)';
+        button.style.boxShadow = `0 6px 16px ${variant === 'primary' ? 'rgba(74, 144, 226, 0.4)' : variant === 'danger' ? 'rgba(220, 53, 69, 0.4)' : 'rgba(108, 117, 125, 0.4)'}`;
+      });
+      
+      button.addEventListener('mouseleave', () => {
+        button.style.transform = 'scale(1)';
+        button.style.boxShadow = `0 4px 12px ${variant === 'primary' ? 'rgba(74, 144, 226, 0.3)' : variant === 'danger' ? 'rgba(220, 53, 69, 0.3)' : 'rgba(108, 117, 125, 0.3)'}`;
+      });
+      
+      // Add click effects
+      button.addEventListener('mousedown', () => {
+        button.style.transform = 'scale(0.98)';
+      });
+      
+      button.addEventListener('mouseup', () => {
+        button.style.transform = 'scale(1.05)';
+      });
+      
+      // Add click action
+      button.addEventListener('click', action);
+      
+      return button;
+    };
+    
+    // Create different button layouts for testing
+    const horizontalLayout = document.createElement('div');
+    horizontalLayout.style.cssText = 'margin-bottom: 20px; text-align: center;';
+    horizontalLayout.innerHTML = '<div style="margin-bottom: 8px; color: #666; font-size: 12px;"><strong>Horizontal Layout:</strong></div>';
+    
+    const primaryBtn = createActionButton('primary-btn', '🎯 Generate Commentary', 'primary', () => {
+      console.log('🎯 Primary button clicked - Generate Commentary');
+      // Simulate loading state
+      const btn = document.getElementById('primary-btn') as HTMLButtonElement;
+      if (btn) {
+        btn.textContent = '⏳ Generating...';
+        btn.disabled = true;
+        setTimeout(() => {
+          btn.textContent = '🎯 Generate Commentary';
+          btn.disabled = false;
+        }, 2000);
+      }
+    });
+    
+    const secondaryBtn = createActionButton('secondary-btn', '⚙️ Settings', 'secondary', () => {
+      console.log('⚙️ Secondary button clicked - Settings');
+    });
+    
+    const dangerBtn = createActionButton('danger-btn', '🛑 Stop', 'danger', () => {
+      console.log('🛑 Danger button clicked - Stop');
+    });
+    
+    horizontalLayout.appendChild(primaryBtn);
+    horizontalLayout.appendChild(secondaryBtn);
+    horizontalLayout.appendChild(dangerBtn);
+    
+    // Create grid layout
+    const gridLayout = document.createElement('div');
+    gridLayout.style.cssText = 'margin-bottom: 20px; text-align: center;';
+    gridLayout.innerHTML = '<div style="margin-bottom: 8px; color: #666; font-size: 12px;"><strong>Grid Layout (2x2):</strong></div>';
+    
+    // Create grid container with proper CSS Grid styling
+    const gridContainer = document.createElement('div');
+    gridContainer.style.cssText = `
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      max-width: 300px;
+      margin: 0 auto;
+      justify-items: center;
+      align-items: center;
+    `;
+    
+    const gridBtn1 = createActionButton('grid-btn-1', '📊 Stats', 'secondary', () => console.log('📊 Grid button 1 clicked'));
+    const gridBtn2 = createActionButton('grid-btn-2', '🎨 Style', 'secondary', () => console.log('🎨 Grid button 2 clicked'));
+    const gridBtn3 = createActionButton('grid-btn-3', '📝 Notes', 'secondary', () => console.log('📝 Grid button 3 clicked'));
+    const gridBtn4 = createActionButton('grid-btn-4', '💾 Save', 'primary', () => console.log('💾 Grid button 4 clicked'));
+    
+    gridContainer.appendChild(gridBtn1);
+    gridContainer.appendChild(gridBtn2);
+    gridContainer.appendChild(gridBtn3);
+    gridContainer.appendChild(gridBtn4);
+    
+    // Add grid container to grid layout
+    gridLayout.appendChild(gridContainer);
+    
+    // Add layouts to demo area
+    actionButtonsDemo.appendChild(horizontalLayout);
+    actionButtonsDemo.appendChild(gridLayout);
+    
+    // Add keyboard navigation info
+    const keyboardInfo = document.createElement('div');
+    keyboardInfo.style.cssText = 'margin-top: 16px; padding: 12px; background: #e3f2fd; border-radius: 6px; border-left: 4px solid #2196f3; font-size: 12px; color: #1976d2;';
+    keyboardInfo.innerHTML = `
+      <strong>🎹 Keyboard Navigation:</strong> Use Tab to navigate between buttons, Enter/Space to activate, Arrow keys for directional navigation.
+    `;
+    actionButtonsDemo.appendChild(keyboardInfo);
   }
   
   header.appendChild(title);
