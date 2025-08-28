@@ -1514,16 +1514,39 @@ function testDialoguePopup(): void {
   const testContent = document.createElement('div');
   testContent.innerHTML = `
     <div style="padding: 20px; text-align: center;">
-      <h3 style="color: #333; margin-bottom: 16px;">🧪 Testing DialoguePopup Component</h3>
+      <h3 style="color: #333; margin-bottom: 16px;">🧪 Testing DialoguePopup + StreamingText Components</h3>
       <p style="color: #666; margin-bottom: 20px;">
-        This is a test of the new professional dialogue UI system (PON-84).
+        This is a test of the new professional dialogue UI system (PON-84) with StreamingText.
       </p>
       <div style="background: #f0f0f0; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
-        <strong>Test Commentary:</strong><br>
-        "The Lakers are showing incredible resilience tonight, with LeBron James leading the charge. 
-        This is exactly the kind of performance that championship teams are made of."
+        <strong>Phase 2.2: StreamingText Component Test</strong><br>
+        <div id="streaming-text-demo" style="min-height: 60px; text-align: left; margin-top: 12px;">
+          <div style="color: #666; font-style: italic;">Click "Start Streaming" to test character-by-character animation...</div>
+        </div>
       </div>
-      <p style="color: #888; font-size: 14px;">
+      <button id="start-streaming-btn" style="
+        background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        margin: 8px;
+        transition: all 0.2s ease;
+      ">Start Streaming</button>
+      <button id="reset-streaming-btn" style="
+        background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        margin: 8px;
+        transition: all 0.2s ease;
+      ">Reset</button>
+      <p style="color: #888; font-size: 14px; margin-top: 16px;">
         Click the close button to test the exit animation.
       </p>
     </div>
@@ -1570,6 +1593,26 @@ function testDialoguePopup(): void {
       to {
         opacity: 0;
         transform: translateX(30px) scale(0.9);
+      }
+    }
+    
+    @keyframes charNatural {
+      from {
+        opacity: 0.8;
+        transform: scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.5;
       }
     }
   `;
@@ -1631,6 +1674,109 @@ function testDialoguePopup(): void {
       style.remove();
     }, 250);
   });
+
+  // Add streaming text functionality for Phase 2.2 testing
+  const streamingDemo = testContent.querySelector('#streaming-text-demo') as HTMLDivElement;
+  const startBtn = testContent.querySelector('#start-streaming-btn') as HTMLButtonElement;
+  const resetBtn = testContent.querySelector('#reset-streaming-btn') as HTMLButtonElement;
+  
+  if (streamingDemo && startBtn && resetBtn) {
+    const sampleText = "The Lakers are showing incredible resilience tonight, with LeBron James leading the charge. This is exactly the kind of performance that championship teams are made of. The way they're executing on both ends of the floor demonstrates championship-level basketball.";
+    let isStreaming = false;
+    let currentIndex = 0;
+    let streamInterval: ReturnType<typeof setInterval>;
+    
+    // Start streaming function
+    const startStreaming = () => {
+      if (isStreaming) return;
+      
+      isStreaming = true;
+      currentIndex = 0;
+      startBtn.textContent = 'Streaming...';
+      startBtn.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+      startBtn.disabled = true;
+      
+      // Clear previous content
+      streamingDemo.innerHTML = '';
+      
+      // Create streaming effect (10% faster, natural typing style)
+      streamInterval = setInterval(() => {
+        if (currentIndex < sampleText.length) {
+          const char = sampleText[currentIndex];
+          const charSpan = document.createElement('span');
+          charSpan.textContent = char === ' ' ? '\u00A0' : char;
+          charSpan.style.cssText = `
+            display: inline-block;
+            opacity: 1;
+            transform: none;
+            animation: charNatural 0.02s ease-out forwards;
+            animation-delay: ${currentIndex * 0.045}s;
+          `;
+          streamingDemo.appendChild(charSpan);
+          currentIndex++;
+        } else {
+          // Streaming complete
+          clearInterval(streamInterval);
+          isStreaming = false;
+          startBtn.textContent = 'Start Streaming';
+          startBtn.style.background = 'linear-gradient(135deg, #4a90e2 0%, #357abd 100%)';
+          startBtn.disabled = false;
+          
+          // Add completion indicator
+          const completionDiv = document.createElement('div');
+          completionDiv.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: flex-end; margin-top: 12px; color: #28a745;">
+              <span style="margin-right: 8px;">✓</span>
+              <span style="font-size: 14px; font-weight: 500;">Streaming Complete</span>
+            </div>
+          `;
+          streamingDemo.appendChild(completionDiv);
+        }
+      }, 45); // ~22 characters per second (10% faster) for natural typing effect
+    };
+    
+    // Reset streaming function
+    const resetStreaming = () => {
+      if (isStreaming) {
+        clearInterval(streamInterval);
+        isStreaming = false;
+      }
+      
+      currentIndex = 0;
+      startBtn.textContent = 'Start Streaming';
+      startBtn.style.background = 'linear-gradient(135deg, #4a90e2 0%, #357abd 100%)';
+      startBtn.disabled = false;
+      
+      streamingDemo.innerHTML = '<div style="color: #666; font-style: italic;">Click "Start Streaming" to test character-by-character animation...</div>';
+    };
+    
+    // Add event listeners
+    startBtn.addEventListener('click', startStreaming);
+    resetBtn.addEventListener('click', resetStreaming);
+    
+    // Add hover effects for buttons
+    startBtn.addEventListener('mouseenter', () => {
+      if (!startBtn.disabled) {
+        startBtn.style.transform = 'scale(1.05)';
+        startBtn.style.boxShadow = '0 4px 12px rgba(74, 144, 226, 0.3)';
+      }
+    });
+    
+    startBtn.addEventListener('mouseleave', () => {
+      startBtn.style.transform = 'scale(1)';
+      startBtn.style.boxShadow = 'none';
+    });
+    
+    resetBtn.addEventListener('mouseenter', () => {
+      resetBtn.style.transform = 'scale(1.05)';
+      resetBtn.style.boxShadow = '0 4px 12px rgba(108, 117, 125, 0.3)';
+    });
+    
+    resetBtn.addEventListener('mouseleave', () => {
+      resetBtn.style.transform = 'scale(1)';
+      resetBtn.style.boxShadow = 'none';
+    });
+  }
   
   header.appendChild(title);
   header.appendChild(closeBtn);

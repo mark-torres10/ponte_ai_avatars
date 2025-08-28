@@ -63,8 +63,11 @@ export const StreamingText: React.FC<StreamingTextProps> = ({
   // Memoized character array for performance
   const characters = useMemo(() => text.split(''), [text]);
   
-  // Calculate timing for smooth 60fps streaming
-  const characterDelay = useMemo(() => 1000 / speed, [speed]);
+  // Calculate timing for smooth 60fps streaming (10% faster)
+  const characterDelay = useMemo(() => {
+    const baseDelay = 1000 / speed;
+    return Math.floor(baseDelay * 0.9); // 10% faster
+  }, [speed]);
 
   // Streaming effect using requestAnimationFrame for optimal performance
   const streamText = useCallback(() => {
@@ -109,15 +112,19 @@ export const StreamingText: React.FC<StreamingTextProps> = ({
     });
   }, [text, speed]);
 
-  // Character animation variants for smooth 60fps performance
+  // Character animation variants for natural typing effect (smooth 60fps performance)
   const characterVariants = {
-    hidden: { opacity: 0, y: 10, scale: 0.8 },
+    hidden: { 
+      opacity: 1, // No fade - characters appear naturally
+      x: 0, // No offset - natural position
+      scale: 1 // No scale - natural size
+    },
     visible: { 
-      opacity: 1, 
-      y: 0, 
-      scale: 1,
+      opacity: 1, // Stay visible
+      x: 0, // Natural position
+      scale: 1, // Natural size
       transition: {
-        duration: 0.1
+        duration: 0.02 // Very fast, almost instant for natural typing feel
       }
     }
   };
