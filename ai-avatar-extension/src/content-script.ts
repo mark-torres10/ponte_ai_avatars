@@ -301,48 +301,41 @@ function extractGameScores(): { home: number; away: number } | undefined {
 // Extract game time and quarter information
 function extractGameTime(): { quarter: string; timeRemaining: string } | undefined {
   try {
-    // Strategy 1: Look for quarter information in the main scoreboard
-    const quarterElements = document.querySelectorAll('[class*="quarter"], [class*="period"], [class*="time"]');
+    // Strategy 1: Look for game status in the main scoreboard area
+    const statusElements = document.querySelectorAll('[class*="status"], [class*="game-status"]');
     
-    for (const element of quarterElements) {
+    for (const element of statusElements) {
       const text = element.textContent?.trim();
       if (text) {
-        // Look for patterns like "Final", "Q1", "Q2", "OT", etc.
-        if (text.match(/^(Final|Q\d+|OT|End|Live)/i)) {
+        // Look for patterns like "Final", "Live", "Q1", "Q2", "OT", etc.
+        if (text.match(/^(Final|Live|Q\d+|OT|End|Start)/i)) {
           const quarter = text;
           const timeRemaining = text === 'Final' || text === 'End' ? '0:00' : '';
           
-          console.log('Game time extracted:', { quarter, timeRemaining });
+          console.log('Game time extracted from status:', { quarter, timeRemaining });
           return { quarter, timeRemaining };
         }
       }
     }
     
-    // Strategy 2: Look for quarter information in the boxscore tables
-    const tableHeaders = document.querySelectorAll('th');
-    for (const header of tableHeaders) {
-      const text = header.textContent?.trim();
-      if (text && text.match(/^(1|2|3|4|T|OT)/)) {
-        // This looks like a quarter header
-        const quarter = text;
-        const timeRemaining = '';
+    // Strategy 2: Look for game status in the main content area
+    const mainContent = document.querySelector('main');
+    if (mainContent) {
+      const statusMatch = mainContent.textContent?.match(/(Final|Live|Q\d+|OT|End|Start)/i);
+      if (statusMatch) {
+        const quarter = statusMatch[1];
+        const timeRemaining = quarter === 'Final' || quarter === 'End' ? '0:00' : '';
         
-        console.log('Game time extracted from table headers:', { quarter, timeRemaining });
+        console.log('Game time extracted from main content:', { quarter, timeRemaining });
         return { quarter, timeRemaining };
       }
     }
     
-    // Strategy 3: Look for game status in the page content
-    const statusElements = document.querySelectorAll('div, span');
-    for (const element of statusElements) {
-      const text = element.textContent?.trim();
-      if (text && text.match(/^(Final|Live|Q\d+|OT|End)/i)) {
-        const quarter = text;
-        const timeRemaining = text === 'Final' || text === 'End' ? '0:00' : '';
-        
-        console.log('Game time extracted from content:', { quarter, timeRemaining });
-        return { quarter, timeRemaining };
-      }
+    // Strategy 3: Look for status in the page title
+    const pageTitle = document.title;
+    if (pageTitle.includes('Final')) {
+      console.log('Game time extracted from title:', { quarter: 'Final', timeRemaining: '0:00' });
+      return { quarter: 'Final', timeRemaining: '0:00' };
     }
     
   } catch (error) {
@@ -392,123 +385,153 @@ function extractGameStatus(): string | undefined {
 
 // Extract venue and location information
 function extractVenueInfo(): { venue?: string; location?: string } {
+  let venue: string | undefined;
+  let location: string | undefined;
+
   try {
-    let venue: string | undefined;
-    let location: string | undefined;
-    
-    // Strategy 1: Look for venue information in the "Game Information" section
-    const gameInfoSection = Array.from(document.querySelectorAll('h3')).find(h3 => 
-      h3.textContent?.includes('Game Information')
+    // Strategy 1: Look for Game Information section with specific heading
+    const gameInfoHeading = Array.from(document.querySelectorAll('h3')).find(
+      heading => heading.textContent?.trim() === 'Game Information'
     );
-    
-    if (gameInfoSection) {
-      const gameInfoContent = gameInfoSection.nextElementSibling;
-      if (gameInfoContent) {
-        // Look for venue name
-        const venueElements = gameInfoContent.querySelectorAll('li');
-        for (const element of venueElements) {
-          const text = element.textContent?.trim();
-          if (text && (text.includes('Center') || text.includes('Arena') || text.includes('Stadium'))) {
+
+    if (gameInfoHeading) {
+      const gameInfoSection = gameInfoHeading.closest('div') || gameInfoHeading.parentElement;
+      if (gameInfoSection) {
+        // Look for venue name (usually first list item)
+        const listItems = gameInfoSection.querySelectorAll('li');
+        for (const item of listItems) {
+          const text = item.textContent?.trim();
+          if (text) {
+            // Venue pattern: contains "Center", "Arena", "Stadium", etc.
+            if (!venue && (text.includes('Center') || text.includes('Arena') || text.includes('Stadium'))) {
+              venue = text;
+              console.log('Venue extracted from Game Information:', venue);
+            }
+            // Location pattern: City, State format
+            else if (!location && text.includes(',') && text.length < 50) {
+              location = text;
+              console.log('Location extracted from Game Information:', location);
+            }
+          }
+        }
+      }
+    }
+
+    // Strategy 2: Fallback to broader search if Game Information section not found
+    if (!venue || !location) {
+      const allListItems = document.querySelectorAll('li');
+      for (const item of allListItems) {
+        const text = item.textContent?.trim();
+        if (text) {
+          if (!venue && (text.includes('Center') || text.includes('Arena') || text.includes('Stadium'))) {
             venue = text;
-            console.log('Venue extracted:', venue);
-            break;
+            console.log('Venue extracted from fallback search:', venue);
           }
-        }
-        
-        // Look for location (city, state)
-        for (const element of venueElements) {
-          const text = element.textContent?.trim();
-          if (text && text.includes(',')) {
+          else if (!location && text.includes(',') && text.length < 50 && !text.includes('Attendance')) {
             location = text;
-            console.log('Location extracted:', location);
-            break;
+            console.log('Location extracted from fallback search:', location);
           }
         }
       }
     }
-    
-    // Strategy 2: Look for venue in the page content
-    if (!venue) {
-      const venueElements = document.querySelectorAll('div, span');
-      for (const element of venueElements) {
-        const text = element.textContent?.trim();
-        if (text && (text.includes('Center') || text.includes('Arena') || text.includes('Stadium'))) {
-          venue = text;
-          console.log('Venue extracted from content:', venue);
-          break;
-        }
-      }
-    }
-    
-    return { venue, location };
-    
+
   } catch (error) {
-    console.log('Venue info extraction failed:', error);
-    return {};
+    console.log('Error extracting venue/location:', error);
   }
+
+  return { venue, location };
 }
 
 // Extract game metadata (date, attendance, officials)
 function extractGameMetadata(): { date?: string; attendance?: string; officials?: string[] } {
+  let date: string | undefined;
+  let attendance: string | undefined;
+  let officials: string[] = [];
+
   try {
-    let date: string | undefined;
-    let attendance: string | undefined;
-    let officials: string[] = [];
-    
-    // Strategy 1: Look for metadata in the "Game Information" section
-    const gameInfoSection = Array.from(document.querySelectorAll('h3')).find(h3 => 
-      h3.textContent?.includes('Game Information')
+    // Strategy 1: Look for Game Information section
+    const gameInfoHeading = Array.from(document.querySelectorAll('h3')).find(
+      heading => heading.textContent?.trim() === 'Game Information'
     );
-    
-    if (gameInfoSection) {
-      const gameInfoContent = gameInfoSection.nextElementSibling;
-      if (gameInfoContent) {
-        const metadataElements = gameInfoContent.querySelectorAll('li');
+
+    if (gameInfoHeading) {
+      const gameInfoSection = gameInfoHeading.closest('div') || gameInfoHeading.parentElement;
+      if (gameInfoSection) {
+        const listItems = gameInfoSection.querySelectorAll('li');
         
-        for (const element of metadataElements) {
-          const text = element.textContent?.trim();
+        for (const item of listItems) {
+          const text = item.textContent?.trim();
           if (text) {
-            // Extract date
-            if (text.includes(',') && text.includes('202') && !date) {
+            // Date pattern: contains month, day, year
+            if (!date && text.match(/\w+ \d{1,2},? \d{4}/)) {
               date = text;
-              console.log('Date extracted:', date);
+              console.log('Date extracted from Game Information:', date);
             }
-            
-            // Extract attendance
-            if (text.includes('Attendance:') && !attendance) {
-              attendance = text.replace('Attendance:', '').trim();
-              console.log('Attendance extracted:', attendance);
+            // Attendance pattern: "Attendance: X"
+            else if (!attendance && text.includes('Attendance:')) {
+              const match = text.match(/Attendance:\s*([\d,]+)/);
+              if (match) {
+                attendance = match[1];
+                console.log('Attendance extracted from Game Information:', attendance);
+              }
             }
-            
-            // Extract officials
-            if (text.includes('Referees:') || text.includes(',')) {
-              const officialsText = text.replace('Referees:', '').trim();
-              if (officialsText && officialsText.includes(',')) {
-                officials = officialsText.split(',').map(official => official.trim());
-                console.log('Officials extracted:', officials);
+            // Officials pattern: individual referee names
+            else if (text.includes(',') && text.length < 30 && !text.includes('Attendance')) {
+              // Skip the "Referees:" header
+              if (!text.includes('Referees:')) {
+                // Split by comma and clean up each name
+                const names = text.split(',').map(name => name.trim()).filter(name => name.length > 0);
+                officials.push(...names);
+                console.log('Officials extracted from Game Information:', names);
               }
             }
           }
         }
       }
     }
-    
-    // Strategy 2: Look for date in the page title
+
+    // Strategy 2: Fallback to page title for date
     if (!date) {
       const pageTitle = document.title;
       const dateMatch = pageTitle.match(/\(([^)]+)\)/);
       if (dateMatch) {
         date = dateMatch[1];
-        console.log('Date extracted from title:', date);
+        console.log('Date extracted from page title:', date);
       }
     }
-    
-    return { date, attendance, officials };
-    
+
+    // Strategy 3: Fallback to broader search for attendance and officials
+    if (!attendance || officials.length === 0) {
+      const allListItems = document.querySelectorAll('li');
+      for (const item of allListItems) {
+        const text = item.textContent?.trim();
+        if (text) {
+          if (!attendance && text.includes('Attendance:')) {
+            const match = text.match(/Attendance:\s*([\d,]+)/);
+            if (match) {
+              attendance = match[1];
+              console.log('Attendance extracted from fallback search:', attendance);
+            }
+          }
+          else if (officials.length === 0 && text.includes(',') && text.length < 30 && !text.includes('Attendance')) {
+            if (!text.includes('Referees:')) {
+              const names = text.split(',').map(name => name.trim()).filter(name => name.length > 0);
+              officials.push(...names);
+              console.log('Officials extracted from fallback search:', names);
+            }
+          }
+        }
+      }
+    }
+
+    // Clean up officials array - remove duplicates and empty strings
+    officials = [...new Set(officials)].filter(name => name.length > 0);
+
   } catch (error) {
-    console.log('Game metadata extraction failed:', error);
-    return {};
+    console.log('Error extracting game metadata:', error);
   }
+
+  return { date, attendance, officials };
 }
 
 // Determine which extraction method was successful
