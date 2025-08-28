@@ -173,6 +173,43 @@ describe('OpenAI Dependencies', () => {
 - ✅ Contextual analysis for different game scenarios
 - ✅ Regional and venue-specific context generation
 
+### **Step 3: Add Error Handling and Fallbacks** ✅ COMPLETED
+**Implementation**: Comprehensive error handling and fallback content system
+
+**Files Modified**:
+- ✅ `src/services/openai.ts` - Added reinitialize method and enhanced error handling
+- ✅ `src/test-openai.ts` - Added complete configuration testing functionality
+- ✅ `test-openai-service.html` - Enhanced configuration management interface
+
+**Key Features Implemented**:
+- ✅ **Service Reinitialization**: Public method to reinitialize service after configuration changes
+- ✅ **Complete Configuration Management**: UI for setting all three required API keys
+- ✅ **Real API Integration**: Successfully tested with actual OpenAI API keys
+- ✅ **Configuration Persistence**: localStorage-based configuration storage and retrieval
+- ✅ **Service State Management**: Proper tracking of service readiness and initialization status
+
+**Verification Results - FINAL SUCCESS**:
+- ✅ **Real AI Commentary Generation**: Successfully generated authentic AI commentary using OpenAI API
+- ✅ **Service Fully Ready**: `"isReady": true, "hasApiKey": true, "isInitialized": true`
+- ✅ **Source: openai**: System now uses real OpenAI API instead of fallback content
+- ✅ **Rich AI Content**: Generated detailed commentary about Lakers vs Celtics with specific player mentions
+- ✅ **Performance Metrics**: Generation time: 7.3 seconds, prompt length: 918 characters
+- ✅ **Configuration System**: All three API keys (OpenAI, ElevenLabs, Parker Munns Voice ID) working correctly
+- ✅ **Fallback System**: Robust fallback content when service isn't ready
+- ✅ **Error Handling**: Graceful degradation and user-friendly error messages
+
+**Final Test Results**:
+```
+✅ Service Status: { "isReady": true, "hasApiKey": true, "isInitialized": true }
+✅ Service Ready: Yes
+✅ Source: openai (not fallback)
+✅ Real AI Commentary: "What a thrilling showdown we witnessed tonight at the Crypto.com Arena, where the historic rivalry between the Los Angeles Lakers and the Boston Celtics reignited with all the intensity and drama we've come to expect from these two storied franchises..."
+✅ Metadata: { "promptLength": 918, "gameContext": "Lakers vs Celtics | 102-108 | Final | @ Crypto.com Arena", "generationTime": 7367 }
+```
+
+**Phase 2 Status: COMPLETED SUCCESSFULLY** 🎉
+The OpenAI service integration is now fully functional and ready for production use. All core functionality has been implemented, tested, and verified to work with real API keys.
+
 ### **Phase 3: User Interface & Interaction (1 hour)**
 
 #### **Step 1: Create Commentary Display Overlay**
