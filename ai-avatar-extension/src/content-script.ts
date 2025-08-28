@@ -1,10 +1,41 @@
-import { ExtensionMessage, ContentScriptState, EnhancedESPNPageInfo } from './types';
+import { ExtensionMessage, ContentScriptState, EnhancedESPNPageInfo, CommentaryEntry, CommentaryStyle } from './types';
+import { generateSportsCommentary, reinitializeService } from './services/openai';
+import { saveEnvironmentConfig, loadEnvironmentConfig } from './utils/config';
+import { API_KEYS } from './config/keys';
 
 // Content script state
 const state: ContentScriptState = {
   isActive: false,
   pageInfo: null,
-  avatarVisible: false
+  avatarVisible: false,
+  // Commentary-related state
+  commentaryGenerating: false,
+  commentaryOverlay: null,
+  commentaryContent: null,
+  lastGeneratedAt: null,
+  loadingState: 'idle',
+  // Enhanced state management for Phase 4
+  commentaryHistory: [],
+  userPreferences: {
+    preferredCommentaryStyle: 'post-game',
+    autoGenerateOnPageLoad: false,
+    enableVoiceSynthesis: false,
+    commentaryLength: 'medium',
+    showPerformanceMetrics: false
+  },
+  performanceMetrics: {
+    totalCommentariesGenerated: 0,
+    averageGenerationTime: 0,
+    successRate: 100,
+    apiCallCount: 0,
+    fallbackUsageCount: 0
+  },
+  lastPageUrl: null,
+  sessionStartTime: new Date(),
+  // Dynamic regeneration tracking
+  lastCommentaryStyle: null,
+  styleChangedSinceLastGeneration: false,
+  regenerationAvailable: false
 };
 
 // ESPN page content analysis
@@ -523,12 +554,534 @@ function createAvatarPlaceholder(): HTMLElement {
     avatar.style.transform = 'scale(1)';
   });
   
-  // Add click handler for future functionality
-  avatar.addEventListener('click', () => {
-    console.log('Avatar clicked - future functionality will be added');
+  // Add click handler for commentary generation
+  avatar.addEventListener('click', async () => {
+    if (state.commentaryGenerating) {
+      console.log('Commentary generation already in progress');
+      return;
+    }
+    
+    console.log('Avatar clicked, generating commentary');
+    
+    // Update state
+    state.commentaryGenerating = true;
+    state.loadingState = 'loading';
+    
+    // Show loading state on avatar
+    avatar.style.transform = 'scale(1.1)';
+    avatar.style.filter = 'brightness(1.2)';
+    
+    try {
+      // Show overlay with loading state
+      showCommentaryOverlay();
+      
+      // Show loading indicator
+      if (state.commentaryOverlay) {
+        const loadingIndicator = state.commentaryOverlay.querySelector('.loading-indicator');
+        const commentaryContent = state.commentaryOverlay.querySelector('.commentary-content');
+        
+        if (loadingIndicator) (loadingIndicator as HTMLElement).style.display = 'block';
+        if (commentaryContent) (commentaryContent as HTMLElement).style.display = 'none';
+      }
+      
+      // Generate commentary using OpenAI service
+      const commentary = await generateCommentary();
+      
+      // Update state
+      state.commentaryContent = commentary;
+      state.lastGeneratedAt = new Date();
+      state.loadingState = 'success';
+      
+      // Display commentary
+      displayCommentary(commentary);
+      
+      console.log('Commentary generated and displayed successfully');
+      
+    } catch (error) {
+      console.error('Error generating commentary:', error);
+      
+      // Update state
+      state.loadingState = 'error';
+      
+      // Show error message
+      displayError('Failed to generate commentary. Please try again.');
+      
+    } finally {
+      // Reset avatar state
+      avatar.style.transform = 'scale(1)';
+      avatar.style.filter = 'brightness(1)';
+      
+      // Update state
+      state.commentaryGenerating = false;
+    }
   });
   
   return avatar;
+}
+
+// Create commentary display overlay
+function createCommentaryOverlay(): HTMLElement {
+  const overlay = document.createElement('div');
+  overlay.id = 'ai-avatar-commentary';
+  overlay.className = 'commentary-overlay sports-themed responsive animated';
+  
+  // Set initial styles
+  overlay.style.cssText = `
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 90% !important;
+    max-width: 600px !important;
+    max-height: 80vh !important;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+    z-index: 2147483646 !important;
+    display: none !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    border: 2px solid #e9ecef !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  `;
+  
+  // Create header
+  const header = document.createElement('div');
+  header.className = 'commentary-header';
+  header.style.cssText = `
+    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%) !important;
+    color: white !important;
+    padding: 20px 24px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+  `;
+  
+  const title = document.createElement('h3');
+  title.textContent = '🏀 AI Sports Commentary';
+  title.style.cssText = `
+    margin: 0 !important;
+    font-size: 20px !important;
+    font-weight: 600 !important;
+    color: white !important;
+  `;
+  
+  // Add settings button
+  const settingsBtn = document.createElement('button');
+  settingsBtn.innerHTML = '⚙️';
+  settingsBtn.className = 'settings-button';
+  settingsBtn.style.cssText = `
+    background: rgba(255, 255, 255, 0.2) !important;
+    border: none !important;
+    color: white !important;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important;
+    cursor: pointer !important;
+    font-size: 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: background-color 0.2s ease !important;
+    margin-right: 10px !important;
+  `;
+  
+  settingsBtn.addEventListener('mouseenter', () => {
+    settingsBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.3) !important';
+  });
+  
+  settingsBtn.addEventListener('mouseleave', () => {
+    settingsBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.2) !important';
+  });
+  
+  settingsBtn.addEventListener('click', () => {
+    toggleSettingsPanel();
+  });
+  
+  const closeBtn = document.createElement('button');
+  closeBtn.innerHTML = '✕';
+  closeBtn.className = 'close-button';
+  closeBtn.style.cssText = `
+    background: rgba(255, 255, 255, 0.2) !important;
+    border: none !important;
+    color: white !important;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important;
+    cursor: pointer !important;
+    font-size: 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: background-color 0.2s ease !important;
+  `;
+  
+  closeBtn.addEventListener('mouseenter', () => {
+    closeBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.3) !important';
+  });
+  
+  closeBtn.addEventListener('mouseleave', () => {
+    closeBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.2) !important';
+  });
+  
+  closeBtn.addEventListener('click', () => {
+    hideCommentaryOverlay();
+  });
+  
+  header.appendChild(title);
+  header.appendChild(settingsBtn);
+  header.appendChild(closeBtn);
+  
+  // Create content area
+  const contentArea = document.createElement('div');
+  contentArea.className = 'commentary-content-area';
+  contentArea.style.cssText = `
+    padding: 24px !important;
+    flex: 1 !important;
+    overflow-y: auto !important;
+    background: white !important;
+  `;
+  
+  // Create loading indicator
+  const loadingIndicator = document.createElement('div');
+  loadingIndicator.className = 'loading-indicator';
+  loadingIndicator.style.cssText = `
+    display: none !important;
+    text-align: center !important;
+    padding: 40px 20px !important;
+  `;
+  
+  const spinner = document.createElement('div');
+  spinner.className = 'loading-spinner';
+  spinner.style.cssText = `
+    width: 40px !important;
+    height: 40px !important;
+    border: 4px solid #f3f3f3 !important;
+    border-top: 4px solid #ff6b35 !important;
+    border-radius: 50% !important;
+    animation: spin 1s linear infinite !important;
+    margin: 0 auto 20px !important;
+  `;
+  
+  const loadingText = document.createElement('p');
+  loadingText.textContent = 'Generating sports commentary...';
+  loadingText.style.cssText = `
+    margin: 0 !important;
+    color: #6c757d !important;
+    font-size: 16px !important;
+  `;
+  
+  loadingIndicator.appendChild(spinner);
+  loadingIndicator.appendChild(loadingText);
+  
+  // Create commentary content
+  const commentaryContent = document.createElement('div');
+  commentaryContent.className = 'commentary-content';
+  commentaryContent.style.cssText = `
+    display: none !important;
+    line-height: 1.6 !important;
+    color: #2c3e50 !important;
+    font-size: 16px !important;
+  `;
+  
+  contentArea.appendChild(loadingIndicator);
+  contentArea.appendChild(commentaryContent);
+  
+  // Create footer
+  const footer = document.createElement('div');
+  footer.className = 'commentary-footer';
+  footer.style.cssText = `
+    background: #f8f9fa !important;
+    padding: 16px 24px !important;
+    border-top: 1px solid #e9ecef !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    font-size: 14px !important;
+  `;
+  
+  const powerText = document.createElement('span');
+  powerText.textContent = 'Powered by AI - Real-time sports analysis';
+  powerText.style.cssText = `
+    color: #6c757d !important;
+  `;
+  
+  const performanceText = document.createElement('span');
+  performanceText.className = 'performance-indicator';
+  performanceText.style.cssText = `
+    color: #28a745 !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+  `;
+  performanceText.textContent = `⚡ ${state.performanceMetrics.totalCommentariesGenerated} generated`;
+  
+  performanceText.addEventListener('click', () => {
+    toggleSettingsPanel();
+  });
+  
+  footer.appendChild(powerText);
+  footer.appendChild(performanceText);
+  
+  // Assemble overlay
+  overlay.appendChild(header);
+  overlay.appendChild(contentArea);
+  overlay.appendChild(footer);
+  
+  // Add click outside to close
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      hideCommentaryOverlay();
+    }
+  });
+  
+  return overlay;
+}
+
+// Show commentary overlay
+function showCommentaryOverlay(): void {
+  if (!state.commentaryOverlay) {
+    state.commentaryOverlay = createCommentaryOverlay();
+    document.body.appendChild(state.commentaryOverlay);
+  }
+  
+  state.commentaryOverlay.style.display = 'flex';
+  state.commentaryOverlay.style.opacity = '0';
+  
+  // Trigger entrance animation
+  requestAnimationFrame(() => {
+    if (state.commentaryOverlay) {
+      state.commentaryOverlay.style.transition = 'opacity 0.3s ease-in-out';
+      state.commentaryOverlay.style.opacity = '1';
+    }
+  });
+}
+
+// Hide commentary overlay
+function hideCommentaryOverlay(): void {
+  if (state.commentaryOverlay) {
+    state.commentaryOverlay.style.transition = 'opacity 0.3s ease-in-out';
+    state.commentaryOverlay.style.opacity = '0';
+    
+    setTimeout(() => {
+      if (state.commentaryOverlay) {
+        state.commentaryOverlay.style.display = 'none';
+      }
+    }, 300);
+  }
+}
+
+// Generate commentary using OpenAI service
+async function generateCommentary(): Promise<string> {
+  if (!state.pageInfo) {
+    throw new Error('No page information available');
+  }
+  
+  const startTime = Date.now();
+  
+  // Convert page info to game data format expected by OpenAI service
+  const gameData = {
+    teamNames: state.pageInfo.teamNames,
+    scores: state.pageInfo.scores,
+    venue: state.pageInfo.venue,
+    gameStatus: state.pageInfo.gameStatus,
+    gameTime: state.pageInfo.gameTime,
+    location: state.pageInfo.location,
+    metadata: state.pageInfo.metadata,
+    // Add explicit home/away team information for accurate winner calculation
+    homeTeam: state.pageInfo.homeTeam,
+    awayTeam: state.pageInfo.awayTeam,
+    context: {
+      rivalry: false, // Could be enhanced later
+      playoffImplications: false,
+      seasonSeries: undefined,
+      keyPlayers: [],
+      recentForm: []
+    }
+  };
+  
+  try {
+    // Update loading state
+    state.loadingState = 'loading';
+    state.commentaryGenerating = true;
+    
+    // Update performance metrics
+    state.performanceMetrics.apiCallCount++;
+    
+    // Generate commentary with current style preference
+    const result = await generateSportsCommentary(gameData, state.userPreferences.preferredCommentaryStyle);
+    
+    const generationTime = Date.now() - startTime;
+    
+    if (result.success && result.commentary) {
+      // Track successful generation
+      trackCommentarySuccess(result.commentary, generationTime, 'openai');
+      
+      // Update regeneration state
+      state.lastCommentaryStyle = state.userPreferences.preferredCommentaryStyle;
+      state.styleChangedSinceLastGeneration = false;
+      state.regenerationAvailable = false;
+      
+      // Update loading state
+      state.loadingState = 'success';
+      state.commentaryGenerating = false;
+      
+      console.log(`🎯 [COMMENTARY] Generated ${state.userPreferences.preferredCommentaryStyle} commentary in ${generationTime}ms`);
+      
+      return result.commentary;
+    } else if (result.fallbackContent) {
+      // Track fallback usage
+      trackCommentaryFallback(result.fallbackContent, generationTime);
+      
+      // Update loading state
+      state.loadingState = 'success';
+      state.commentaryGenerating = false;
+      
+      console.log(`🔄 [COMMENTARY] Using fallback content in ${generationTime}ms`);
+      
+      return result.fallbackContent;
+    } else {
+      throw new Error('No commentary content generated');
+    }
+  } catch (error) {
+    // Track error
+    const generationTime = Date.now() - startTime;
+    trackCommentaryError(error as Error, generationTime);
+    
+    // Update loading state
+    state.loadingState = 'error';
+    state.commentaryGenerating = false;
+    
+    console.error('❌ [COMMENTARY] Error generating commentary:', error);
+    
+    // Return fallback content
+    return generateFallbackCommentary(state.userPreferences.preferredCommentaryStyle);
+  }
+}
+
+// Generate fallback commentary content
+function generateFallbackCommentary(style: CommentaryStyle): string {
+  const fallbacks = {
+    'post-game': 'What an incredible game we witnessed! The teams gave it their all, showcasing the very best of basketball. The energy in the arena was electric, and the players delivered a performance that will be remembered for seasons to come.',
+    'play-by-play': 'The action was non-stop from tip-off to the final buzzer. Every possession mattered, every shot counted, and the intensity never let up. This was basketball at its finest.',
+    'analytical': 'From a strategic perspective, this game demonstrated excellent execution on both sides. The coaching decisions, player rotations, and tactical adjustments all played crucial roles in the outcome.',
+    'color-commentary': 'The atmosphere here tonight was absolutely electric! You could feel the passion of the fans, the determination of the players, and the sheer excitement of the game. What a night for basketball!',
+    'pre-game': 'As we prepare for tip-off, the anticipation is building. Both teams are ready to give their all, and the fans are in for an incredible show. This is going to be a game to remember.',
+    'halftime': 'What we\'ve seen so far has been absolutely thrilling. The teams are evenly matched, the energy is high, and the second half promises to be even more exciting. Stay tuned!'
+  };
+  
+  return fallbacks[style] || fallbacks['post-game'];
+}
+
+// Display commentary in overlay
+function displayCommentary(commentary: string): void {
+  if (!state.commentaryOverlay) return;
+  
+  const loadingIndicator = state.commentaryOverlay.querySelector('.loading-indicator');
+  const commentaryContent = state.commentaryOverlay.querySelector('.commentary-content');
+  
+  if (loadingIndicator) {
+    (loadingIndicator as HTMLElement).style.display = 'none';
+  }
+  
+  if (commentaryContent) {
+    (commentaryContent as HTMLElement).style.display = 'block';
+    (commentaryContent as HTMLElement).innerHTML = formatCommentaryText(commentary);
+  }
+}
+
+// Display error message in overlay
+function displayError(message: string): void {
+  if (!state.commentaryOverlay) return;
+  
+  const loadingIndicator = state.commentaryOverlay.querySelector('.loading-indicator');
+  const commentaryContent = state.commentaryOverlay.querySelector('.commentary-content');
+  
+  if (loadingIndicator) {
+    (loadingIndicator as HTMLElement).style.display = 'none';
+  }
+  
+  if (commentaryContent) {
+    (commentaryContent as HTMLElement).style.display = 'block';
+    (commentaryContent as HTMLElement).innerHTML = `
+      <div style="text-align: center; color: #dc3545; padding: 20px;">
+        <h4 style="margin: 0 0 10px 0; color: #dc3545;">❌ Error</h4>
+        <p style="margin: 0; color: #6c757d;">${message}</p>
+      </div>
+    `;
+  }
+}
+
+// Format commentary text with proper line breaks
+function formatCommentaryText(text: string): string {
+  // Split by sentences and add line breaks
+  const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+  return sentences.map(sentence => sentence.trim()).join('.<br><br>') + '.';
+}
+
+// Global function for testing - set configuration from console
+(window as any).setExtensionConfig = async function(openaiKey: string, elevenlabsKey: string, voiceId: string) {
+  console.log('🔧 [EXTENSION] Setting configuration...');
+  
+  try {
+    await saveEnvironmentConfig({
+      openaiApiKey: openaiKey,
+      elevenlabsApiKey: elevenlabsKey,
+      parkerMunnsVoiceId: voiceId
+    });
+    
+    console.log('✅ [EXTENSION] Configuration saved, reinitializing service...');
+    await reinitializeService();
+    console.log('✅ [EXTENSION] Service reinitialized successfully');
+    
+    return { success: true, message: 'Configuration updated successfully' };
+  } catch (error) {
+    console.error('❌ [EXTENSION] Error setting configuration:', error);
+    return { success: false, error: (error as Error).message };
+  }
+};
+
+// Global function for testing - get current configuration
+(window as any).getExtensionConfig = async function() {
+  try {
+    const config = await loadEnvironmentConfig();
+    console.log('🔍 [EXTENSION] Current configuration:', config);
+    return config;
+  } catch (error) {
+    console.error('❌ [EXTENSION] Error getting configuration:', error);
+    return null;
+  }
+};
+
+// Initialize configuration with development keys
+async function initializeConfiguration() {
+  console.log('🔧 [EXTENSION] Initializing configuration with development keys...');
+  
+  try {
+    // Check if configuration is already set
+    const currentConfig = await loadEnvironmentConfig();
+    
+    if (currentConfig.openaiApiKey && currentConfig.elevenlabsApiKey && currentConfig.parkerMunnsVoiceId) {
+      console.log('✅ [EXTENSION] Configuration already set, skipping initialization');
+      return;
+    }
+    
+    // Set the development configuration
+    await saveEnvironmentConfig({
+      openaiApiKey: API_KEYS.OPENAI_API_KEY,
+      elevenlabsApiKey: API_KEYS.ELEVENLABS_API_KEY,
+      parkerMunnsVoiceId: API_KEYS.ELEVENLABS_PARKER_MUNNS_VOICE_ID
+    });
+    
+    console.log('✅ [EXTENSION] Development configuration set successfully');
+    
+    // Reinitialize the OpenAI service with the new configuration
+    await reinitializeService();
+    console.log('✅ [EXTENSION] OpenAI service reinitialized with development keys');
+    
+  } catch (error) {
+    console.error('❌ [EXTENSION] Error initializing configuration:', error);
+  }
 }
 
 // Initialize content script
@@ -543,6 +1096,12 @@ function initializeContentScript() {
   state.isActive = true;
   
   console.log('AI Avatar: ESPN NBA boxscore page detected:', pageInfo);
+  
+  // Automatically initialize configuration with development keys
+  initializeConfiguration();
+  
+  // Load user preferences
+  loadUserPreferences();
   
   // Create and inject avatar placeholder
   const avatar = createAvatarPlaceholder();
@@ -636,4 +1195,280 @@ window.addEventListener('load', ensureAvatarVisibility);
 
 // Periodically check avatar visibility (fallback)
 setInterval(ensureAvatarVisibility, 2000);
+
+// Track successful commentary generation
+function trackCommentarySuccess(commentary: string, generationTime: number, source: 'openai' | 'fallback') {
+  // Update performance metrics
+  state.performanceMetrics.totalCommentariesGenerated++;
+  state.performanceMetrics.averageGenerationTime = 
+    (state.performanceMetrics.averageGenerationTime * (state.performanceMetrics.totalCommentariesGenerated - 1) + generationTime) / 
+    state.performanceMetrics.totalCommentariesGenerated;
+  
+  // Calculate success rate
+  const totalAttempts = state.performanceMetrics.apiCallCount;
+  const successfulAttempts = state.performanceMetrics.totalCommentariesGenerated;
+  state.performanceMetrics.successRate = (successfulAttempts / totalAttempts) * 100;
+  
+  // Add to commentary history
+  if (state.pageInfo) {
+    const historyEntry: CommentaryEntry = {
+      id: generateId(),
+      timestamp: new Date(),
+      gameInfo: {
+        teams: state.pageInfo.teamNames || [],
+        score: state.pageInfo.scores ? `${state.pageInfo.scores.away}-${state.pageInfo.scores.home}` : undefined,
+        venue: state.pageInfo.venue,
+        gameStatus: state.pageInfo.gameStatus
+      },
+      commentary,
+      style: state.userPreferences.preferredCommentaryStyle,
+      generationTime,
+      source,
+      pageUrl: window.location.href
+    };
+    
+    state.commentaryHistory.push(historyEntry);
+    
+    // Keep only last 50 entries to prevent memory bloat
+    if (state.commentaryHistory.length > 50) {
+      state.commentaryHistory = state.commentaryHistory.slice(-50);
+    }
+  }
+  
+  console.log(`📊 [PERFORMANCE] Commentary generated in ${generationTime}ms (${source})`);
+}
+
+// Track fallback commentary usage
+function trackCommentaryFallback(commentary: string, generationTime: number) {
+  state.performanceMetrics.fallbackUsageCount++;
+  trackCommentarySuccess(commentary, generationTime, 'fallback');
+  console.log(`⚠️ [PERFORMANCE] Fallback commentary used (${generationTime}ms)`);
+}
+
+// Track commentary generation errors
+function trackCommentaryError(error: Error, generationTime: number) {
+  state.performanceMetrics.lastError = error.message;
+  state.performanceMetrics.lastErrorTime = new Date();
+  
+  // Recalculate success rate
+  const totalAttempts = state.performanceMetrics.apiCallCount;
+  const successfulAttempts = state.performanceMetrics.totalCommentariesGenerated;
+  state.performanceMetrics.successRate = (successfulAttempts / totalAttempts) * 100;
+  
+  console.log(`❌ [PERFORMANCE] Commentary generation failed in ${generationTime}ms: ${error.message}`);
+}
+
+// Generate unique ID for history entries
+function generateId(): string {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
+// Toggle settings panel in overlay
+function toggleSettingsPanel() {
+  if (!state.commentaryOverlay) return;
+  
+  const contentArea = state.commentaryOverlay.querySelector('.commentary-content-area');
+  const loadingIndicator = state.commentaryOverlay.querySelector('.loading-indicator');
+  const commentaryContent = state.commentaryOverlay.querySelector('.commentary-content');
+  const settingsPanel = state.commentaryOverlay.querySelector('.settings-panel');
+  
+  if (settingsPanel) {
+    // Remove settings panel entirely and show commentary content
+    settingsPanel.remove();
+    if (commentaryContent) (commentaryContent as HTMLElement).style.display = 'block';
+    console.log('🔧 [SETTINGS] Settings panel closed');
+  } else {
+    // Show settings panel, hide commentary content
+    if (loadingIndicator) (loadingIndicator as HTMLElement).style.display = 'none';
+    if (commentaryContent) (commentaryContent as HTMLElement).style.display = 'none';
+    
+    // Create and show settings panel
+    const panel = createSettingsPanel();
+    contentArea?.appendChild(panel);
+    
+    // IMPORTANT: Show the panel by setting display to block
+    panel.style.display = 'block';
+    
+    console.log('🔧 [SETTINGS] Settings panel opened');
+  }
+}
+
+// Create settings panel
+function createSettingsPanel(): HTMLElement {
+  const settingsPanel = document.createElement('div');
+  settingsPanel.className = 'settings-panel';
+  settingsPanel.style.cssText = `
+    padding: 24px !important;
+    display: none !important;
+  `;
+  
+  const settingsTitle = document.createElement('h4');
+  settingsTitle.textContent = 'Commentary Settings';
+  settingsTitle.style.cssText = `
+    margin: 0 0 20px 0 !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    color: #333 !important;
+  `;
+  
+  // Commentary style selector
+  const styleSection = document.createElement('div');
+  styleSection.style.cssText = `
+    margin-bottom: 24px !important;
+  `;
+  
+  const styleLabel = document.createElement('label');
+  styleLabel.textContent = 'Commentary Style:';
+  styleLabel.style.cssText = `
+    display: block !important;
+    margin-bottom: 8px !important;
+    font-weight: 500 !important;
+    color: #555 !important;
+  `;
+  
+  const styleSelect = document.createElement('select');
+  styleSelect.className = 'style-selector';
+  styleSelect.style.cssText = `
+    width: 100% !important;
+    padding: 10px 12px !important;
+    border: 2px solid #e1e5e9 !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    background: white !important;
+    cursor: pointer !important;
+    transition: border-color 0.2s ease !important;
+  `;
+  
+  // Add commentary style options
+  const styleOptions = [
+    { value: 'post-game', label: 'Post-Game Analysis' },
+    { value: 'play-by-play', label: 'Play-by-Play Commentary' },
+    { value: 'analytical', label: 'Analytical Breakdown' },
+    { value: 'color-commentary', label: 'Color Commentary' },
+    { value: 'pre-game', label: 'Pre-Game Preview' },
+    { value: 'halftime', label: 'Halftime Analysis' }
+  ];
+  
+  styleOptions.forEach(option => {
+    const optionElement = document.createElement('option');
+    optionElement.value = option.value;
+    optionElement.textContent = option.label;
+    if (option.value === state.userPreferences.preferredCommentaryStyle) {
+      optionElement.selected = true;
+    }
+    styleSelect.appendChild(optionElement);
+  });
+  
+  // Live style preview
+  const stylePreview = document.createElement('div');
+  stylePreview.className = 'style-preview';
+  stylePreview.style.cssText = `
+    margin-top: 8px !important;
+    padding: 8px 12px !important;
+    background: #f8f9fa !important;
+    border-radius: 6px !important;
+    font-size: 12px !important;
+    color: #6c757d !important;
+    font-style: italic !important;
+  `;
+  stylePreview.textContent = `Current style: ${styleOptions.find(opt => opt.value === state.userPreferences.preferredCommentaryStyle)?.label}`;
+  
+  // Regenerate button (initially hidden)
+  const regenerateBtn = document.createElement('button');
+  regenerateBtn.className = 'regenerate-btn';
+  regenerateBtn.textContent = '🔄 Regenerate with New Style';
+  regenerateBtn.style.cssText = `
+    width: 100% !important;
+    padding: 12px 16px !important;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    margin-top: 16px !important;
+    transition: all 0.2s ease !important;
+    display: none !important;
+  `;
+  
+  // Style change handler
+  styleSelect.addEventListener('change', (e) => {
+    const newStyle = (e.target as HTMLSelectElement).value as CommentaryStyle;
+    const oldStyle = state.userPreferences.preferredCommentaryStyle;
+    
+    // Update user preferences
+    state.userPreferences.preferredCommentaryStyle = newStyle;
+    
+    // Update live preview
+    stylePreview.textContent = `Current style: ${styleOptions.find(opt => opt.value === newStyle)?.label}`;
+    
+    // Check if style changed since last generation
+    if (state.lastCommentaryStyle && state.lastCommentaryStyle !== newStyle) {
+      state.styleChangedSinceLastGeneration = true;
+      state.regenerationAvailable = true;
+      
+      // Show regenerate button with animation
+      regenerateBtn.style.display = 'block';
+      regenerateBtn.style.animation = 'fadeInUp 0.3s ease';
+      
+      console.log(`🔧 [SETTINGS] Style changed from ${oldStyle} to ${newStyle}, regeneration available`);
+    }
+    
+    // Save preferences to storage
+    saveUserPreferences();
+  });
+  
+  // Regenerate button click handler
+  regenerateBtn.addEventListener('click', async () => {
+    if (state.regenerationAvailable && !state.commentaryGenerating) {
+      console.log(`🔄 [REGENERATE] Regenerating commentary with new style: ${state.userPreferences.preferredCommentaryStyle}`);
+      
+      // Hide settings panel and show commentary content
+      toggleSettingsPanel();
+      
+      // Generate new commentary with updated style
+      await generateCommentary();
+      
+      // Reset regeneration state
+      state.styleChangedSinceLastGeneration = false;
+      state.regenerationAvailable = false;
+      regenerateBtn.style.display = 'none';
+    }
+  });
+  
+  // Assemble settings panel
+  styleSection.appendChild(styleLabel);
+  styleSection.appendChild(styleSelect);
+  styleSection.appendChild(stylePreview);
+  
+  settingsPanel.appendChild(settingsTitle);
+  settingsPanel.appendChild(styleSection);
+  settingsPanel.appendChild(regenerateBtn);
+  
+  return settingsPanel;
+}
+
+// Save user preferences to chrome storage
+function saveUserPreferences() {
+  if (chrome.storage && chrome.storage.local) {
+    chrome.storage.local.set({ 
+      userPreferences: state.userPreferences 
+    }, () => {
+      console.log('💾 [PREFERENCES] User preferences saved to storage');
+    });
+  }
+}
+
+// Load user preferences from chrome storage
+function loadUserPreferences() {
+  if (chrome.storage && chrome.storage.local) {
+    chrome.storage.local.get(['userPreferences'], (result) => {
+      if (result.userPreferences) {
+        state.userPreferences = { ...state.userPreferences, ...result.userPreferences };
+        console.log('📂 [PREFERENCES] User preferences loaded from storage');
+      }
+    });
+  }
+}
 

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commentary Overlay Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .test-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 6px;
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Commentary Overlay Test Page</h1>
+        <p>This page tests the commentary overlay functionality without requiring ESPN or the full extension.</p>
+        
+        <div class="status">
+            <h3>Test Controls:</h3>
+            <button class="test-button" onclick="testOverlayCreation()">Test Overlay Creation</button>
+            <button class="test-button" onclick="testOverlayShow()">Test Overlay Show</button>
+            <button class="test-button" onclick="testOverlayHide()">Test Overlay Hide</button>
+            <button class="test-button" onclick="testCommentaryDisplay()">Test Commentary Display</button>
+            <button class="test-button" onclick="testLoadingState()">Test Loading State</button>
+        </div>
+        
+        <div class="status">
+            <h3>Test Results:</h3>
+            <div id="test-results">No tests run yet.</div>
+        </div>
+        
+        <div class="status">
+            <h3>Instructions:</h3>
+            <ol>
+                <li>Click "Test Overlay Creation" to create the overlay element</li>
+                <li>Click "Test Overlay Show" to display the overlay</li>
+                <li>Click "Test Overlay Hide" to hide the overlay</li>
+                <li>Click "Test Commentary Display" to show sample commentary</li>
+                <li>Click "Test Loading State" to show loading indicator</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // Mock state for testing
+        const mockState = {
+            commentaryOverlay: null,
+            commentaryGenerating: false,
+            loadingState: 'idle'
+        };
+
+        // Test functions
+        function testOverlayCreation() {
+            try {
+                const overlay = createCommentaryOverlay();
+                mockState.commentaryOverlay = overlay;
+                document.body.appendChild(overlay);
+                updateTestResults('✅ Overlay created and added to page successfully');
+            } catch (error) {
+                updateTestResults('❌ Error creating overlay: ' + error.message);
+            }
+        }
+
+        function testOverlayShow() {
+            if (!mockState.commentaryOverlay) {
+                updateTestResults('❌ No overlay created yet. Run "Test Overlay Creation" first.');
+                return;
+            }
+            
+            try {
+                showCommentaryOverlay();
+                updateTestResults('✅ Overlay shown successfully');
+            } catch (error) {
+                updateTestResults('❌ Error showing overlay: ' + error.message);
+            }
+        }
+
+        function testOverlayHide() {
+            if (!mockState.commentaryOverlay) {
+                updateTestResults('❌ No overlay created yet. Run "Test Overlay Creation" first.');
+                return;
+            }
+            
+            try {
+                hideCommentaryOverlay();
+                updateTestResults('✅ Overlay hidden successfully');
+            } catch (error) {
+                updateTestResults('❌ Error hiding overlay: ' + error.message);
+            }
+        }
+
+        function testCommentaryDisplay() {
+            if (!mockState.commentaryOverlay) {
+                updateTestResults('❌ No overlay created yet. Run "Test Overlay Creation" first.');
+                return;
+            }
+            
+            try {
+                const sampleCommentary = "What an exciting matchup between the Lakers and Celtics! The Lakers showed great resilience in this contest, securing a 108-102 victory at the iconic Crypto.com Arena. Both teams displayed exceptional skill and determination throughout the game, making this a memorable NBA showdown.";
+                displayCommentary(sampleCommentary);
+                updateTestResults('✅ Commentary displayed successfully');
+            } catch (error) {
+                updateTestResults('❌ Error displaying commentary: ' + error.message);
+            }
+        }
+
+        function testLoadingState() {
+            if (!mockState.commentaryOverlay) {
+                updateTestResults('❌ No overlay created yet. Run "Test Overlay Creation" first.');
+                return;
+            }
+            
+            try {
+                const loadingIndicator = mockState.commentaryOverlay.querySelector('.loading-indicator');
+                const commentaryContent = mockState.commentaryOverlay.querySelector('.commentary-content');
+                
+                if (loadingIndicator) loadingIndicator.style.display = 'block';
+                if (commentaryContent) commentaryContent.style.display = 'none';
+                
+                updateTestResults('✅ Loading state displayed successfully');
+            } catch (error) {
+                updateTestResults('❌ Error showing loading state: ' + error.message);
+            }
+        }
+
+        function updateTestResults(message) {
+            const resultsDiv = document.getElementById('test-results');
+            const timestamp = new Date().toLocaleTimeString();
+            resultsDiv.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+        }
+
+        // Import the functions from the built content script
+        // Note: This is a simplified test - in the real extension these functions are available
+        console.log('Test page loaded. Functions will be available when the extension is loaded.');
+    </script>
+</body>
+</html>
