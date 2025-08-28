@@ -7,6 +7,8 @@
 **Timeline**: 2-3 hours focused implementation  
 **Goal**: Create a complete AI commentary system that generates contextual sports analysis when users click the avatar on ESPN NBA boxscore pages
 
+> **⚠️ IMPORTANT ARCHITECTURE NOTE**: This implementation uses a temporary frontend-only approach with OpenAI API calls directly from the browser extension. This is for rapid prototyping and demo purposes only. In production, all AI services (OpenAI, ElevenLabs, etc.) should be moved to a secure backend service to protect API keys and improve security. The current approach prioritizes speed of delivery over production readiness.
+
 ## Current State Analysis
 
 ### **What Already Exists**

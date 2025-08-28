@@ -43,6 +43,8 @@ A polished, AI-powered browser extension that automatically detects NBA games on
 - **State Management**: Zustand for lightweight, performant state
 - **Performance**: <100ms page load impact, 60fps animations
 
+> **⚠️ ARCHITECTURE NOTE**: The current "Client-Side Only" approach is a temporary solution for rapid prototyping and demo purposes. In production, all AI services (OpenAI, ElevenLabs) should be moved to a secure backend service to protect API keys and improve security. This frontend-only approach prioritizes speed of delivery over production readiness.
+
 ## Success Criteria
 
 - **Demo Quality**: Stakeholder-impressing UI/UX
