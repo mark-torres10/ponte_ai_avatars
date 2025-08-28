@@ -29,6 +29,9 @@ export interface GameData {
     keyPlayers?: string[];
     recentForm?: string[];
   };
+  // Explicit home/away team information for accurate winner calculation
+  homeTeam?: string;
+  awayTeam?: string;
 }
 
 export interface CommentaryResult {
@@ -86,7 +89,7 @@ export class OpenAIService {
         return;
       }
 
-      console.log('🔧 [OPENAI] Creating OpenAI client with API key...');
+      console.log('🔧 [OPENAI] Creating OpenAI client...');
       this.client = new OpenAI({
         apiKey: config.openaiApiKey,
         dangerouslyAllowBrowser: true // Note: This is for demo purposes only
@@ -101,7 +104,7 @@ export class OpenAIService {
 
   // Set test configuration for testing purposes
   async setTestConfig(apiKey: string): Promise<void> {
-    console.log('🔧 [OPENAI] setTestConfig() called with API key:', apiKey ? `${apiKey.substring(0, 10)}...` : 'undefined');
+    console.log('🔧 [OPENAI] setTestConfig() called with API key:', apiKey ? 'API key present' : 'No API key');
     
     try {
       console.log('🔧 [OPENAI] Setting test configuration...');
@@ -486,7 +489,12 @@ export class OpenAIService {
     let content = '';
 
     if (scores) {
-      const winner = scores.home > scores.away ? teamNames[1] : teamNames[0];
+      // Use explicit home/away team information when available, fallback to array positions
+      const homeTeam = gameData.homeTeam || teamNames[1] || 'Home Team';
+      const awayTeam = gameData.awayTeam || teamNames[0] || 'Away Team';
+      
+      // Determine winner based on actual scores, not array positions
+      const winner = scores.home > scores.away ? homeTeam : awayTeam;
       const winningScore = Math.max(scores.home, scores.away);
       const losingScore = Math.min(scores.home, scores.away);
 

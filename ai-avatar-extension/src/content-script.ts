@@ -888,6 +888,9 @@ async function generateCommentary(): Promise<string> {
     gameTime: state.pageInfo.gameTime,
     location: state.pageInfo.location,
     metadata: state.pageInfo.metadata,
+    // Add explicit home/away team information for accurate winner calculation
+    homeTeam: state.pageInfo.homeTeam,
+    awayTeam: state.pageInfo.awayTeam,
     context: {
       rivalry: false, // Could be enhanced later
       playoffImplications: false,
