@@ -26,6 +26,9 @@ function analyzeESPNPage(): EnhancedESPNPageInfo | null {
   // Extract team names using multiple strategies
   const teamNames = extractTeamNamesWithFallbacks();
   
+  // Determine which team is home vs away
+  const homeAway = determineHomeAwayTeams(teamNames);
+  
   // Extract game context information
   const scores = extractGameScores();
   const gameTime = extractGameTime();
@@ -50,6 +53,8 @@ function analyzeESPNPage(): EnhancedESPNPageInfo | null {
     metadata,
     extractionMethod,
     attemptedStrategies,
+    homeTeam: homeAway?.home,
+    awayTeam: homeAway?.away,
     url
   };
 }
@@ -57,15 +62,15 @@ function analyzeESPNPage(): EnhancedESPNPageInfo | null {
 // Enhanced team name extraction with multiple strategies
 function extractTeamNamesWithFallbacks(): string[] {
   const strategies = [
-    extractTeamNamesWithCSS,
-    extractTeamNamesWithTextPatterns,
-    extractTeamNamesWithContentAnalysis
+    extractTeamNamesFromHeading,
+    extractTeamNamesFromScoreboard,
+    extractTeamNamesFromTeamLinks
   ];
   
   for (const strategy of strategies) {
     try {
       const result = strategy();
-      if (result && result.length > 0) {
+      if (result && result.length >= 2) {
         const validatedTeams = filterValidTeamNames(result);
         if (validatedTeams.length >= 2) {
           console.log(`Team extraction successful using: ${strategy.name}`);
@@ -81,90 +86,75 @@ function extractTeamNamesWithFallbacks(): string[] {
   return [];
 }
 
-// Primary CSS selector strategy for team names
-function extractTeamNamesWithCSS(): string[] {
+// Primary strategy: Extract from main game heading
+function extractTeamNamesFromHeading(): string[] {
   const teamNames: string[] = [];
   
-  // Multiple CSS selectors for team names
-  const selectors = [
-    '.team-name',
-    '.team-abbrev',
-    '[class*="team"]',
-    '.scoreboard-team-name',
-    '.gamepackage-scoreboard-team-name',
-    'h1',
-    'h2',
-    'h3'
-  ];
-  
-  selectors.forEach(selector => {
-    const elements = document.querySelectorAll(selector);
-    elements.forEach(element => {
-      const text = element.textContent?.trim();
-      if (text && text.length > 0 && text.length < 50) {
-        if (!teamNames.includes(text)) {
-          teamNames.push(text);
-        }
+  // Look for the main game heading: "Dallas Mavericks @ Philadelphia 76ers"
+  const mainHeading = document.querySelector('h1');
+  if (mainHeading) {
+    const headingText = mainHeading.textContent?.trim();
+    if (headingText && headingText.includes('@')) {
+      const teams = headingText.split('@').map(team => team.trim());
+      if (teams.length === 2) {
+        teamNames.push(...teams);
+        console.log('Teams extracted from heading:', teamNames);
+        return teamNames;
       }
-    });
-  });
-  
-  return teamNames;
-}
-
-// Secondary text pattern strategy for team names
-function extractTeamNamesWithTextPatterns(): string[] {
-  const teamNames: string[] = [];
-  
-  // Look for team names in page content using text patterns
-  const pageText = document.body.textContent || '';
-  
-  // Common NBA team patterns
-  const teamPatterns = [
-    /(Lakers|Celtics|Warriors|Heat|Bulls|Knicks|Lakers|Celtics|Warriors|Heat|Bulls|Knicks|Mavericks|Suns|Nets|Clippers|Hawks|Pistons|Rockets|Thunder|Jazz|Trail Blazers|Pelicans|Kings|Timberwolves|Hornets|Magic|Wizards|Pacers|Cavaliers|Bucks|Raptors|76ers|Nuggets|Grizzlies|Spurs)/gi,
-    /(LAL|BOS|GSW|MIA|CHI|NYK|DAL|PHX|BKN|LAC|ATL|DET|HOU|OKC|UTA|POR|NOP|SAC|MIN|CHA|ORL|WAS|IND|CLE|MIL|TOR|PHI|DEN|MEM|SAS)/gi
-  ];
-  
-  teamPatterns.forEach(pattern => {
-    const matches = pageText.match(pattern);
-    if (matches) {
-      matches.forEach(match => {
-        const cleanMatch = match.trim();
-        if (cleanMatch.length > 0 && !teamNames.includes(cleanMatch)) {
-          teamNames.push(cleanMatch);
-        }
-      });
     }
-  });
+  }
   
-  return teamNames;
+  return [];
 }
 
-// Fallback content analysis strategy
-function extractTeamNamesWithContentAnalysis(): string[] {
+// Secondary strategy: Extract from scoreboard area
+function extractTeamNamesFromScoreboard(): string[] {
   const teamNames: string[] = [];
   
-  // Analyze page structure for team information
-  const scoreElements = document.querySelectorAll('[class*="score"], [class*="team"]');
+  // Look for team names in the scoreboard area
+  const teamElements = document.querySelectorAll('a[href*="/nba/team/_/name/"]');
   
-  scoreElements.forEach(element => {
+  teamElements.forEach(element => {
     const text = element.textContent?.trim();
-    if (text) {
-      // Look for score patterns like "LAL 108 - BOS 102"
-      const scorePattern = /([A-Z]{3})\s+(\d+)\s*-\s*([A-Z]{3})\s+(\d+)/;
-      const match = text.match(scorePattern);
-      
-      if (match) {
-        const team1 = match[1];
-        const team2 = match[3];
-        
-        if (!teamNames.includes(team1)) teamNames.push(team1);
-        if (!teamNames.includes(team2)) teamNames.push(team2);
+    if (text && text.length > 0 && text.length < 50) {
+      // Filter out team abbreviations (DAL, PHI) and keep full names
+      if (text.length > 3 && !teamNames.includes(text)) {
+        teamNames.push(text);
       }
     }
   });
   
-  return teamNames;
+  if (teamNames.length >= 2) {
+    console.log('Teams extracted from scoreboard:', teamNames);
+    return teamNames;
+  }
+  
+  return [];
+}
+
+// Fallback strategy: Extract from team links
+function extractTeamNamesFromTeamLinks(): string[] {
+  const teamNames: string[] = [];
+  
+  // Look for team name links in the boxscore
+  const teamLinks = document.querySelectorAll('a[href*="/nba/team/_/name/"]');
+  
+  teamLinks.forEach(link => {
+    const text = link.textContent?.trim();
+    if (text && text.length > 0 && text.length < 50) {
+      // Look for full team names (not abbreviations)
+      if (text.length > 3 && !teamNames.includes(text)) {
+        teamNames.push(text);
+      }
+    }
+  });
+  
+  if (teamNames.length >= 2) {
+    console.log('Teams extracted from team links:', teamNames);
+    return teamNames;
+  }
+  
+  return [];
 }
 
 // Filter and validate team names
@@ -172,9 +162,10 @@ function filterValidTeamNames(names: string[]): string[] {
   const validTeams = names.filter(name => {
     // Filter out non-team text
     if (name.match(/^\d+$/)) return false; // Numbers only
-    if (name.length < 2 || name.length > 30) return false; // Length check
-    if (name.match(/^(Final|Live|Q\d+|OT|End|Start)/i)) return false; // Game status
+    if (name.length < 4 || name.length > 30) return false; // Length check
+    if (name.match(/^(Final|Live|Q\d+|OT|End|Start|starters|bench|team)/i)) return false; // Game status
     if (name.match(/^\d+:\d+$/)) return false; // Time format
+    if (name.match(/^(Regular Season Series|Game Information|NBA News)/i)) return false; // Navigation
     
     return true;
   });
@@ -183,45 +174,123 @@ function filterValidTeamNames(names: string[]): string[] {
   return [...new Set(validTeams)];
 }
 
-// Extract game scores
-function extractGameScores(): { home: number; away: number } | undefined {
+// Determine which team is home vs away
+function determineHomeAwayTeams(teamNames: string[]): { home: string; away: string } | undefined {
+  if (teamNames.length < 2) return undefined;
+  
   try {
-    // Multiple strategies for score extraction
-    const scoreSelectors = [
-      '.score',
-      '[class*="score"]',
-      '.gamepackage-scoreboard-score',
-      '.team-score'
-    ];
-    
-    for (const selector of scoreSelectors) {
-      const elements = document.querySelectorAll(selector);
-      if (elements.length >= 2) {
-        const scores = Array.from(elements).map(el => {
-          const text = el.textContent?.trim();
-          return text ? parseInt(text, 10) : null;
-        });
-        
-        const validScores = scores.filter(score => score !== null && !isNaN(score)) as number[];
-        
-        if (validScores.length >= 2) {
-          return { home: validScores[0], away: validScores[1] };
+    // Strategy 1: Check the main heading format "Team1 @ Team2" (Team2 is home)
+    const mainHeading = document.querySelector('h1');
+    if (mainHeading) {
+      const headingText = mainHeading.textContent?.trim();
+      if (headingText && headingText.includes('@')) {
+        const teams = headingText.split('@').map(team => team.trim());
+        if (teams.length === 2) {
+          const awayTeam = teams[0];
+          const homeTeam = teams[1];
+          
+          // Verify these teams are in our extracted team names
+          if (teamNames.includes(awayTeam) && teamNames.includes(homeTeam)) {
+            console.log('Home/Away determined from heading:', { away: awayTeam, home: homeTeam });
+            return { away: awayTeam, home: homeTeam };
+          }
         }
       }
     }
     
-    // Fallback: look for score patterns in text
-    const pageText = document.body.textContent || '';
-    const scorePattern = /(\d+)\s*-\s*(\d+)/;
-    const match = pageText.match(scorePattern);
-    
-    if (match) {
-      const home = parseInt(match[1], 10);
-      const away = parseInt(match[2], 10);
-      if (!isNaN(home) && !isNaN(away)) {
-        return { home, away };
+    // Strategy 2: Check the page title format "Team1 Score1-Score2 Team2"
+    const pageTitle = document.title;
+    const titleMatch = pageTitle.match(/(\w+)\s+(\d+)-(\d+)\s+(\w+)/);
+    if (titleMatch) {
+      const team1 = titleMatch[1];
+      const team2 = titleMatch[4];
+      
+      // Find full team names that match these abbreviations
+      const fullTeam1 = teamNames.find(name => name.includes(team1) || name.includes(team1.charAt(0).toUpperCase() + team1.slice(1)));
+      const fullTeam2 = teamNames.find(name => name.includes(team2) || name.includes(team2.charAt(0).toUpperCase() + team2.slice(1)));
+      
+      if (fullTeam1 && fullTeam2) {
+        // In ESPN format, the second team is usually home
+        console.log('Home/Away determined from page title:', { away: fullTeam1, home: fullTeam2 });
+        return { away: fullTeam1, home: fullTeam2 };
       }
     }
+    
+    // Strategy 3: Default to first team as away, second as home (common pattern)
+    if (teamNames.length >= 2) {
+      console.log('Home/Away determined by order (default):', { away: teamNames[0], home: teamNames[1] });
+      return { away: teamNames[0], home: teamNames[1] };
+    }
+    
+  } catch (error) {
+    console.log('Home/Away determination failed:', error);
+  }
+  
+  return undefined;
+}
+
+// Extract game scores - FIXED to get actual game scores, not win-loss records
+function extractGameScores(): { home: number; away: number } | undefined {
+  try {
+    // Strategy 1: Look for the final score in the main scoreboard
+    const finalScoreElements = document.querySelectorAll('div[class*="score"], span[class*="score"]');
+    
+    for (const element of finalScoreElements) {
+      const text = element.textContent?.trim();
+      if (text && text.match(/^\d+$/)) {
+        const score = parseInt(text, 10);
+        if (!isNaN(score) && score >= 0 && score <= 200) {
+          // This looks like a valid game score
+          console.log('Found potential game score:', score);
+        }
+      }
+    }
+    
+    // Strategy 2: Look for the final score in the boxscore table totals
+    const totalRows = document.querySelectorAll('tr');
+    let awayScore: number | null = null;
+    let homeScore: number | null = null;
+    
+    for (const row of totalRows) {
+      const cells = row.querySelectorAll('td');
+      if (cells.length > 0) {
+        const lastCell = cells[cells.length - 1];
+        const text = lastCell.textContent?.trim();
+        
+        if (text && text.match(/^\d+$/)) {
+          const score = parseInt(text, 10);
+          if (!isNaN(score) && score >= 0 && score <= 200) {
+            // This is likely a team's total score
+            if (awayScore === null) {
+              awayScore = score;
+              console.log('Away team score:', awayScore);
+            } else if (homeScore === null) {
+              homeScore = score;
+              console.log('Home team score:', homeScore);
+              break; // We have both scores
+            }
+          }
+        }
+      }
+    }
+    
+    if (awayScore !== null && homeScore !== null) {
+      console.log('Final scores extracted:', { away: awayScore, home: homeScore });
+      return { away: awayScore, home: homeScore };
+    }
+    
+    // Strategy 3: Look for score patterns in the page title or content
+    const pageTitle = document.title;
+    const scoreMatch = pageTitle.match(/(\d+)-(\d+)/);
+    if (scoreMatch) {
+      const awayScore = parseInt(scoreMatch[1], 10);
+      const homeScore = parseInt(scoreMatch[2], 10);
+      if (!isNaN(awayScore) && !isNaN(homeScore)) {
+        console.log('Scores extracted from page title:', { away: awayScore, home: homeScore });
+        return { away: awayScore, home: homeScore };
+      }
+    }
+    
   } catch (error) {
     console.log('Score extraction failed:', error);
   }

@@ -20,6 +20,8 @@ export interface EnhancedESPNPageInfo extends ESPNPageInfo {
   gameStatus?: string;
   venue?: string;
   location?: string;
+  homeTeam?: string;
+  awayTeam?: string;
   metadata?: {
     date?: string;
     attendance?: string;
