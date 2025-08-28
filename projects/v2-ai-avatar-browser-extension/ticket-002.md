@@ -588,6 +588,8 @@ describe('Function Updates', () => {
 7. ✅ Manual verification confirms functionality on example URL
 8. ✅ Extension maintains existing functionality while adding new features
 
+**PR URL**: https://github.com/mark-torres10/ponte_ai_avatars/pull/46
+
 **Estimated Implementation Time**: 2-3 hours  
 **Testing Time**: 1-2 hours  
 **Total Time**: 3-5 hours
