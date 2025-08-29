@@ -1,13 +1,5 @@
-// Dialogue UI specific types for DialoguePopup component
-import type { ActionButton } from '../../types';
-
-export interface DialogueState {
-  isVisible: boolean;
-  currentText: string;
-  isStreaming: boolean;
-  availableActions: ActionButton[];
-  position: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
-}
+// DialoguePopup component types
+import type { ActionButton, DialogueState } from '../../types';
 
 export interface DialoguePopupProps {
   isVisible: boolean;
@@ -15,12 +7,4 @@ export interface DialoguePopupProps {
   children: React.ReactNode;
   onClose?: () => void;
   className?: string;
-}
-
-export interface DialoguePosition {
-  top?: string;
-  right?: string;
-  bottom?: string;
-  left?: string;
-  transform?: string;
 }

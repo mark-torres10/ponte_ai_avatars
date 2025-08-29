@@ -1,23 +1,11 @@
 // ActionButtons component types
+import { ActionButton as CanonicalActionButton } from '../../types';
 
-export interface ActionButton {
-  /** Unique identifier for the button */
-  id: string;
-  /** Display text for the button */
-  label: string;
-  /** Function to execute when button is clicked */
-  action: () => void;
-  /** Visual variant of the button */
-  variant?: 'primary' | 'secondary' | 'danger';
-  /** Whether the button is disabled */
-  disabled?: boolean;
-  /** Optional icon for the button */
-  icon?: React.ReactNode;
-  /** Optional tooltip text */
-  tooltip?: string;
+// Extend the canonical ActionButton type with component-specific props
+export type ActionButton = CanonicalActionButton & {
   /** Whether to show loading state */
   loading?: boolean;
-}
+};
 
 export interface ActionButtonsProps {
   /** Array of action buttons to display */

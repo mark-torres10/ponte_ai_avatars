@@ -6,22 +6,24 @@ export { StreamingText } from './StreamingText';
 export { ActionButtons } from './ActionButtons';
 export { IntegratedDialogue } from './IntegratedDialogue';
 
-// Export types
+// Export types from canonical source
 export type {
-  DialoguePopupProps,
   DialogueState,
-  DialoguePosition
+  ActionButton,
+  StreamingTextState
+} from '../types';
+
+export type {
+  DialoguePopupProps
 } from './DialoguePopup';
 
 export type {
   StreamingTextProps,
-  StreamingTextState,
   CharacterAnimationProps
 } from './StreamingText';
 
 export type {
   ActionButtonsProps,
-  ActionButton,
   ButtonLayoutConfig,
   ButtonState
 } from './ActionButtons';

@@ -271,6 +271,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
           {buttons.map((button, index) => (
             <motion.button
               key={button.id}
+              type="button"
               ref={(el) => { buttonRefs.current[index] = el; }}
               variants={buttonVariants}
               initial="hidden"
@@ -292,6 +293,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
               `}
               aria-label={button.tooltip || button.label}
               aria-describedby={button.tooltip ? `tooltip-${button.id}` : undefined}
+              aria-busy={button.loading || buttonState.loadingStates[button.id] ? 'true' : 'false'}
               tabIndex={enableKeyboardNav ? 0 : -1}
             >
               {/* Loading state */}

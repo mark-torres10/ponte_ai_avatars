@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, MessageSquare, Sparkles } from 'lucide-react';
-import { DialoguePopupProps, DialoguePosition } from './types';
+import { DialoguePopupProps } from './types';
 
 /**
  * Professional DialoguePopup Component - PON-84 Implementation
@@ -45,8 +45,8 @@ export const DialoguePopup: React.FC<DialoguePopupProps> = ({
   }
 
   // Enhanced positioning system with responsive behavior
-  const getPositionStyles = (): DialoguePosition => {
-    const baseStyles: Record<string, DialoguePosition> = {
+  const getPositionStyles = (): Record<string, string> => {
+    const baseStyles: Record<string, Record<string, string>> = {
       'top-right': { 
         top: '20px', 
         right: '20px'
