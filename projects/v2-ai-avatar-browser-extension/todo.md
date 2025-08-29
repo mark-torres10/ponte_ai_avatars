@@ -133,25 +133,28 @@
 
 ---
 
-## Ticket 006: Wikipedia Integration & Team Info
-**Linear Issue**: [Ticket 006](https://linear.app/metresearch/issue/TICKET-006)  
-**Effort**: 1-2 hours  
-**Priority**: Medium  
+## Ticket 006: Exa API Integration & AI Agent Workflow
+**Linear Issue**: [PON-86](https://linear.app/metresearch/issue/PON-86)  
+**Effort**: 2-3 hours  
+**Priority**: High  
 **Dependencies**: Ticket 005  
 
 ### Subtasks
-- [ ] Integrate Wikipedia API for team information
-- [ ] Extract first 2-3 sentences for each team
-- [ ] Format Wikipedia content for display
-- [ ] Add error handling for API failures
-- [ ] Test Wikipedia integration with various teams
-- [ ] Optimize content extraction and formatting
+- [ ] Add Exa API key to configuration system
+- [ ] Create Exa service with search and content retrieval
+- [ ] Design conversation context parser for XML-style blocks
+- [ ] Create query curation logic using OpenAI
+- [ ] Implement Exa API integration workflow
+- [ ] Build response generation with persona styling
+- [ ] Integrate with existing dialogue system
+- [ ] Test conversation flow and context handling
 
 ### Acceptance Criteria
-- [ ] Wikipedia team information is relevant and accurate
-- [ ] Content is properly formatted for display
-- [ ] Graceful handling of API failures
-- [ ] Information enhances user experience
+- [ ] AI agent correctly parses and understands conversation history
+- [ ] Generated search queries are relevant and contextually appropriate
+- [ ] Exa API integration works reliably with proper error handling
+- [ ] Responses maintain sports commentator style and personality
+- [ ] Integration works smoothly with existing dialogue and audio systems
 
 ---
 

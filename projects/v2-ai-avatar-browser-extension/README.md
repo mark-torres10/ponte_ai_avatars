@@ -15,7 +15,7 @@
 - **PON-83**: [Ticket 003: AI Integration & Response Generation](https://linear.app/metresearch/issue/PON-83/ticket-003-ai-integration-and-response-generation)
 - **PON-84**: [Ticket 004: Professional Dialogue UI System](https://linear.app/metresearch/issue/PON-84/ticket-004-professional-dialogue-ui-system)
 - **PON-85**: [Ticket 005: Audio Integration & ElevenLabs](https://linear.app/metresearch/issue/PON-85/ticket-005-audio-integration-and-elevenlabs)
-- **PON-86**: [Ticket 006: Wikipedia Integration & Team Info](https://linear.app/metresearch/issue/PON-86/ticket-006-wikipedia-integration-and-team-info)
+- **PON-86**: [Ticket 006: Exa API Integration & AI Agent Workflow](https://linear.app/metresearch/issue/PON-86/ticket-006-exa-api-integration-and-ai-agent-workflow)
 - **PON-87**: [Ticket 007: UI Polish & Final Integration](https://linear.app/metresearch/issue/PON-87/ticket-007-ui-polish-and-final-integration)
 - **PON-88**: [Ticket 008: Testing & Demo Preparation](https://linear.app/metresearch/issue/PON-88/ticket-008-testing-and-demo-preparation)
 
@@ -32,7 +32,7 @@ A polished, AI-powered browser extension that automatically detects NBA games on
 - **Enhanced ESPN Detection**: Sophisticated team extraction and game context analysis
 - **AI-Powered Commentary**: OpenAI integration for contextual game recognition
 - **Interactive Dialogue**: "Tell me more" vs "Good to know" options
-- **Wikipedia Integration**: Team background information
+- **Exa API Integration**: Intelligent, context-aware information retrieval
 - **Audio Synthesis**: ElevenLabs integration with text synchronization
 - **Professional UI/UX**: shadcn/ui components, smooth animations, modern design
 
@@ -61,7 +61,7 @@ A polished, AI-powered browser extension that automatically detects NBA games on
 
 - OpenAI API access and credits
 - ElevenLabs API access
-- Wikipedia API (free, no key required)
+- Exa API (AI-powered search and content retrieval)
 - Chrome extension development environment
 
 ## Project Status

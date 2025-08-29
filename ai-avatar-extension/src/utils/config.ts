@@ -5,6 +5,7 @@ export interface EnvironmentConfig {
   openaiApiKey?: string;
   elevenlabsApiKey?: string;
   parkerMunnsVoiceId?: string;
+  exaApiKey?: string;
 }
 
 // Default configuration values (these will be used if no stored config exists)
@@ -13,7 +14,8 @@ const DEFAULT_CONFIG: EnvironmentConfig = {
   // In production, these should be empty and configured by the user
   openaiApiKey: IS_DEVELOPMENT ? API_KEYS.OPENAI_API_KEY : undefined,
   elevenlabsApiKey: IS_DEVELOPMENT ? API_KEYS.ELEVENLABS_API_KEY : undefined,
-  parkerMunnsVoiceId: IS_DEVELOPMENT ? API_KEYS.ELEVENLABS_PARKER_MUNNS_VOICE_ID : undefined
+  parkerMunnsVoiceId: IS_DEVELOPMENT ? API_KEYS.ELEVENLABS_PARKER_MUNNS_VOICE_ID : undefined,
+  exaApiKey: IS_DEVELOPMENT ? API_KEYS.EXA_API_KEY : undefined
 };
 
 // Load configuration from browser extension storage

@@ -379,71 +379,64 @@ A comprehensive audio system that integrates ElevenLabs API for high-quality tex
 
 ---
 
-### **Ticket 006: Wikipedia Integration & Team Info**
-**Effort**: 1-2 hours  
-**Priority**: Medium  
+### **Ticket 006: Exa API Integration & AI Agent Workflow**
+**Effort**: 2-3 hours  
+**Priority**: High  
 **Dependencies**: Ticket 005  
 
 #### **Why This Ticket is Critical**
-Wikipedia integration provides the "tell me more" functionality that enriches the user experience with relevant team background information. This feature demonstrates the extension's ability to provide comprehensive, contextual information and enhances the value proposition for stakeholders. It's a key differentiator that shows the extension goes beyond basic commentary.
+The Exa API integration provides a more sophisticated "tell me more" functionality that showcases advanced AI capabilities. Instead of simple Wikipedia lookups, users get intelligent, context-aware responses that demonstrate the extension's ability to understand conversation context, curate relevant search queries, and synthesize information in the sports commentator persona. This significantly enhances the value proposition and stakeholder impression.
 
 #### **What We're Building**
-A Wikipedia integration system that fetches team information, extracts relevant content (first 2-3 sentences), formats it for display, and handles errors gracefully. This system will provide users with valuable context about teams when they choose "tell me more," creating a richer, more informative experience.
+An AI agent workflow that:
+1. **Takes conversation context** as XML-style `<assistant>` and `<user>` blocks
+2. **Curates intelligent search queries** based on context and user questions
+3. **Fetches relevant information** from Exa API
+4. **Generates contextual responses** in the sports commentator persona style
+5. **Maintains conversation flow** with intelligent follow-up capabilities
 
 #### **Implementation Plan for Each Subtask**
 
-##### **1. Integrate Wikipedia API for team information**
-- **What**: Set up Wikipedia API integration to fetch team information and background
-- **How**: Use Wikipedia's public API, implement search functionality, handle API responses
-- **Why**: Wikipedia provides comprehensive, reliable team information that enhances user knowledge
-- **Technical Details**: Implement Wikipedia API search, handle JSON responses, create service wrapper with proper error handling
+##### **1. Setup Exa API Integration**
+- **What**: Add Exa API key to configuration system and create Exa service
+- **How**: Update keys.template.ts, create Exa service with search and content retrieval
+- **Why**: Exa API provides AI-powered search and content retrieval capabilities
+- **Technical Details**: Implement Exa API integration, handle rate limiting, add error handling
 
-##### **2. Extract first 2-3 sentences for each team**
-- **What**: Parse Wikipedia content to extract the most relevant introductory information
-- **How**: Implement content parsing logic, extract first few sentences, filter out irrelevant content
-- **Why**: Concise, relevant information provides value without overwhelming users
-- **Technical Details**: Implement text parsing algorithms, extract first 2-3 sentences, filter out citations and irrelevant content
+##### **2. Design AI Agent Workflow**
+- **What**: Create conversation context parser and query curation logic
+- **How**: Design XML-style context parsing, implement OpenAI-powered query generation
+- **Why**: Intelligent query curation ensures relevant search results
+- **Technical Details**: Build context parser, create query curator using OpenAI, design workflow
 
-##### **3. Format Wikipedia content for display**
-- **What**: Format extracted content for professional display in the dialogue system
-- **How**: Clean up text formatting, remove HTML tags, ensure proper readability
-- **Why**: Well-formatted content enhances readability and professional appearance
-- **Technical Details**: Implement HTML tag removal, clean up text formatting, ensure proper line breaks and spacing
+##### **3. Implement Core Workflow**
+- **What**: Build the complete AI agent workflow from context to response
+- **How**: Implement conversation context extraction, Exa API integration, response generation
+- **Why**: Complete workflow enables intelligent, context-aware responses
+- **Technical Details**: Build context extraction, Exa API workflow, response synthesis with persona styling
 
-##### **4. Add error handling for API failures**
-- **What**: Implement robust error handling for Wikipedia API failures and edge cases
-- **How**: Create error handling strategies, implement fallback content, add user-friendly error messages
-- **Why**: Robust error handling ensures the extension works reliably even when Wikipedia API fails
-- **Technical Details**: Implement try-catch blocks, create fallback content, add error logging and user notification
-
-##### **5. Test Wikipedia integration with various teams**
-- **What**: Validate that Wikipedia integration works correctly with different team names and scenarios
-- **How**: Test with various NBA teams, validate content relevance, check error handling
-- **Why**: Testing ensures reliability and identifies edge cases before demo
-- **Technical Details**: Test with different team names, validate content extraction, check error scenarios
-
-##### **6. Optimize content extraction and formatting**
-- **What**: Refine content extraction algorithms and formatting for better user experience
-- **How**: Analyze extraction quality, improve parsing logic, optimize formatting
-- **Why**: Optimization improves content quality and user satisfaction
-- **Technical Details**: Refine parsing algorithms, improve content filtering, optimize formatting logic
+##### **4. Integration & Testing**
+- **What**: Integrate with existing dialogue system and validate functionality
+- **How**: Connect to dialogue system, test conversation flow, validate responses
+- **Why**: Integration ensures seamless user experience
+- **Technical Details**: Integrate with dialogue system, test conversation scenarios, validate error handling
 
 #### **Deliverables**
-- Wikipedia API integration working with reliable team information fetching
-- Team information extraction system that provides relevant, concise content
-- Formatted content display with professional appearance and readability
-- Comprehensive error handling with fallback content and user-friendly messages
-- Tested and validated Wikipedia integration with various teams
-- Optimized content extraction and formatting for best user experience
+- **Exa API Integration**: Working search and content retrieval system
+- **AI Agent Workflow**: Intelligent conversation context processing and query curation
+- **Context-Aware Responses**: Persona-styled responses based on conversation history
+- **Seamless Integration**: Full integration with existing dialogue and audio systems
+- **Error Handling**: Comprehensive error management with graceful fallbacks
+- **Testing & Validation**: Verified functionality across various conversation scenarios
 
 #### **Acceptance Criteria**
-- Wikipedia team information is relevant, accurate, and enhances user understanding
-- Content is properly formatted for professional display with good readability
-- Graceful handling of API failures with appropriate fallback content
-- Information provides value and enriches the overall user experience
-- Content extraction is reliable and works consistently across different teams
-- Error handling provides user-friendly messages and fallback options
-- Integration works seamlessly with the existing dialogue system
+- **Conversation Context Processing**: AI agent correctly parses and understands conversation history
+- **Intelligent Query Curation**: Generated search queries are relevant and contextually appropriate
+- **Exa API Integration**: Reliable search and content retrieval with proper error handling
+- **Persona-Based Responses**: Responses maintain sports commentator style and personality
+- **Seamless User Experience**: Integration works smoothly with existing dialogue and audio systems
+- **Performance**: Response generation completes within acceptable time limits
+- **Error Resilience**: Graceful handling of API failures and edge cases
 
 ---
 

@@ -13,7 +13,11 @@ export const API_KEYS = {
   
   // ElevenLabs Voice ID for Parker Munns
   // This is a specific voice ID from ElevenLabs
-  ELEVENLABS_PARKER_MUNNS_VOICE_ID: 'your-parker-munns-voice-id-here'
+  ELEVENLABS_PARKER_MUNNS_VOICE_ID: 'your-parker-munns-voice-id-here',
+  
+  // Exa API Key for AI-powered search and content retrieval
+  // Get your key from: https://dashboard.exa.ai/api-keys
+  EXA_API_KEY: 'your-exa-api-key-here'
 };
 
 // Development flag to indicate if we're using hardcoded keys

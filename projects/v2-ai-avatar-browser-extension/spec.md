@@ -20,7 +20,7 @@ Sports fans currently consume sports content passively on ESPN NBA pages, missin
 - Existing extension (PON-76) lacks intelligent functionality
 
 ### Solution Vision
-A polished, AI-powered browser extension that automatically detects NBA games on ESPN pages and provides proactive, engaging commentary with audio synthesis. The extension will offer interactive dialogue options, Wikipedia team information, and professional-quality UI/UX that demonstrates the full potential of proactive AI assistants.
+A polished, AI-powered browser extension that automatically detects NBA games on ESPN pages and provides proactive, engaging commentary with audio synthesis. The extension will offer interactive dialogue options, Exa API-powered intelligent information retrieval, and professional-quality UI/UX that demonstrates the full potential of proactive AI assistants.
 
 ## 2. Success Metrics and Validation Criteria
 
@@ -42,7 +42,7 @@ A polished, AI-powered browser extension that automatically detects NBA games on
 ### Validation Criteria
 - Avatar successfully detects and activates on ESPN NBA boxscore pages
 - AI generates contextual, engaging responses about games and teams
-- Wikipedia API calls return relevant team information
+- Exa API calls return relevant, context-aware information
 - Audio output is clear, synchronized with text, and professional quality
 - Extension doesn't interfere with ESPN page functionality
 - UI/UX quality impresses stakeholders and demonstrates professional capability
@@ -55,7 +55,7 @@ A polished, AI-powered browser extension that automatically detects NBA games on
 - ESPN NBA boxscore page detection and enhanced team extraction
 - AI-powered game recognition and commentary generation
 - Interactive dialogue system with "tell me more" vs "good to know" options
-- Wikipedia integration for team background information
+- Exa API integration for intelligent, context-aware information retrieval
 - ElevenLabs audio synthesis with text synchronization
 - Professional UI/UX using shadcn/ui components and modern design patterns
 - Client-side API integration (no backend required)
@@ -77,7 +77,7 @@ A polished, AI-powered browser extension that automatically detects NBA games on
 ### Technical Requirements
 - **Extension Architecture**: Content script + background script pattern (enhanced)
 - **Content Detection**: Enhanced URL pattern matching + sophisticated page content analysis
-- **API Integration**: Direct client-side calls to OpenAI GPT-4, Wikipedia API, ElevenLabs
+- **API Integration**: Direct client-side calls to OpenAI GPT-4, Exa API, ElevenLabs
 - **UI Framework**: React 18 + TypeScript + shadcn/ui components
 - **Styling**: Tailwind CSS for rapid, professional UI development
 - **State Management**: Zustand for lightweight, performant state management
@@ -131,7 +131,7 @@ Extension (Chrome)
 ├── Background Script (API coordination, state management)
 ├── UI Components (shadcn/ui + custom components)
 ├── State Management (Zustand store)
-└── Services (OpenAI, Wikipedia, ElevenLabs direct integration)
+└── Services (OpenAI, Exa API, ElevenLabs direct integration)
 
 No Backend Required
 ├── Direct API calls from extension
@@ -142,7 +142,7 @@ No Backend Required
 
 ### Implementation Phases
 1. **Phase 1 (Day 1)**: Foundation setup, enhanced ESPN analysis, AI integration, dialogue system
-2. **Phase 2 (Day 2)**: Audio integration, Wikipedia integration, UI polish, testing and demo prep
+2. **Phase 2 (Day 2)**: Audio integration, Exa API integration, UI polish, testing and demo prep
 
 ### Risk Assessment
 - **Low Risk**: Enhanced ESPN detection, basic extension structure, UI component integration
@@ -152,7 +152,7 @@ No Backend Required
 ### Dependencies
 - OpenAI API access and credits
 - ElevenLabs API access
-- Wikipedia API availability (free, no key required)
+- Exa API availability and rate limits
 - Chrome extension development environment
 - Modern development tooling (shadcn/ui, Tailwind, Framer Motion)
 
@@ -192,7 +192,7 @@ extension/
 │   ├── services/
 │   │   ├── espn-analyzer.ts
 │   │   ├── ai-service.ts
-│   │   ├── wikipedia-service.ts
+│   │   ├── exa-service.ts
 │   │   └── audio-service.ts
 │   ├── stores/
 │   │   └── game-store.ts
