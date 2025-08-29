@@ -142,7 +142,6 @@ export interface ElevenLabsResponse {
   headers: Record<string, string>;
   audioBuffer?: ArrayBuffer;
   error?: string;
-  success?: boolean;
 }
 
 // Audio generation request

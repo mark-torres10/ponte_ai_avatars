@@ -108,7 +108,7 @@ export class ElevenLabsService {
       // Call ElevenLabs API
       const response = await this.callElevenLabsAPI(request);
       
-      if (!response.success || !response.audioBuffer) {
+      if (!response.audioBuffer) {
         throw new Error(response.error || 'Audio generation failed');
       }
 
@@ -191,6 +191,12 @@ export class ElevenLabsService {
         }
 
         const audioBuffer = await response.arrayBuffer();
+        
+        console.log('🎵 [ELEVENLABS] API response successful:', {
+          status: response.status,
+          headers: Object.fromEntries(response.headers.entries()),
+          audioBufferSize: audioBuffer.byteLength
+        });
         
         return {
           status: response.status,

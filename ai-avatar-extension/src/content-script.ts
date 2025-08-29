@@ -1555,6 +1555,46 @@ function testDialoguePopup(): void {
   const elevenLabsService = getElevenLabsService(API_KEYS.ELEVENLABS_API_KEY, API_KEYS.ELEVENLABS_PARKER_MUNNS_VOICE_ID);
   console.log('🎵 [ELEVENLABS] Service initialized:', elevenLabsService.isReady());
   
+  // Local audio cache to prevent regeneration
+  const audioCache = new Map<string, { audioBuffer: ArrayBuffer; duration: number; timestamp: number }>();
+  
+  // Function to generate cache key for text
+  const generateCacheKey = (text: string): string => {
+    return btoa(text.substring(0, 100)).replace(/[^a-zA-Z0-9]/g, '').substring(0, 32);
+  };
+  
+  // Function to check if audio is cached
+  const isAudioCached = (text: string): boolean => {
+    const cacheKey = generateCacheKey(text);
+    const cached = audioCache.get(cacheKey);
+    if (cached) {
+      // Check if cache is still valid (24 hours)
+      const now = Date.now();
+      const cacheAge = now - cached.timestamp;
+      if (cacheAge < 24 * 60 * 60 * 1000) {
+        return true;
+      } else {
+        // Remove expired cache
+        audioCache.delete(cacheKey);
+      }
+    }
+    return false;
+  };
+  
+  // Function to get cached audio
+  const getCachedAudio = (text: string): { audioBuffer: ArrayBuffer; duration: number } | null => {
+    const cacheKey = generateCacheKey(text);
+    const cached = audioCache.get(cacheKey);
+    return cached ? { audioBuffer: cached.audioBuffer, duration: cached.duration } : null;
+  };
+  
+  // Function to cache audio
+  const cacheAudio = (text: string, audioBuffer: ArrayBuffer, duration: number): void => {
+    const cacheKey = generateCacheKey(text);
+    audioCache.set(cacheKey, { audioBuffer, duration, timestamp: Date.now() });
+    console.log('🎵 [CACHE] Audio cached for text:', text.substring(0, 50) + '...');
+  };
+  
   // Check if dialogue already exists and restore state
   const existingDialogue = document.querySelector('.integrated-dialogue-popup') as HTMLElement;
   if (existingDialogue) {
@@ -1736,6 +1776,7 @@ function testDialoguePopup(): void {
     line-height: 1.6;
     color: #374151;
     font-size: 15px;
+    padding-bottom: 60px; /* Add padding to prevent text overlap with audio controls */
   `;
   
   // Create follow-up question buttons
@@ -1782,7 +1823,7 @@ function testDialoguePopup(): void {
     
     button.addEventListener('click', () => {
       addUserMessage(question);
-      setTimeout(() => {
+    setTimeout(() => {
         addAIResponse('<placeholder response>');
       }, 1000);
     });
@@ -1790,15 +1831,25 @@ function testDialoguePopup(): void {
     followUpButtons.appendChild(button);
   });
   
-    // Create audio controls for this message - positioned to not overlap text
+    // Create audio controls for this message - positioned at bottom right, initially hidden
   const audioControls = document.createElement('div');
   audioControls.style.cssText = `
     position: absolute;
-    top: 20px;
+    bottom: 20px;
     right: 20px;
     display: flex;
     gap: 8px;
+    z-index: 10;
   `;
+  
+  // Initially hide audio controls until streaming completes
+  audioControls.style.display = 'none';
+  
+  // Function to show audio controls after streaming completes
+  const showAudioControls = () => {
+    audioControls.style.display = 'flex';
+    console.log('🎵 Audio controls now visible');
+  };
   
   const playButton = document.createElement('button');
   playButton.innerHTML = '▶️';
@@ -1859,61 +1910,94 @@ function testDialoguePopup(): void {
       playButton.style.color = '#3b82f6';
       playButton.disabled = true;
       
-      try {
-        // Validate ElevenLabs service
-        if (!elevenLabsService.isReady()) {
-          throw new Error(`ElevenLabs service not ready. API Key: ${!!API_KEYS.ELEVENLABS_API_KEY}, Voice ID: ${!!API_KEYS.ELEVENLABS_PARKER_MUNNS_VOICE_ID}`);
-        }
-        
-        console.log('🎵 [ELEVENLABS] Service status:', {
-          isReady: elevenLabsService.isReady(),
-          hasValidApiKey: elevenLabsService.hasValidApiKey(),
-          apiKeyLength: API_KEYS.ELEVENLABS_API_KEY?.length,
-          voiceId: API_KEYS.ELEVENLABS_PARKER_MUNNS_VOICE_ID
-        });
-        
-        // Get the commentary text
-        const commentaryText = streamingContent.textContent || 'Oh, I see you\'re looking at this game! Let me break down what\'s happening here.';
-        
-        console.log('🎵 [ELEVENLABS] Generating audio for:', commentaryText.substring(0, 100) + '...');
-        
-        // Generate audio using ElevenLabs
-        const audioResult = await elevenLabsService.generateAudio(commentaryText, {
-          voiceId: API_KEYS.ELEVENLABS_PARKER_MUNNS_VOICE_ID,
-          voiceSettings: {
-            stability: 0.5,
-            similarity_boost: 0.75
+              try {
+          // Get the commentary text
+          const commentaryText = streamingContent.textContent || 'Oh, I see you\'re looking at this game! Let me break down what\'s happening here.';
+          
+          // Check if audio is already cached
+          if (isAudioCached(commentaryText)) {
+            console.log('🎵 [CACHE] Using cached audio for commentary');
+            const cachedAudio = getCachedAudio(commentaryText);
+            if (cachedAudio) {
+              // Update button to playing state
+              playButton.innerHTML = '⏸️';
+              playButton.style.borderColor = '#f59e0b';
+              playButton.style.color = '#f59e0b';
+              playButton.disabled = false;
+              
+              // Play the cached audio
+              const playbackSuccess = await elevenLabsService.playAudio((currentTime) => {
+                // Update button state based on playback
+                if (currentTime >= cachedAudio.duration) {
+                  playButton.innerHTML = '▶️';
+                  playButton.style.borderColor = '#d1d5db';
+                  playButton.style.color = '#374151';
+                }
+              });
+              
+              if (!playbackSuccess) {
+                throw new Error('Audio playback failed');
+              }
+              return; // Exit early, no need to generate
+            }
           }
-        });
-        
-        console.log('🎵 [ELEVENLABS] Audio generation result:', audioResult);
-        
-        if (audioResult.success) {
-          const duration = audioResult.duration || 0;
-          console.log('🎵 [ELEVENLABS] Audio generated successfully, duration:', duration);
           
-          // Update button to playing state
-          playButton.innerHTML = '⏸️';
-          playButton.style.borderColor = '#f59e0b';
-          playButton.style.color = '#f59e0b';
-          playButton.disabled = false;
+          // Validate ElevenLabs service
+          if (!elevenLabsService.isReady()) {
+            throw new Error(`ElevenLabs service not ready. API Key: ${!!API_KEYS.ELEVENLABS_API_KEY}, Voice ID: ${!!API_KEYS.ELEVENLABS_PARKER_MUNNS_VOICE_ID}`);
+          }
           
-          // Play the audio
-          const playbackSuccess = await elevenLabsService.playAudio((currentTime) => {
-            // Update button state based on playback
-            if (currentTime >= duration) {
-              playButton.innerHTML = '▶️';
-              playButton.style.borderColor = '#d1d5db';
-              playButton.style.color = '#374151';
+          console.log('🎵 [ELEVENLABS] Service status:', {
+            isReady: elevenLabsService.isReady(),
+            hasValidApiKey: elevenLabsService.hasValidApiKey(),
+            apiKeyLength: API_KEYS.ELEVENLABS_API_KEY?.length,
+            voiceId: API_KEYS.ELEVENLABS_PARKER_MUNNS_VOICE_ID
+          });
+          
+          console.log('🎵 [ELEVENLABS] Generating audio for:', commentaryText.substring(0, 100) + '...');
+          
+          // Generate audio using ElevenLabs
+          const audioResult = await elevenLabsService.generateAudio(commentaryText, {
+            voiceId: API_KEYS.ELEVENLABS_PARKER_MUNNS_VOICE_ID,
+            voiceSettings: {
+              stability: 0.5,
+              similarity_boost: 0.75
             }
           });
           
-          if (!playbackSuccess) {
-            throw new Error('Audio playback failed');
+          console.log('🎵 [ELEVENLABS] Audio generation result:', audioResult);
+          
+          if (audioResult.success) {
+            const duration = audioResult.duration || 0;
+            console.log('🎵 [ELEVENLABS] Audio generated successfully, duration:', duration);
+            
+            // Cache the generated audio
+            if (audioResult.audioBuffer) {
+              cacheAudio(commentaryText, audioResult.audioBuffer, duration);
+            }
+            
+            // Update button to playing state
+            playButton.innerHTML = '⏸️';
+            playButton.style.borderColor = '#f59e0b';
+            playButton.style.color = '#f59e0b';
+            playButton.disabled = false;
+            
+            // Play the audio
+            const playbackSuccess = await elevenLabsService.playAudio((currentTime) => {
+              // Update button state based on playback
+              if (currentTime >= duration) {
+                playButton.innerHTML = '▶️';
+                playButton.style.borderColor = '#d1d5db';
+                playButton.style.color = '#374151';
+              }
+            });
+            
+            if (!playbackSuccess) {
+              throw new Error('Audio playback failed');
+            }
+          } else {
+            throw new Error(audioResult.error || 'Audio generation failed');
           }
-        } else {
-          throw new Error(audioResult.error || 'Audio generation failed');
-        }
       } catch (error) {
         console.error('❌ [ELEVENLABS] Audio error:', error);
         
@@ -1933,7 +2017,7 @@ function testDialoguePopup(): void {
           border: 1px solid #fecaca;
           color: #dc2626;
           padding: 8px 12px;
-          border-radius: 8px;
+        border-radius: 8px;
           font-size: 12px;
           z-index: 1000;
           max-width: 300px;
@@ -2052,7 +2136,7 @@ function testDialoguePopup(): void {
     if (message) {
       addUserMessage(message);
       textInput.value = '';
-      setTimeout(() => {
+        setTimeout(() => {
         addAIResponse('<placeholder response>');
       }, 1000);
     }
@@ -2128,6 +2212,7 @@ function testDialoguePopup(): void {
       border: 1px solid #e2e8f0;
       border-radius: 16px;
       padding: 20px;
+      padding-bottom: 60px; /* Add padding to prevent text overlap with audio controls */
       margin-bottom: 20px;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
       position: relative;
@@ -2156,10 +2241,11 @@ function testDialoguePopup(): void {
     const audioControls = document.createElement('div');
     audioControls.style.cssText = `
       position: absolute;
-      top: 20px;
+      bottom: 20px;
       right: 20px;
       display: flex;
       gap: 8px;
+      z-index: 10;
     `;
     
     const playButton = document.createElement('button');
@@ -2222,6 +2308,34 @@ function testDialoguePopup(): void {
         playButton.disabled = true;
         
         try {
+          // Check if audio is already cached
+          if (isAudioCached(response)) {
+            console.log('🎵 [CACHE] Using cached audio for AI response');
+            const cachedAudio = getCachedAudio(response);
+            if (cachedAudio) {
+              // Update button to playing state
+              playButton.innerHTML = '⏸️';
+              playButton.style.borderColor = '#f59e0b';
+              playButton.style.color = '#f59e0b';
+              playButton.disabled = false;
+              
+              // Play the cached audio
+              const playbackSuccess = await elevenLabsService.playAudio((currentTime) => {
+                // Update button state based on playback
+                if (currentTime >= cachedAudio.duration) {
+                  playButton.innerHTML = '▶️';
+                  playButton.style.borderColor = '#d1d5db';
+                  playButton.style.color = '#374151';
+                }
+              });
+              
+              if (!playbackSuccess) {
+                throw new Error('Audio playback failed');
+              }
+              return; // Exit early, no need to generate
+            }
+          }
+          
           // Validate ElevenLabs service
           if (!elevenLabsService.isReady()) {
             throw new Error(`ElevenLabs service not ready. API Key: ${!!API_KEYS.ELEVENLABS_API_KEY}, Voice ID: ${!!API_KEYS.ELEVENLABS_PARKER_MUNNS_VOICE_ID}`);
@@ -2250,6 +2364,11 @@ function testDialoguePopup(): void {
           if (audioResult.success) {
             const duration = audioResult.duration || 0;
             console.log('🎵 [ELEVENLABS] AI response audio generated successfully, duration:', duration);
+            
+            // Cache the generated audio
+            if (audioResult.audioBuffer) {
+              cacheAudio(response, audioResult.audioBuffer, duration);
+            }
             
             // Update button to playing state
             playButton.innerHTML = '⏸️';
@@ -2343,21 +2462,62 @@ function testDialoguePopup(): void {
     chatMessages.scrollTop = chatMessages.scrollHeight;
   }
   
-  // Start streaming the initial commentary
-  setTimeout(() => {
-    const commentaryText = `Oh, I see you're looking at this game! Let me break down what's happening here.
+  // Persona-based text transformation system
+  const transformTextForPersona = (rawText: string, persona: 'sports-commentator' | 'analyst' | 'color-commentator' = 'sports-commentator'): string => {
+    switch (persona) {
+      case 'sports-commentator':
+        return rawText
+          .replace(/Game Details:/g, 'Now, let me give you the breakdown of this matchup.')
+          .replace(/Dallas Mavericks vs Philadelphia 76ers/g, 'We had the Dallas Mavericks taking on the Philadelphia 76ers')
+          .replace(/Final Score: (\d+)-(\d+)/g, 'and what a finish this was! The final score shows $1 to $2')
+          .replace(/Venue: (.+)/g, 'This all went down at $1')
+          .replace(/Date: (.+)/g, 'on $1')
+          .replace(/This was an absolute nail-biter!/g, 'Folks, this was an absolute nail-biter!')
+          .replace(/The 76ers managed to pull off a thrilling 2-point victory in their home arena./g, 'The 76ers managed to pull off a thrilling 2-point victory right here in their own house.')
+          .replace(/The game was incredibly close throughout, with both teams showing championship-level intensity./g, 'The game was incredibly close from start to finish, with both teams bringing that championship-level intensity we love to see.')
+          .replace(/The Mavericks put up a strong fight, but the 76ers' home court advantage and clutch performance in the final minutes sealed the deal./g, 'The Mavericks put up one heck of a fight, but you know what they say about home court advantage - and the 76ers came through with some clutch plays in those final minutes that sealed the deal.')
+          .replace(/This kind of game is exactly what makes basketball so exciting!/g, 'This is exactly the kind of basketball that keeps us all on the edge of our seats!');
+      
+      case 'analyst':
+        return rawText
+          .replace(/Game Details:/g, 'Let me analyze the key metrics from this contest.')
+          .replace(/Dallas Mavericks vs Philadelphia 76ers/g, 'Dallas versus Philadelphia')
+          .replace(/Final Score: (\d+)-(\d+)/g, 'ended with a $1 to $2 final')
+          .replace(/Venue: (.+)/g, 'played at $1')
+          .replace(/Date: (.+)/g, 'on $1');
+      
+      case 'color-commentator':
+        return rawText
+          .replace(/Game Details:/g, 'Let me paint you a picture of what went down here.')
+          .replace(/Dallas Mavericks vs Philadelphia 76ers/g, 'Dallas and Philly went head-to-head')
+          .replace(/Final Score: (\d+)-(\d+)/g, 'and when the dust settled, it was $1 to $2')
+          .replace(/Venue: (.+)/g, 'all happening at $1')
+          .replace(/Date: (.+)/g, 'on $1');
+      
+      default:
+        return rawText;
+    }
+  };
 
-**Game Details:**
-🏀 **Dallas Mavericks vs Philadelphia 76ers**
-📊 **Final Score: 116-118**
-📍 **Venue: Wells Fargo Center**
-📅 **Date: February 4, 2025**
+  // Start streaming the initial commentary with persona transformation
+  setTimeout(() => {
+    const rawCommentaryText = `Oh, I see you're looking at this game! Let me break down what's happening here.
+
+Game Details:
+
+Dallas Mavericks vs Philadelphia 76ers
+Final Score: 116-118
+Venue: Wells Fargo Center
+Date: February 4, 2025
 
 This was an absolute nail-biter! The 76ers managed to pull off a thrilling 2-point victory in their home arena. The game was incredibly close throughout, with both teams showing championship-level intensity.
 
 The Mavericks put up a strong fight, but the 76ers' home court advantage and clutch performance in the final minutes sealed the deal. This kind of game is exactly what makes basketball so exciting!`;
     
-    // Stream the text character by character
+    // Transform text for sports commentator persona
+    const commentaryText = transformTextForPersona(rawCommentaryText, 'sports-commentator');
+    
+    // Stream the transformed text character by character
     let currentIndex = 0;
     const streamInterval = setInterval(() => {
       if (currentIndex < commentaryText.length) {
@@ -2365,20 +2525,8 @@ The Mavericks put up a strong fight, but the 76ers' home court advantage and clu
         currentIndex++;
       } else {
         clearInterval(streamInterval);
-        // Add a completion indicator
-        const completionDiv = document.createElement('div');
-        completionDiv.style.cssText = `
-          margin-top: 16px;
-          padding: 12px;
-          background: #f0fdf4;
-          border: 1px solid #bbf7d0;
-          border-radius: 8px;
-          color: #166534;
-          font-size: 14px;
-          text-align: center;
-        `;
-        completionDiv.innerHTML = '✅ Commentary complete! Ask me anything about the game.';
-        streamingContent.appendChild(completionDiv);
+        // Show audio controls after streaming completes
+        showAudioControls();
       }
     }, 30); // ~33 characters per second for natural reading speed
   }, 500);
