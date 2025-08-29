@@ -49,6 +49,59 @@ const state: ContentScriptState = {
     currentIndex: 0,
     isComplete: false,
     speed: 10
+  },
+  // Audio integration state (PON-85)
+  audioState: {
+    playback: {
+      isPlaying: false,
+      isPaused: false,
+      isStopped: true,
+      currentTime: 0,
+      duration: 0,
+      volume: 1,
+      playbackRate: 1,
+      isMuted: false
+    },
+    sync: {
+      isSynchronized: false,
+      syncAccuracy: 0,
+      currentTextIndex: 0,
+      currentAudioTime: 0,
+      syncStatus: 'failed',
+      lastSyncCheck: new Date(),
+      syncErrors: []
+    },
+    controls: {
+      playButton: {
+        enabled: false,
+        loading: false,
+        tooltip: 'Play audio'
+      },
+      pauseButton: {
+        enabled: false,
+        tooltip: 'Pause audio'
+      },
+      stopButton: {
+        enabled: false,
+        tooltip: 'Stop audio'
+      },
+      volumeControl: {
+        value: 1,
+        min: 0,
+        max: 1,
+        step: 0.1
+      },
+      speedControl: {
+        value: 1,
+        min: 0.5,
+        max: 2.0,
+        step: 0.1,
+        options: [0.5, 0.75, 1, 1.25, 1.5, 2.0]
+      }
+    },
+    generation: null,
+    isEnabled: false,
+    lastError: undefined
   }
 };
 
