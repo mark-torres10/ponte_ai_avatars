@@ -131,7 +131,7 @@ export const DialoguePopup: React.FC<DialoguePopupProps> = ({
           animate="visible"
           exit="exit"
           layout
-          aria-label="AI Sports Commentary Dialogue"
+          aria-label="Parker Munns Dialogue"
           role="dialog"
           aria-modal="true"
         >
@@ -175,7 +175,7 @@ export const DialoguePopup: React.FC<DialoguePopupProps> = ({
                 <div className="flex items-center space-x-2">
                   <MessageSquare className="w-4 h-4 text-orange-600" />
                   <span className="text-sm font-semibold text-gray-800">
-                    AI Sports Commentary
+                    Parker Munns
                   </span>
                   <Sparkles className="w-3 h-3 text-blue-500 animate-pulse" />
                 </div>

@@ -131,14 +131,14 @@ export const IntegratedDialogue: React.FC<IntegratedDialogueProps> = ({
             {/* Header */}
             <div className="text-center">
               <h2 className="text-xl font-semibold text-gray-800 mb-2">
-                AI Sports Commentary
+                Parker Munns
               </h2>
               <p className="text-sm text-gray-600">
                 {streamingTextState.isComplete 
                   ? 'Commentary complete! What would you like to do next?'
                   : dialogueState.isStreaming 
                     ? 'Generating your personalized commentary...'
-                    : 'Ready to generate professional sports commentary'
+                    : 'AI-powered live game analysis & commentary'
                 }
               </p>
             </div>

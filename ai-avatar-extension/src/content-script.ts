@@ -688,7 +688,7 @@ function createAvatarPlaceholder(): HTMLElement {
 }
 
 // Create commentary display overlay
-function createCommentaryOverlay(): HTMLElement {
+function _createCommentaryOverlay(): HTMLElement {
   const overlay = document.createElement('div');
   overlay.id = 'ai-avatar-commentary';
   overlay.className = 'commentary-overlay sports-themed responsive animated';
@@ -727,7 +727,7 @@ function createCommentaryOverlay(): HTMLElement {
   `;
   
   const title = document.createElement('h3');
-  title.textContent = '🏀 AI Sports Commentary';
+  title.textContent = '🏀 Parker Munns';
   title.style.cssText = `
     margin: 0 !important;
     font-size: 20px !important;
@@ -1655,7 +1655,7 @@ function testDialoguePopup(): void {
     flex-direction: column;
   `;
   
-  // Create the AI Sports Commentator chatbox interface
+  // Create the Parker Munns chatbox interface
   const chatboxContainer = document.createElement('div');
   chatboxContainer.id = 'ai-commentator-chatbox';
   chatboxContainer.style.cssText = `
@@ -1677,10 +1677,12 @@ function testDialoguePopup(): void {
     gap: 12px;
   `;
   chatHeader.innerHTML = `
-    <div style="width: 40px; height: 40px; background: #fbbf24; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px;">🎯</div>
+    <div style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+      <img src="${chrome.runtime.getURL('parker-avatar-80x80.png')}" style="width: 100%; height: 100%; object-fit: cover;" alt="Parker Munns" />
+    </div>
     <div>
-      <h3 style="margin: 0; font-size: 18px; font-weight: 600;">AI Sports Commentator</h3>
-      <p style="margin: 4px 0 0 0; font-size: 14px; opacity: 0.9;">Live game analysis & commentary</p>
+      <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Parker Munns</h3>
+      <p style="margin: 4px 0 0 0; font-size: 14px; opacity: 0.9;">AI-powered live game analysis & commentary</p>
     </div>
   `;
   
@@ -1851,12 +1853,25 @@ function testDialoguePopup(): void {
     console.log('🎵 Play Audio clicked for initial commentary');
     
     if (playButton.innerHTML === '▶️') {
-      // Start playing
-      playButton.innerHTML = '⏸️';
-      playButton.style.borderColor = '#f59e0b';
-      playButton.style.color = '#f59e0b';
+      // Show loading state
+      playButton.innerHTML = '⏳';
+      playButton.style.borderColor = '#3b82f6';
+      playButton.style.color = '#3b82f6';
+      playButton.disabled = true;
       
       try {
+        // Validate ElevenLabs service
+        if (!elevenLabsService.isReady()) {
+          throw new Error(`ElevenLabs service not ready. API Key: ${!!API_KEYS.ELEVENLABS_API_KEY}, Voice ID: ${!!API_KEYS.ELEVENLABS_PARKER_MUNNS_VOICE_ID}`);
+        }
+        
+        console.log('🎵 [ELEVENLABS] Service status:', {
+          isReady: elevenLabsService.isReady(),
+          hasValidApiKey: elevenLabsService.hasValidApiKey(),
+          apiKeyLength: API_KEYS.ELEVENLABS_API_KEY?.length,
+          voiceId: API_KEYS.ELEVENLABS_PARKER_MUNNS_VOICE_ID
+        });
+        
         // Get the commentary text
         const commentaryText = streamingContent.textContent || 'Oh, I see you\'re looking at this game! Let me break down what\'s happening here.';
         
@@ -1871,9 +1886,17 @@ function testDialoguePopup(): void {
           }
         });
         
+        console.log('🎵 [ELEVENLABS] Audio generation result:', audioResult);
+        
         if (audioResult.success) {
           const duration = audioResult.duration || 0;
           console.log('🎵 [ELEVENLABS] Audio generated successfully, duration:', duration);
+          
+          // Update button to playing state
+          playButton.innerHTML = '⏸️';
+          playButton.style.borderColor = '#f59e0b';
+          playButton.style.color = '#f59e0b';
+          playButton.disabled = false;
           
           // Play the audio
           const playbackSuccess = await elevenLabsService.playAudio((currentTime) => {
@@ -1898,8 +1921,9 @@ function testDialoguePopup(): void {
         playButton.innerHTML = '▶️';
         playButton.style.borderColor = '#d1d5db';
         playButton.style.color = '#374151';
+        playButton.disabled = false;
         
-        // Show error message to user
+        // Show detailed error message to user
         const errorDiv = document.createElement('div');
         errorDiv.style.cssText = `
           position: absolute;
@@ -1912,16 +1936,18 @@ function testDialoguePopup(): void {
           border-radius: 8px;
           font-size: 12px;
           z-index: 1000;
+          max-width: 300px;
+          word-wrap: break-word;
         `;
-        errorDiv.textContent = 'Audio generation failed';
+        errorDiv.textContent = `Audio generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
         initialCommentary.appendChild(errorDiv);
         
-        // Remove error message after 3 seconds
+        // Remove error message after 5 seconds
         setTimeout(() => {
           if (errorDiv.parentNode) {
             errorDiv.parentNode.removeChild(errorDiv);
           }
-        }, 3000);
+        }, 5000);
       }
     } else {
       // Pause audio
@@ -2184,17 +2210,30 @@ function testDialoguePopup(): void {
       });
     });
     
-    // Add click functionality with real ElevenLabs integration
+        // Add click functionality with real ElevenLabs integration
     playButton.addEventListener('click', async () => {
       console.log('🎵 Play Audio clicked for AI response');
       
       if (playButton.innerHTML === '▶️') {
-        // Start playing
-        playButton.innerHTML = '⏸️';
-        playButton.style.borderColor = '#f59e0b';
-        playButton.style.color = '#f59e0b';
+        // Show loading state
+        playButton.innerHTML = '⏳';
+        playButton.style.borderColor = '#3b82f6';
+        playButton.style.color = '#3b82f6';
+        playButton.disabled = true;
         
         try {
+          // Validate ElevenLabs service
+          if (!elevenLabsService.isReady()) {
+            throw new Error(`ElevenLabs service not ready. API Key: ${!!API_KEYS.ELEVENLABS_API_KEY}, Voice ID: ${!!API_KEYS.ELEVENLABS_PARKER_MUNNS_VOICE_ID}`);
+          }
+          
+          console.log('🎵 [ELEVENLABS] AI response service status:', {
+            isReady: elevenLabsService.isReady(),
+            hasValidApiKey: elevenLabsService.hasValidApiKey(),
+            apiKeyLength: API_KEYS.ELEVENLABS_API_KEY?.length,
+            voiceId: API_KEYS.ELEVENLABS_PARKER_MUNNS_VOICE_ID
+          });
+          
           console.log('🎵 [ELEVENLABS] Generating audio for AI response:', response.substring(0, 100) + '...');
           
           // Generate audio using ElevenLabs
@@ -2206,9 +2245,17 @@ function testDialoguePopup(): void {
             }
           });
           
+          console.log('🎵 [ELEVENLABS] AI response audio generation result:', audioResult);
+          
           if (audioResult.success) {
             const duration = audioResult.duration || 0;
             console.log('🎵 [ELEVENLABS] AI response audio generated successfully, duration:', duration);
+            
+            // Update button to playing state
+            playButton.innerHTML = '⏸️';
+            playButton.style.borderColor = '#f59e0b';
+            playButton.style.color = '#f59e0b';
+            playButton.disabled = false;
             
             // Play the audio
             const playbackSuccess = await elevenLabsService.playAudio((currentTime) => {
@@ -2233,8 +2280,9 @@ function testDialoguePopup(): void {
           playButton.innerHTML = '▶️';
           playButton.style.borderColor = '#d1d5db';
           playButton.style.color = '#374151';
+          playButton.disabled = false;
           
-          // Show error message to user
+          // Show detailed error message to user
           const errorDiv = document.createElement('div');
           errorDiv.style.cssText = `
             position: absolute;
@@ -2247,16 +2295,18 @@ function testDialoguePopup(): void {
             border-radius: 8px;
             font-size: 12px;
             z-index: 1000;
+            max-width: 300px;
+            word-wrap: break-word;
           `;
-          errorDiv.textContent = 'Audio generation failed';
+          errorDiv.textContent = `Audio generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
           aiMessage.appendChild(errorDiv);
           
-          // Remove error message after 3 seconds
+          // Remove error message after 5 seconds
           setTimeout(() => {
             if (errorDiv.parentNode) {
               errorDiv.parentNode.removeChild(errorDiv);
             }
-          }, 3000);
+          }, 5000);
         }
       } else {
         // Pause audio
