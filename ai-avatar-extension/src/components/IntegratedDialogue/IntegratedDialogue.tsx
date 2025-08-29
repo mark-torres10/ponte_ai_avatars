@@ -5,6 +5,7 @@ import { DialoguePopup } from '../DialoguePopup';
 import { StreamingText } from '../StreamingText';
 import { ActionButtons } from '../ActionButtons';
 import { ActionButton } from '../../types';
+import { audioIntegrationService } from '../../services/audio-integration';
 
 interface IntegratedDialogueProps {
   isVisible: boolean;
@@ -130,14 +131,14 @@ export const IntegratedDialogue: React.FC<IntegratedDialogueProps> = ({
             {/* Header */}
             <div className="text-center">
               <h2 className="text-xl font-semibold text-gray-800 mb-2">
-                AI Sports Commentary
+                Parker Munns
               </h2>
               <p className="text-sm text-gray-600">
                 {streamingTextState.isComplete 
                   ? 'Commentary complete! What would you like to do next?'
                   : dialogueState.isStreaming 
                     ? 'Generating your personalized commentary...'
-                    : 'Ready to generate professional sports commentary'
+                    : 'AI-powered live game analysis & commentary'
                 }
               </p>
             </div>
@@ -150,6 +151,8 @@ export const IntegratedDialogue: React.FC<IntegratedDialogueProps> = ({
                   speed={streamingTextState.speed}
                   isStreaming={dialogueState.isStreaming}
                   onComplete={handleStreamingComplete}
+                  audioSync={true}
+                  audioPlaybackState={useDialogueStore.getState().audioState.playback}
                 />
               </div>
             )}
@@ -160,6 +163,31 @@ export const IntegratedDialogue: React.FC<IntegratedDialogueProps> = ({
                 buttons={getIntegratedActions()}
                 layout="horizontal"
                 onButtonActivate={handleActionExecute}
+                audioControls={true}
+                _audioPlaybackState={useDialogueStore.getState().audioState.playback}
+                _onAudioControl={(action: 'play' | 'pause' | 'stop' | 'volume' | 'speed', value?: number) => {
+                  switch (action) {
+                    case 'play':
+                      audioIntegrationService.playAudio();
+                      break;
+                    case 'pause':
+                      audioIntegrationService.pauseAudio();
+                      break;
+                    case 'stop':
+                      audioIntegrationService.stopAudio();
+                      break;
+                    case 'volume':
+                      if (value !== undefined) {
+                        audioIntegrationService.setVolume(value);
+                      }
+                      break;
+                    case 'speed':
+                      if (value !== undefined) {
+                        audioIntegrationService.setPlaybackSpeed(value);
+                      }
+                      break;
+                  }
+                }}
               />
             </div>
 
