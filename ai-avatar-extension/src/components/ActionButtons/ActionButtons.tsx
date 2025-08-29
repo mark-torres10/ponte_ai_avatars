@@ -6,6 +6,8 @@ import {
   Settings, 
   Loader2
 } from 'lucide-react';
+import { AudioControls } from '../AudioControls';
+
 import type { ActionButtonsProps, ActionButton, ButtonLayoutConfig, ButtonState } from './types';
 
 /**
@@ -23,6 +25,7 @@ import type { ActionButtonsProps, ActionButton, ButtonLayoutConfig, ButtonState 
  * - Comprehensive keyboard navigation support (Tab, Enter, Space)
  * - Intelligent layout system (horizontal, vertical, grid)
  * - Advanced accessibility features (ARIA labels, screen reader support)
+ * - Audio integration with ElevenLabs (PON-85)
  */
 export const ActionButtons: React.FC<ActionButtonsProps> = ({
   buttons,
@@ -31,7 +34,11 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
   showDescriptions: _showDescriptions = false,
   className = '',
   enableKeyboardNav = true,
-  onButtonActivate
+  onButtonActivate,
+  // Audio integration props (PON-85)
+  audioControls = false,
+  _audioPlaybackState,
+  _onAudioControl
 }) => {
   // Component state management
   const [buttonState, setButtonState] = useState<ButtonState>({
@@ -109,7 +116,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
   }, [layoutConfig]);
 
   // Handle button click with loading state
-  const handleButtonClick = useCallback(async (button: ActionButton, index: number) => {
+  const handleButtonClick = useCallback(async (button: ActionButton, _index: number) => {
     if (button.disabled || button.loading) return;
 
     try {
@@ -339,6 +346,20 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
           ))}
         </motion.div>
       </AnimatePresence>
+
+      {/* Audio Controls Integration (PON-85) */}
+      {audioControls && (
+        <>
+          {console.log('🎵 ActionButtons: audioControls is true, rendering AudioControls')}
+          <AudioControls 
+            showVolume={true}
+            showSpeed={true}
+            showProgress={true}
+            className="mt-4"
+          />
+        </>
+      )}
+      {!audioControls && (() => { console.log('🎵 ActionButtons: audioControls is false, not rendering AudioControls'); return null; })()}
     </div>
   );
 };

@@ -15,6 +15,14 @@ export interface StreamingTextProps {
   className?: string;
   showCursor?: boolean;
   cursorBlink?: boolean;
+  // Audio integration props (PON-85)
+  audioSync?: boolean;
+  onAudioStateChange?: (currentTime: number) => void;
+  audioPlaybackState?: {
+    isPlaying: boolean;
+    currentTime: number;
+    duration: number;
+  };
 }
 
 export interface CharacterAnimationProps {

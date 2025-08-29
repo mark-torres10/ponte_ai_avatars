@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { StreamingTextProps, StreamingTextState } from './types';
+import { RealTimeTextStream } from '../RealTimeTextStream';
 
 /**
  * StreamingText Component
@@ -19,7 +20,11 @@ export const StreamingText: React.FC<StreamingTextProps> = ({
   onComplete,
   className = '',
   showCursor = true,
-  cursorBlink = true
+  cursorBlink = true,
+  // Audio integration props (PON-85)
+  audioSync = false,
+  onAudioStateChange,
+  audioPlaybackState
 }) => {
   // Error boundary for streaming errors
   const [hasError, setHasError] = React.useState(false);
@@ -68,6 +73,39 @@ export const StreamingText: React.FC<StreamingTextProps> = ({
     const baseDelay = 1000 / speed;
     return Math.floor(baseDelay * 0.9); // 10% faster
   }, [speed]);
+
+  // Audio synchronization logic (PON-85)
+  const [syncState, setSyncState] = useState({
+    isSynchronized: false,
+    syncAccuracy: 0,
+    lastSyncCheck: Date.now()
+  });
+
+  // Audio sync effect - monitor audio playback and adjust text streaming
+  useEffect(() => {
+    if (!audioSync || !audioPlaybackState || !isStreaming) return;
+
+    const checkAudioSync = () => {
+      if (!audioPlaybackState.isPlaying) return;
+
+      const currentTime = audioPlaybackState.currentTime;
+      const expectedTextIndex = Math.floor(currentTime * speed);
+      const actualTextIndex = state.currentIndex;
+      const syncAccuracy = Math.abs(expectedTextIndex - actualTextIndex);
+
+      setSyncState({
+        isSynchronized: syncAccuracy < 2, // Within 2 characters
+        syncAccuracy,
+        lastSyncCheck: Date.now()
+      });
+
+      // Notify parent component of audio state change
+      onAudioStateChange?.(currentTime);
+    };
+
+    const syncInterval = setInterval(checkAudioSync, 16); // ~60fps sync checking
+    return () => clearInterval(syncInterval);
+  }, [audioSync, audioPlaybackState, isStreaming, speed, state.currentIndex, onAudioStateChange]);
 
   // Streaming effect using requestAnimationFrame for optimal performance
   const streamText = useCallback(() => {
@@ -190,6 +228,16 @@ export const StreamingText: React.FC<StreamingTextProps> = ({
           />
           <span>Generating commentary...</span>
         </motion.div>
+      )}
+
+      {/* Real-time text streaming with audio synchronization (PON-85) */}
+      {audioSync && audioPlaybackState && (
+        <RealTimeTextStream 
+          text={text}
+          className="mt-2"
+          autoStart={audioPlaybackState.isPlaying}
+          streamingSpeed={speed}
+        />
       )}
 
       {/* Completion indicator */}

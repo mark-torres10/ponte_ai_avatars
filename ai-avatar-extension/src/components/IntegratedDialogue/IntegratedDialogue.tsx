@@ -5,6 +5,7 @@ import { DialoguePopup } from '../DialoguePopup';
 import { StreamingText } from '../StreamingText';
 import { ActionButtons } from '../ActionButtons';
 import { ActionButton } from '../../types';
+import { audioIntegrationService } from '../../services/audio-integration';
 
 interface IntegratedDialogueProps {
   isVisible: boolean;
@@ -150,6 +151,8 @@ export const IntegratedDialogue: React.FC<IntegratedDialogueProps> = ({
                   speed={streamingTextState.speed}
                   isStreaming={dialogueState.isStreaming}
                   onComplete={handleStreamingComplete}
+                  audioSync={true}
+                  audioPlaybackState={useDialogueStore.getState().audioState.playback}
                 />
               </div>
             )}
@@ -160,6 +163,31 @@ export const IntegratedDialogue: React.FC<IntegratedDialogueProps> = ({
                 buttons={getIntegratedActions()}
                 layout="horizontal"
                 onButtonActivate={handleActionExecute}
+                audioControls={true}
+                _audioPlaybackState={useDialogueStore.getState().audioState.playback}
+                _onAudioControl={(action: 'play' | 'pause' | 'stop' | 'volume' | 'speed', value?: number) => {
+                  switch (action) {
+                    case 'play':
+                      audioIntegrationService.playAudio();
+                      break;
+                    case 'pause':
+                      audioIntegrationService.pauseAudio();
+                      break;
+                    case 'stop':
+                      audioIntegrationService.stopAudio();
+                      break;
+                    case 'volume':
+                      if (value !== undefined) {
+                        audioIntegrationService.setVolume(value);
+                      }
+                      break;
+                    case 'speed':
+                      if (value !== undefined) {
+                        audioIntegrationService.setPlaybackSpeed(value);
+                      }
+                      break;
+                  }
+                }}
               />
             </div>
 

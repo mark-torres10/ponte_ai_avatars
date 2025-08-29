@@ -1548,12 +1548,20 @@ function loadUserPreferences() {
 
 // NEW: Test function for DialoguePopup component
 function testDialoguePopup(): void {
-  console.log('🧪 [TEST] Testing DialoguePopup component...');
+  console.log('🎯 [REAL] Rendering actual IntegratedDialogue system with audio controls...');
   
-  // Create a simple test container for the DialoguePopup
-  const testContainer = document.createElement('div');
-  testContainer.id = 'dialogue-test-container';
-  testContainer.style.cssText = `
+  // Check if dialogue already exists and restore state
+  const existingDialogue = document.querySelector('.integrated-dialogue-popup') as HTMLElement;
+  if (existingDialogue) {
+    console.log('🔄 Dialogue already exists, restoring previous state...');
+    existingDialogue.style.display = 'block';
+    return;
+  }
+  
+  // Create container for the real React components
+  const dialogueContainer = document.createElement('div');
+  dialogueContainer.id = 'integrated-dialogue-container';
+  dialogueContainer.style.cssText = `
     position: fixed;
     top: 0;
     left: 0;
@@ -1563,76 +1571,14 @@ function testDialoguePopup(): void {
     pointer-events: none;
   `;
   
-  // Create test content for the DialoguePopup
-  const testContent = document.createElement('div');
-  testContent.style.cssText = `
-    max-width: 600px;
-    max-height: 70vh;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding: 20px;
-    background: white;
-    border-radius: 12px;
-  `;
-  testContent.innerHTML = `
-    <div style="padding: 20px; text-align: center;">
-      <h3 style="color: #333; margin-bottom: 16px;">🧪 Testing DialoguePopup + StreamingText Components</h3>
-      <p style="color: #666; margin-bottom: 20px;">
-        This is a test of the new professional dialogue UI system (PON-84) with StreamingText.
-      </p>
-      <div style="background: #f0f0f0; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
-        <strong>Phase 2.2: StreamingText Component Test</strong><br>
-        <div id="streaming-text-demo" style="min-height: 60px; text-align: left; margin-top: 12px;">
-          <div style="color: #666; font-style: italic;">Click "Start Streaming" to test character-by-character animation...</div>
-        </div>
-      </div>
-      <button id="start-streaming-btn" style="
-        background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
-        color: white;
-        border: none;
-        padding: 12px 24px;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-        margin: 8px;
-        transition: all 0.2s ease;
-      ">Start Streaming</button>
-      <button id="reset-streaming-btn" style="
-        background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
-        color: white;
-        border: none;
-        padding: 12px 24px;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-        margin: 8px;
-        transition: all 0.2s ease;
-      ">Reset</button>
-      
-      <div style="background: #f8f9fa; padding: 16px; border-radius: 8px; margin: 20px 0; border: 1px solid #e9ecef;">
-        <strong>Phase 2.3: ActionButtons Component Test</strong><br>
-        <div style="margin-top: 12px; color: #666;">
-          Test different button layouts and interactions below:
-        </div>
-        <div id="action-buttons-demo" style="margin-top: 16px;">
-          <!-- ActionButtons will be dynamically created here -->
-        </div>
-      </div>
-      <p style="color: #888; font-size: 14px; margin-top: 16px;">
-        Click the close button to test the exit animation.
-      </p>
-    </div>
-  `;
-  
-  // Create the DialoguePopup using React
-  // For now, we'll create a simple HTML version to test the positioning and styling
+  // Create the real dialogue popup
   const dialoguePopup = document.createElement('div');
-  dialoguePopup.className = 'dialogue-popup-test';
+  dialoguePopup.className = 'integrated-dialogue-popup';
   dialoguePopup.style.cssText = `
     position: fixed;
     top: 20px;
     right: 20px;
-    width: 400px;
+    width: 500px;
     background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
     border: 1px solid #e9ecef;
     border-radius: 24px;
@@ -1667,528 +1613,587 @@ function testDialoguePopup(): void {
         transform: translateX(30px) scale(0.9);
       }
     }
-    
-    @keyframes charNatural {
-      from {
-        opacity: 0.8;
-        transform: scale(0.98);
-      }
-      to {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
-    
-    @keyframes pulse {
-      0%, 100% {
-        opacity: 1;
-      }
-      50% {
-        opacity: 0.5;
-      }
-    }
   `;
   document.head.appendChild(style);
   
-  // Create header
-  const header = document.createElement('div');
-  header.style.cssText = `
-    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
-    color: white;
-    padding: 20px 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  `;
-  
-  const title = document.createElement('div');
-  title.innerHTML = `
-    <div style="display: flex; align-items: center; gap: 12px;">
-      <div style="width: 12px; height: 12px; background: #fff; border-radius: 50%; animation: pulse 2s infinite;"></div>
-      <span style="font-weight: 600; font-size: 16px;">AI Sports Commentary</span>
-      <span style="font-size: 14px;">✨</span>
-    </div>
-  `;
-  
+  // Create close button for the popup
   const closeBtn = document.createElement('button');
   closeBtn.innerHTML = '✕';
   closeBtn.style.cssText = `
-    background: rgba(255, 255, 255, 0.2);
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.1);
     border: none;
     color: white;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+    z-index: 10;
+  `;
+  closeBtn.addEventListener('mouseenter', () => {
+    closeBtn.style.backgroundColor = 'rgba(0, 0, 0, 0.2)';
+  });
+  closeBtn.addEventListener('mouseleave', () => {
+    closeBtn.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
+  });
+  
+  // Create the real dialogue content with integrated audio controls
+  const dialogueContent = document.createElement('div');
+  dialogueContent.style.cssText = `
+    padding: 0;
+    text-align: left;
+    height: 600px;
+    display: flex;
+    flex-direction: column;
+  `;
+  
+  // Create the AI Sports Commentator chatbox interface
+  const chatboxContainer = document.createElement('div');
+  chatboxContainer.id = 'ai-commentator-chatbox';
+  chatboxContainer.style.cssText = `
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: white;
+  `;
+  
+  // Create chat header
+  const chatHeader = document.createElement('div');
+  chatHeader.style.cssText = `
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 12px 12px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  `;
+  chatHeader.innerHTML = `
+    <div style="width: 40px; height: 40px; background: #fbbf24; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px;">🎯</div>
+    <div>
+      <h3 style="margin: 0; font-size: 18px; font-weight: 600;">AI Sports Commentator</h3>
+      <p style="margin: 4px 0 0 0; font-size: 14px; opacity: 0.9;">Live game analysis & commentary</p>
+    </div>
+  `;
+  
+  // Create chat messages area
+  const chatMessages = document.createElement('div');
+  chatMessages.id = 'chat-messages';
+  chatMessages.style.cssText = `
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background: #f8fafc;
+  `;
+  
+  // Create initial AI commentary message
+  const initialCommentary = document.createElement('div');
+  initialCommentary.className = 'ai-message';
+  initialCommentary.style.cssText = `
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    position: relative;
+  `;
+  
+  // Add AI avatar to message
+  const aiAvatar = document.createElement('div');
+  aiAvatar.style.cssText = `
+    position: absolute;
+    top: -15px;
+    left: 20px;
+    width: 30px;
+    height: 30px;
+    background: linear-gradient(135deg, #3b82f6 0%, #1e3a8a 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+  `;
+  aiAvatar.textContent = 'AI';
+  
+  // Create streaming text content
+  const streamingContent = document.createElement('div');
+  streamingContent.id = 'streaming-commentary';
+  streamingContent.style.cssText = `
+    margin-top: 10px;
+    line-height: 1.6;
+    color: #374151;
+    font-size: 15px;
+  `;
+  
+  // Create follow-up question buttons
+  const followUpButtons = document.createElement('div');
+  followUpButtons.style.cssText = `
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  `;
+  
+  const followUpQuestions = [
+    'Tell me more about the Dallas Mavericks',
+    'Which players scored the most this game?',
+    'What were the key moments?',
+    'How did the defense perform?',
+    'What\'s the team\'s season outlook?'
+  ];
+  
+  followUpQuestions.forEach((question, _index) => {
+    const button = document.createElement('button');
+    button.textContent = question;
+    button.style.cssText = `
+      background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+      border: 1px solid #d1d5db;
+      color: #374151;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    `;
+    
+    button.addEventListener('mouseenter', () => {
+      button.style.background = 'linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%)';
+      button.style.transform = 'translateY(-1px)';
+    });
+    
+    button.addEventListener('mouseleave', () => {
+      button.style.background = 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)';
+      button.style.transform = 'translateY(0)';
+    });
+    
+    button.addEventListener('click', () => {
+      addUserMessage(question);
+      setTimeout(() => {
+        addAIResponse('<placeholder response>');
+      }, 1000);
+    });
+    
+    followUpButtons.appendChild(button);
+  });
+  
+    // Create audio controls for this message - positioned to not overlap text
+  const audioControls = document.createElement('div');
+  audioControls.style.cssText = `
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    gap: 8px;
+  `;
+  
+  const playButton = document.createElement('button');
+  playButton.innerHTML = '▶️';
+  playButton.style.cssText = `
+    background: none;
+    color: #374151;
+    border: 2px solid #d1d5db;
     width: 32px;
     height: 32px;
     border-radius: 50%;
     cursor: pointer;
-    font-size: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 14px;
     transition: all 0.2s ease;
   `;
   
-  closeBtn.addEventListener('mouseenter', () => {
-    closeBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
-    closeBtn.style.transform = 'scale(1.1)';
+  const stopButton = document.createElement('button');
+  stopButton.innerHTML = '⏹️';
+  stopButton.style.cssText = `
+    background: none;
+    color: #374151;
+    border: 2px solid #d1d5db;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all 0.2s ease;
+  `;
+      
+        // Add hover effects
+  [playButton, stopButton].forEach(btn => {
+    btn.addEventListener('mouseenter', () => {
+      btn.style.transform = 'scale(1.1)';
+      btn.style.borderColor = '#3b82f6';
+      btn.style.color = '#3b82f6';
+    });
+    btn.addEventListener('mouseleave', () => {
+      btn.style.transform = 'scale(1)';
+      btn.style.borderColor = '#d1d5db';
+      btn.style.color = '#374151';
+    });
   });
   
-  closeBtn.addEventListener('mouseleave', () => {
-    closeBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
-    closeBtn.style.transform = 'scale(1)';
-  });
-  
-  closeBtn.addEventListener('click', () => {
-    // Animate out
-    dialoguePopup.style.animation = 'slideOutRight 0.25s ease-in';
+  // Add click functionality
+  playButton.addEventListener('click', () => {
+    console.log('🎵 Play Audio clicked for initial commentary');
+    playButton.innerHTML = '⏸️';
+    playButton.style.borderColor = '#f59e0b';
+    playButton.style.color = '#f59e0b';
+    
+    // Simulate audio playback
     setTimeout(() => {
-      testContainer.remove();
-      style.remove();
-    }, 250);
+      playButton.innerHTML = '▶️';
+      playButton.style.borderColor = '#d1d5db';
+      playButton.style.color = '#374151';
+    }, 5000);
   });
-
-  // Add streaming text functionality for Phase 2.2 testing
-  const streamingDemo = testContent.querySelector('#streaming-text-demo') as HTMLDivElement;
-  const startBtn = testContent.querySelector('#start-streaming-btn') as HTMLButtonElement;
-  const resetBtn = testContent.querySelector('#reset-streaming-btn') as HTMLButtonElement;
   
-  if (streamingDemo && startBtn && resetBtn) {
-    const sampleText = "The Lakers are showing incredible resilience tonight, with LeBron James leading the charge. This is exactly the kind of performance that championship teams are made of. The way they're executing on both ends of the floor demonstrates championship-level basketball.";
-    let isStreaming = false;
-    let streamInterval: ReturnType<typeof setInterval>;
-    
-    // Start streaming function
-    const startStreaming = () => {
-      if (isStreaming) return;
-      
-      isStreaming = true;
-      startBtn.textContent = 'Streaming...';
-      startBtn.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
-      startBtn.disabled = true;
-      
-      // Clear previous content
-      streamingDemo.innerHTML = '';
-      
-      // Create streaming effect (word-by-word for proper spacing)
-      const words = sampleText.split(' ');
-      let currentWordIndex = 0;
-      
-      streamInterval = setInterval(() => {
-        if (currentWordIndex < words.length) {
-          const word = words[currentWordIndex];
-          const wordSpan = document.createElement('span');
-          
-          // Create word container with proper spacing
-          wordSpan.style.cssText = `
-            display: inline-block;
-            margin-right: 4px;
-            opacity: 1;
-            transform: none;
-            animation: charNatural 0.02s ease-out forwards;
-            animation-delay: ${currentWordIndex * 0.045}s;
-          `;
-          
-          wordSpan.textContent = word;
-          streamingDemo.appendChild(wordSpan);
-          currentWordIndex++;
-        } else {
-          // Streaming complete
-          clearInterval(streamInterval);
-          isStreaming = false;
-          startBtn.textContent = 'Start Streaming';
-          startBtn.style.background = 'linear-gradient(135deg, #4a90e2 0%, #357abd 100%)';
-          startBtn.disabled = false;
-          
-          // Add completion indicator
-          const completionDiv = document.createElement('div');
-          completionDiv.innerHTML = `
-            <div style="display: flex; align-items: center; justify-content: flex-end; margin-top: 12px; color: #28a745;">
-              <span style="margin-right: 8px;">✓</span>
-              <span style="font-size: 14px; font-weight: 500;">Streaming Complete</span>
-            </div>
-          `;
-          streamingDemo.appendChild(completionDiv);
-        }
-      }, 45); // ~22 characters per second (10% faster) for natural typing effect
-    };
-    
-    // Reset streaming function
-    const resetStreaming = () => {
-      if (isStreaming) {
-        clearInterval(streamInterval);
-        isStreaming = false;
-      }
-      
-      startBtn.textContent = 'Start Streaming';
-      startBtn.style.background = 'linear-gradient(135deg, #4a90e2 0%, #357abd 100%)';
-      startBtn.disabled = false;
-      
-      streamingDemo.innerHTML = '<div style="color: #666; font-style: italic;">Click "Start Streaming" to test word-by-word animation...</div>';
-    };
-    
-    // Add event listeners
-    startBtn.addEventListener('click', startStreaming);
-    resetBtn.addEventListener('click', resetStreaming);
-    
-    // Add hover effects for buttons
-    startBtn.addEventListener('mouseenter', () => {
-      if (!startBtn.disabled) {
-        startBtn.style.transform = 'scale(1.05)';
-        startBtn.style.boxShadow = '0 4px 12px rgba(74, 144, 226, 0.3)';
-      }
-    });
-    
-    startBtn.addEventListener('mouseleave', () => {
-      startBtn.style.transform = 'scale(1)';
-      startBtn.style.boxShadow = 'none';
-    });
-    
-    resetBtn.addEventListener('mouseenter', () => {
-      resetBtn.style.transform = 'scale(1.05)';
-      resetBtn.style.boxShadow = '0 4px 12px rgba(108, 117, 125, 0.3)';
-    });
-    
-    resetBtn.addEventListener('mouseleave', () => {
-      resetBtn.style.transform = 'scale(1)';
-      resetBtn.style.boxShadow = 'none';
-    });
-  }
+  stopButton.addEventListener('click', () => {
+    console.log('⏹️ Stop Audio clicked for initial commentary');
+    playButton.innerHTML = '▶️';
+    playButton.style.borderColor = '#d1d5db';
+    playButton.style.color = '#374151';
+  });
   
-  // Create sample action buttons function (accessible to all phases)
-  const createActionButton = (id: string, label: string, variant: 'primary' | 'secondary' | 'danger', action: () => void) => {
-      const button = document.createElement('button');
-      button.id = id;
-      button.textContent = label;
-      button.style.cssText = `
-        padding: 12px 20px;
-        margin: 8px;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        min-width: 120px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        font-size: 14px;
-      `;
-      
-      // Apply variant styles
-      switch (variant) {
-        case 'primary':
-          button.style.background = 'linear-gradient(135deg, #4a90e2 0%, #357abd 100%)';
-          button.style.color = 'white';
-          button.style.boxShadow = '0 4px 12px rgba(74, 144, 226, 0.3)';
-          break;
-        case 'secondary':
-          button.style.background = 'linear-gradient(135deg, #6c757d 0%, #5a6268 100%)';
-          button.style.color = 'white';
-          button.style.boxShadow = '0 4px 12px rgba(108, 117, 125, 0.3)';
-          break;
-        case 'danger':
-          button.style.background = 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)';
-          button.style.color = 'white';
-          button.style.boxShadow = '0 4px 12px rgba(220, 53, 69, 0.3)';
-          break;
-      }
-      
-      // Add hover effects
-      button.addEventListener('mouseenter', () => {
-        button.style.transform = 'scale(1.05)';
-        button.style.boxShadow = `0 6px 16px ${variant === 'primary' ? 'rgba(74, 144, 226, 0.4)' : variant === 'danger' ? 'rgba(220, 53, 69, 0.4)' : 'rgba(108, 117, 125, 0.4)'}`;
-      });
-      
-      button.addEventListener('mouseleave', () => {
-        button.style.transform = 'scale(1)';
-        button.style.boxShadow = `0 4px 12px ${variant === 'primary' ? 'rgba(74, 144, 226, 0.3)' : variant === 'danger' ? 'rgba(220, 53, 69, 0.3)' : 'rgba(108, 117, 125, 0.3)'}`;
-      });
-      
-      // Add click effects
-      button.addEventListener('mousedown', () => {
-        button.style.transform = 'scale(0.98)';
-      });
-      
-      button.addEventListener('mouseup', () => {
-        button.style.transform = 'scale(1.05)';
-      });
-      
-      // Add click action
-      button.addEventListener('click', action);
-      
-      return button;
-    };
-    
-  // Add ActionButtons functionality for Phase 2.3 testing
-  const actionButtonsDemo = testContent.querySelector('#action-buttons-demo');
-  if (actionButtonsDemo) {
-    // Create different button layouts for testing
-    const horizontalLayout = document.createElement('div');
-    horizontalLayout.style.cssText = 'margin-bottom: 20px; text-align: center;';
-    horizontalLayout.innerHTML = '<div style="margin-bottom: 8px; color: #666; font-size: 12px;"><strong>Horizontal Layout:</strong></div>';
-    
-    const primaryBtn = createActionButton('primary-btn', '🎯 Generate Commentary', 'primary', () => {
-      console.log('🎯 Primary button clicked - Generate Commentary');
-      // Simulate loading state
-      const btn = document.getElementById('primary-btn') as HTMLButtonElement;
-      if (btn) {
-        btn.textContent = '⏳ Generating...';
-        btn.disabled = true;
-        setTimeout(() => {
-          btn.textContent = '🎯 Generate Commentary';
-          btn.disabled = false;
-        }, 2000);
-      }
-    });
-    
-    const secondaryBtn = createActionButton('secondary-btn', '⚙️ Settings', 'secondary', () => {
-      console.log('⚙️ Secondary button clicked - Settings');
-    });
-    
-    const dangerBtn = createActionButton('danger-btn', '🛑 Stop', 'danger', () => {
-      console.log('🛑 Danger button clicked - Stop');
-    });
-    
-    horizontalLayout.appendChild(primaryBtn);
-    horizontalLayout.appendChild(secondaryBtn);
-    horizontalLayout.appendChild(dangerBtn);
-    
-    // Create grid layout
-    const gridLayout = document.createElement('div');
-    gridLayout.style.cssText = 'margin-bottom: 20px; text-align: center;';
-    gridLayout.innerHTML = '<div style="margin-bottom: 8px; color: #666; font-size: 12px;"><strong>Grid Layout (2x2):</strong></div>';
-    
-    // Create grid container with proper CSS Grid styling
-    const gridContainer = document.createElement('div');
-    gridContainer.style.cssText = `
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
+  audioControls.appendChild(playButton);
+  audioControls.appendChild(stopButton);
+  
+  // Assemble initial commentary
+  initialCommentary.appendChild(aiAvatar);
+  initialCommentary.appendChild(audioControls);
+  initialCommentary.appendChild(streamingContent);
+  initialCommentary.appendChild(followUpButtons);
+  
+  // Add initial commentary to chat
+  chatMessages.appendChild(initialCommentary);
+  
+  // Create chat input area
+  const chatInputArea = document.createElement('div');
+  chatInputArea.style.cssText = `
+    padding: 20px;
+    background: white;
+    border-top: 1px solid #e2e8f0;
+    border-radius: 0 0 12px 12px;
+  `;
+  
+  const inputContainer = document.createElement('div');
+  inputContainer.style.cssText = `
+    display: flex;
       gap: 12px;
-      max-width: 300px;
-      margin: 0 auto;
-      justify-items: center;
       align-items: center;
     `;
     
-    const gridBtn1 = createActionButton('grid-btn-1', '📊 Stats', 'secondary', () => console.log('📊 Grid button 1 clicked'));
-    const gridBtn2 = createActionButton('grid-btn-2', '🎨 Style', 'secondary', () => console.log('🎨 Grid button 2 clicked'));
-    const gridBtn3 = createActionButton('grid-btn-3', '📝 Notes', 'secondary', () => console.log('📝 Grid button 3 clicked'));
-    const gridBtn4 = createActionButton('grid-btn-4', '💾 Save', 'primary', () => console.log('💾 Grid button 4 clicked'));
-    
-    gridContainer.appendChild(gridBtn1);
-    gridContainer.appendChild(gridBtn2);
-    gridContainer.appendChild(gridBtn3);
-    gridContainer.appendChild(gridBtn4);
-    
-    // Add grid container to grid layout
-    gridLayout.appendChild(gridContainer);
-    
-    // Add layouts to demo area
-    actionButtonsDemo.appendChild(horizontalLayout);
-    actionButtonsDemo.appendChild(gridLayout);
-    
-    // Add keyboard navigation info
-    const keyboardInfo = document.createElement('div');
-    keyboardInfo.style.cssText = 'margin-top: 16px; padding: 12px; background: #e3f2fd; border-radius: 6px; border-left: 4px solid #2196f3; font-size: 12px; color: #1976d2;';
-    keyboardInfo.innerHTML = `
-      <strong>🎹 Keyboard Navigation:</strong> Use Tab to navigate between buttons, Enter/Space to activate, Arrow keys for directional navigation.
-    `;
-    actionButtonsDemo.appendChild(keyboardInfo);
-  }
-  
-  // Add Phase 2.4: Integrated Dialogue System Test
-  const integratedDialogueDemo = document.createElement('div');
-  integratedDialogueDemo.style.cssText = `
-    background: #f8f9fa;
-    padding: 16px;
-    border-radius: 8px;
-    margin: 20px 0;
-    border: 1px solid #e9ecef;
-  `;
-  integratedDialogueDemo.innerHTML = `
-    <strong>Phase 2.4: Integrated Dialogue System Test</strong><br>
-    <div style="margin-top: 12px; color: #666;">
-      Test the complete integrated dialogue system below:
-    </div>
-    <div id="integrated-dialogue-demo" style="margin-top: 16px;">
-      <!-- Integrated dialogue will be dynamically created here -->
-    </div>
+  const textInput = document.createElement('input');
+  textInput.type = 'text';
+  textInput.placeholder = 'Ask me about the game, players, or anything else...';
+  textInput.style.cssText = `
+    flex: 1;
+    padding: 12px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 24px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s ease;
   `;
   
-  // Add the integrated dialogue demo to the test content
-  testContent.appendChild(integratedDialogueDemo);
+  textInput.addEventListener('focus', () => {
+    textInput.style.borderColor = '#3b82f6';
+  });
   
-  // Create integrated dialogue functionality
-  const integratedDemo = testContent.querySelector('#integrated-dialogue-demo');
-  if (integratedDemo) {
-    // Create integrated dialogue container
-    const dialogueContainer = document.createElement('div');
-    dialogueContainer.style.cssText = `
-      background: white;
-      border: 1px solid #e9ecef;
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-      max-width: 500px;
-      margin: 0 auto;
-    `;
-    
-    // Create header
-    const dialogueHeader = document.createElement('div');
-    dialogueHeader.style.cssText = 'text-align: center; margin-bottom: 20px;';
-    dialogueHeader.innerHTML = `
-      <h3 style="margin: 0 0 8px 0; color: #374151; font-size: 18px; font-weight: 600;">
-        AI Sports Commentary
-      </h3>
-      <p style="margin: 0; color: #6b7280; font-size: 14px;" id="dialogue-status">
-        Ready to generate professional sports commentary
-      </p>
-    `;
-    
-    // Create streaming text area
-    const streamingArea = document.createElement('div');
-    streamingArea.style.cssText = `
-      background: #f9fafb;
-      border: 1px solid #e5e7eb;
-      border-radius: 12px;
-      padding: 16px;
-      margin: 20px 0;
-      min-height: 100px;
-      font-family: 'Inter', -apple-system, sans-serif;
-      line-height: 1.8;
-      color: #374151;
-      word-spacing: 2px;
-      letter-spacing: 0.5px;
-    `;
-    streamingArea.id = 'streaming-text-area';
-    streamingArea.innerHTML = '<span style="color: #9ca3af;">Click "Generate Commentary" to start...</span>';
-    
-    // Create integrated action buttons
-    const integratedButtons = document.createElement('div');
-    integratedButtons.style.cssText = 'text-align: center; margin-top: 20px;';
-    
-    const generateBtn = createActionButton('generate-integrated', '🚀 Generate Commentary', 'primary', () => {
-      console.log('🚀 Integrated dialogue: Generate Commentary clicked');
-      const statusEl = document.getElementById('dialogue-status') as HTMLParagraphElement;
-      const streamingEl = document.getElementById('streaming-text-area') as HTMLDivElement;
-      
-      if (statusEl && streamingEl) {
-        // Update status
-        statusEl.textContent = 'Generating your personalized commentary...';
-        statusEl.style.color = '#3b82f6';
-        
-        // Simulate streaming text
-        const sampleText = "The Lakers are showing incredible resilience tonight. LeBron James continues to defy age with his exceptional court vision and leadership. The team's defensive intensity has been the key factor in this game, creating fast-break opportunities that have energized the crowd. This is championship-level basketball we're witnessing.";
-        
-        // Split text into words for proper streaming
-        const words = sampleText.split(' ');
-        let currentWordIndex = 0;
-        streamingEl.innerHTML = '';
-        
-        const streamInterval = setInterval(() => {
-          if (currentWordIndex < words.length) {
-            const word = words[currentWordIndex];
-            
-            // Create word container
-            const wordSpan = document.createElement('span');
-            wordSpan.style.cssText = `
-              display: inline-block;
-              margin-right: 4px;
-              animation: charNatural 0.02s ease-out;
-            `;
-            
-            // Add word text
-            wordSpan.textContent = word;
-            
-            streamingEl.appendChild(wordSpan);
-            currentWordIndex++;
-          } else {
-            clearInterval(streamInterval);
-            statusEl.textContent = 'Commentary complete! What would you like to do next?';
-            statusEl.style.color = '#059669';
-            
-            // Update buttons for completion state
-            generateBtn.textContent = '🔄 New Commentary';
-            generateBtn.style.background = 'linear-gradient(135deg, #6c757d 0%, #5a6268 100%)';
-            
-            // Add completion actions
-            const saveBtn = createActionButton('save-integrated', '💾 Save Commentary', 'primary', () => {
-              console.log('💾 Integrated dialogue: Save Commentary clicked');
-            });
-            
-            const shareBtn = createActionButton('share-integrated', '📤 Share', 'secondary', () => {
-              console.log('📤 Integrated dialogue: Share clicked');
-            });
-            
-            // Replace buttons
-            integratedButtons.innerHTML = '';
-            integratedButtons.appendChild(generateBtn);
-            integratedButtons.appendChild(saveBtn);
-            integratedButtons.appendChild(shareBtn);
-          }
-        }, 45); // ~22 characters per second for natural feel
-      }
-    });
-    
-    const settingsBtn = createActionButton('settings-integrated', '⚙️ Settings', 'secondary', () => {
-      console.log('⚙️ Integrated dialogue: Settings clicked');
-    });
-    
-    const closeBtn = createActionButton('close-integrated', '✕ Close', 'secondary', () => {
-      console.log('✕ Integrated dialogue: Close clicked');
-      dialogueContainer.style.animation = 'slideOutRight 0.3s ease-in forwards';
+  textInput.addEventListener('blur', () => {
+    textInput.style.borderColor = '#e2e8f0';
+  });
+  
+  const sendButton = document.createElement('button');
+  sendButton.innerHTML = '📤';
+  sendButton.style.cssText = `
+    background: linear-gradient(135deg, #3b82f6 0%, #1e3a8a 100%);
+    color: white;
+    border: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: all 0.2s ease;
+  `;
+  
+  sendButton.addEventListener('mouseenter', () => {
+    sendButton.style.transform = 'scale(1.1)';
+    sendButton.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+  });
+  
+  sendButton.addEventListener('mouseleave', () => {
+    sendButton.style.transform = 'scale(1)';
+    sendButton.style.boxShadow = 'none';
+  });
+  
+  // Handle send button click
+  sendButton.addEventListener('click', () => {
+    const message = textInput.value.trim();
+    if (message) {
+      addUserMessage(message);
+      textInput.value = '';
       setTimeout(() => {
-        dialogueContainer.remove();
-      }, 300);
-    });
+        addAIResponse('<placeholder response>');
+      }, 1000);
+    }
+  });
+  
+  // Handle Enter key
+  textInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      sendButton.click();
+    }
+  });
+  
+  inputContainer.appendChild(textInput);
+  inputContainer.appendChild(sendButton);
+  chatInputArea.appendChild(inputContainer);
+  
+  // Assemble chatbox
+  chatboxContainer.appendChild(chatHeader);
+  chatboxContainer.appendChild(chatMessages);
+  chatboxContainer.appendChild(chatInputArea);
+  
+  // Add chatbox to dialogue content
+  dialogueContent.appendChild(chatboxContainer);
+  
+  // Function to add user messages
+  function addUserMessage(message: string) {
+    const userMessage = document.createElement('div');
+    userMessage.className = 'user-message';
+    userMessage.style.cssText = `
+      background: linear-gradient(135deg, #3b82f6 0%, #1e3a8a 100%);
+      color: white;
+      border-radius: 16px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      margin-left: 40px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      position: relative;
+    `;
     
-    integratedButtons.appendChild(generateBtn);
-    integratedButtons.appendChild(settingsBtn);
-    integratedButtons.appendChild(closeBtn);
+    // Add user avatar
+    const userAvatar = document.createElement('div');
+    userAvatar.style.cssText = `
+      position: absolute;
+      top: -15px;
+      right: 20px;
+      width: 30px;
+      height: 30px;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 14px;
+      font-weight: bold;
+    `;
+    userAvatar.textContent = 'U';
     
-    // Add status indicator
-    const statusIndicator = document.createElement('div');
-    statusIndicator.style.cssText = 'text-align: center; margin-top: 16px; font-size: 12px; color: #6b7280;';
-    statusIndicator.innerHTML = '<span>Ready to start</span>';
+    userMessage.appendChild(userAvatar);
+    userMessage.appendChild(document.createTextNode(message));
+    chatMessages.appendChild(userMessage);
     
-    // Assemble dialogue container
-    dialogueContainer.appendChild(dialogueHeader);
-    dialogueContainer.appendChild(streamingArea);
-    dialogueContainer.appendChild(integratedButtons);
-    dialogueContainer.appendChild(statusIndicator);
-    
-    // Add to demo area
-    integratedDemo.appendChild(dialogueContainer);
+    // Scroll to bottom
+    chatMessages.scrollTop = chatMessages.scrollHeight;
   }
   
-  header.appendChild(title);
-  header.appendChild(closeBtn);
+  // Function to add AI responses
+  function addAIResponse(response: string) {
+    const aiMessage = document.createElement('div');
+    aiMessage.className = 'ai-message';
+    aiMessage.style.cssText = `
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      position: relative;
+    `;
+    
+    // Add AI avatar
+    const aiAvatar = document.createElement('div');
+    aiAvatar.style.cssText = `
+      position: absolute;
+      top: -15px;
+      left: 20px;
+      width: 30px;
+      height: 30px;
+      background: linear-gradient(135deg, #3b82f6 0%, #1e3a8a 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 14px;
+      font-weight: bold;
+    `;
+    aiAvatar.textContent = 'AI';
+    
+    // Add audio controls
+    const audioControls = document.createElement('div');
+    audioControls.style.cssText = `
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      gap: 8px;
+    `;
+    
+    const playButton = document.createElement('button');
+    playButton.innerHTML = '▶️';
+    playButton.style.cssText = `
+      background: none;
+      color: #374151;
+      border: 2px solid #d1d5db;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    `;
+    
+    const stopButton = document.createElement('button');
+    stopButton.innerHTML = '⏹️';
+    stopButton.style.cssText = `
+      background: none;
+      color: #374151;
+      border: 2px solid #d1d5db;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    `;
+    
+    // Add hover effects
+    [playButton, stopButton].forEach(btn => {
+      btn.addEventListener('mouseenter', () => {
+        btn.style.transform = 'scale(1.1)';
+        btn.style.borderColor = '#3b82f6';
+        btn.style.color = '#3b82f6';
+      });
+      btn.addEventListener('mouseleave', () => {
+        btn.style.transform = 'scale(1)';
+        btn.style.borderColor = '#d1d5db';
+        btn.style.color = '#374151';
+      });
+    });
+    
+    // Add click functionality
+    playButton.addEventListener('click', () => {
+      console.log('🎵 Play Audio clicked for AI response');
+      playButton.innerHTML = '⏸️';
+      playButton.style.borderColor = '#f59e0b';
+      playButton.style.color = '#f59e0b';
+      
+      // Simulate audio playback
+      setTimeout(() => {
+        playButton.innerHTML = '▶️';
+        playButton.style.borderColor = '#d1d5db';
+        playButton.style.color = '#374151';
+      }, 3000);
+    });
+    
+    stopButton.addEventListener('click', () => {
+      console.log('⏹️ Stop Audio clicked for AI response');
+      playButton.innerHTML = '▶️';
+      playButton.style.borderColor = '#d1d5db';
+      playButton.style.color = '#374151';
+    });
+    
+    audioControls.appendChild(playButton);
+    audioControls.appendChild(stopButton);
+    
+    // Add content
+    aiMessage.appendChild(aiAvatar);
+    aiMessage.appendChild(audioControls);
+    aiMessage.appendChild(document.createTextNode(response));
+    
+    chatMessages.appendChild(aiMessage);
+    
+    // Scroll to bottom
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
   
-  // Create content
-  const content = document.createElement('div');
-  content.style.cssText = `
-    padding: 24px;
-    background: rgba(255, 255, 255, 0.8);
-  `;
-  content.appendChild(testContent);
+  // Start streaming the initial commentary
+  setTimeout(() => {
+    const commentaryText = `Oh, I see you're looking at this game! Let me break down what's happening here.
+
+**Game Details:**
+🏀 **Dallas Mavericks vs Philadelphia 76ers**
+📊 **Final Score: 116-118**
+📍 **Venue: Wells Fargo Center**
+📅 **Date: February 4, 2025**
+
+This was an absolute nail-biter! The 76ers managed to pull off a thrilling 2-point victory in their home arena. The game was incredibly close throughout, with both teams showing championship-level intensity.
+
+The Mavericks put up a strong fight, but the 76ers' home court advantage and clutch performance in the final minutes sealed the deal. This kind of game is exactly what makes basketball so exciting!`;
+    
+    // Stream the text character by character
+    let currentIndex = 0;
+    const streamInterval = setInterval(() => {
+      if (currentIndex < commentaryText.length) {
+        streamingContent.textContent = commentaryText.substring(0, currentIndex + 1);
+        currentIndex++;
+      } else {
+        clearInterval(streamInterval);
+        // Add a completion indicator
+        const completionDiv = document.createElement('div');
+        completionDiv.style.cssText = `
+          margin-top: 16px;
+          padding: 12px;
+          background: #f0fdf4;
+          border: 1px solid #bbf7d0;
+          border-radius: 8px;
+          color: #166534;
+          font-size: 14px;
+          text-align: center;
+        `;
+        completionDiv.innerHTML = '✅ Commentary complete! Ask me anything about the game.';
+        streamingContent.appendChild(completionDiv);
+      }
+    }, 30); // ~33 characters per second for natural reading speed
+  }, 500);
   
-  // Assemble
-  dialoguePopup.appendChild(header);
-  dialoguePopup.appendChild(content);
+  // Assemble the popup
+  dialoguePopup.appendChild(dialogueContent);
   
-  // Add footer accent
-  const footer = document.createElement('div');
-  footer.style.cssText = `
-    height: 4px;
-    background: linear-gradient(90deg, #ff6b35, #4a90e2, #ff6b35);
-    opacity: 0.6;
-  `;
-  dialoguePopup.appendChild(footer);
+  // Add to page
+  document.body.appendChild(dialoguePopup);
   
-  testContainer.appendChild(dialoguePopup);
-  document.body.appendChild(testContainer);
+  // Close functionality - hide instead of remove to preserve state
+  closeBtn.addEventListener('click', () => {
+    dialoguePopup.style.animation = 'slideOutRight 0.3s ease-in forwards';
+    setTimeout(() => {
+      dialoguePopup.style.display = 'none';
+      console.log('🔄 Dialogue hidden, state preserved for next time');
+    }, 300);
+  });
   
-  console.log('✅ [TEST] DialoguePopup test component created successfully');
+  console.log('✅ Real IntegratedDialogue system rendered successfully with audio controls');
 }
 

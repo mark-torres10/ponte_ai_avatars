@@ -22,6 +22,18 @@ export interface ActionButtonsProps {
   enableKeyboardNav?: boolean;
   /** Callback when button is activated */
   onButtonActivate?: (buttonId: string) => void;
+  // Audio integration props (PON-85)
+  audioControls?: boolean;
+  _audioPlaybackState?: {
+    isPlaying: boolean;
+    isPaused: boolean;
+    isStopped: boolean;
+    currentTime: number;
+    duration: number;
+    volume: number;
+    playbackRate: number;
+  };
+  _onAudioControl?: (action: 'play' | 'pause' | 'stop' | 'volume' | 'speed', value?: number) => void;
 }
 
 export interface ButtonLayoutConfig {
