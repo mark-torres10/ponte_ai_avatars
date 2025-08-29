@@ -4,6 +4,7 @@
 export { DialoguePopup } from './DialoguePopup';
 export { StreamingText } from './StreamingText';
 export { ActionButtons } from './ActionButtons';
+export { IntegratedDialogue } from './IntegratedDialogue';
 
 // Export types
 export type {
@@ -24,3 +25,5 @@ export type {
   ButtonLayoutConfig,
   ButtonState
 } from './ActionButtons';
+
+

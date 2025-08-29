@@ -1512,6 +1512,15 @@ function testDialoguePopup(): void {
   
   // Create test content for the DialoguePopup
   const testContent = document.createElement('div');
+  testContent.style.cssText = `
+    max-width: 600px;
+    max-height: 70vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+  `;
   testContent.innerHTML = `
     <div style="padding: 20px; text-align: center;">
       <h3 style="color: #333; margin-bottom: 16px;">🧪 Testing DialoguePopup + StreamingText Components</h3>
@@ -1693,7 +1702,6 @@ function testDialoguePopup(): void {
   if (streamingDemo && startBtn && resetBtn) {
     const sampleText = "The Lakers are showing incredible resilience tonight, with LeBron James leading the charge. This is exactly the kind of performance that championship teams are made of. The way they're executing on both ends of the floor demonstrates championship-level basketball.";
     let isStreaming = false;
-    let currentIndex = 0;
     let streamInterval: ReturnType<typeof setInterval>;
     
     // Start streaming function
@@ -1701,7 +1709,6 @@ function testDialoguePopup(): void {
       if (isStreaming) return;
       
       isStreaming = true;
-      currentIndex = 0;
       startBtn.textContent = 'Streaming...';
       startBtn.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
       startBtn.disabled = true;
@@ -1709,21 +1716,28 @@ function testDialoguePopup(): void {
       // Clear previous content
       streamingDemo.innerHTML = '';
       
-      // Create streaming effect (10% faster, natural typing style)
+      // Create streaming effect (word-by-word for proper spacing)
+      const words = sampleText.split(' ');
+      let currentWordIndex = 0;
+      
       streamInterval = setInterval(() => {
-        if (currentIndex < sampleText.length) {
-          const char = sampleText[currentIndex];
-          const charSpan = document.createElement('span');
-          charSpan.textContent = char === ' ' ? '\u00A0' : char;
-          charSpan.style.cssText = `
+        if (currentWordIndex < words.length) {
+          const word = words[currentWordIndex];
+          const wordSpan = document.createElement('span');
+          
+          // Create word container with proper spacing
+          wordSpan.style.cssText = `
             display: inline-block;
+            margin-right: 4px;
             opacity: 1;
             transform: none;
             animation: charNatural 0.02s ease-out forwards;
-            animation-delay: ${currentIndex * 0.045}s;
+            animation-delay: ${currentWordIndex * 0.045}s;
           `;
-          streamingDemo.appendChild(charSpan);
-          currentIndex++;
+          
+          wordSpan.textContent = word;
+          streamingDemo.appendChild(wordSpan);
+          currentWordIndex++;
         } else {
           // Streaming complete
           clearInterval(streamInterval);
@@ -1752,12 +1766,11 @@ function testDialoguePopup(): void {
         isStreaming = false;
       }
       
-      currentIndex = 0;
       startBtn.textContent = 'Start Streaming';
       startBtn.style.background = 'linear-gradient(135deg, #4a90e2 0%, #357abd 100%)';
       startBtn.disabled = false;
       
-      streamingDemo.innerHTML = '<div style="color: #666; font-style: italic;">Click "Start Streaming" to test character-by-character animation...</div>';
+      streamingDemo.innerHTML = '<div style="color: #666; font-style: italic;">Click "Start Streaming" to test word-by-word animation...</div>';
     };
     
     // Add event listeners
@@ -1788,11 +1801,8 @@ function testDialoguePopup(): void {
     });
   }
   
-  // Add ActionButtons functionality for Phase 2.3 testing
-  const actionButtonsDemo = testContent.querySelector('#action-buttons-demo');
-  if (actionButtonsDemo) {
-    // Create sample action buttons
-    const createActionButton = (id: string, label: string, variant: 'primary' | 'secondary' | 'danger', action: () => void) => {
+  // Create sample action buttons function (accessible to all phases)
+  const createActionButton = (id: string, label: string, variant: 'primary' | 'secondary' | 'danger', action: () => void) => {
       const button = document.createElement('button');
       button.id = id;
       button.textContent = label;
@@ -1857,6 +1867,9 @@ function testDialoguePopup(): void {
       return button;
     };
     
+  // Add ActionButtons functionality for Phase 2.3 testing
+  const actionButtonsDemo = testContent.querySelector('#action-buttons-demo');
+  if (actionButtonsDemo) {
     // Create different button layouts for testing
     const horizontalLayout = document.createElement('div');
     horizontalLayout.style.cssText = 'margin-bottom: 20px; text-align: center;';
@@ -1929,6 +1942,171 @@ function testDialoguePopup(): void {
       <strong>🎹 Keyboard Navigation:</strong> Use Tab to navigate between buttons, Enter/Space to activate, Arrow keys for directional navigation.
     `;
     actionButtonsDemo.appendChild(keyboardInfo);
+  }
+  
+  // Add Phase 2.4: Integrated Dialogue System Test
+  const integratedDialogueDemo = document.createElement('div');
+  integratedDialogueDemo.style.cssText = `
+    background: #f8f9fa;
+    padding: 16px;
+    border-radius: 8px;
+    margin: 20px 0;
+    border: 1px solid #e9ecef;
+  `;
+  integratedDialogueDemo.innerHTML = `
+    <strong>Phase 2.4: Integrated Dialogue System Test</strong><br>
+    <div style="margin-top: 12px; color: #666;">
+      Test the complete integrated dialogue system below:
+    </div>
+    <div id="integrated-dialogue-demo" style="margin-top: 16px;">
+      <!-- Integrated dialogue will be dynamically created here -->
+    </div>
+  `;
+  
+  // Add the integrated dialogue demo to the test content
+  testContent.appendChild(integratedDialogueDemo);
+  
+  // Create integrated dialogue functionality
+  const integratedDemo = testContent.querySelector('#integrated-dialogue-demo');
+  if (integratedDemo) {
+    // Create integrated dialogue container
+    const dialogueContainer = document.createElement('div');
+    dialogueContainer.style.cssText = `
+      background: white;
+      border: 1px solid #e9ecef;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+      margin: 0 auto;
+    `;
+    
+    // Create header
+    const dialogueHeader = document.createElement('div');
+    dialogueHeader.style.cssText = 'text-align: center; margin-bottom: 20px;';
+    dialogueHeader.innerHTML = `
+      <h3 style="margin: 0 0 8px 0; color: #374151; font-size: 18px; font-weight: 600;">
+        AI Sports Commentary
+      </h3>
+      <p style="margin: 0; color: #6b7280; font-size: 14px;" id="dialogue-status">
+        Ready to generate professional sports commentary
+      </p>
+    `;
+    
+    // Create streaming text area
+    const streamingArea = document.createElement('div');
+    streamingArea.style.cssText = `
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 16px;
+      margin: 20px 0;
+      min-height: 100px;
+      font-family: 'Inter', -apple-system, sans-serif;
+      line-height: 1.8;
+      color: #374151;
+      word-spacing: 2px;
+      letter-spacing: 0.5px;
+    `;
+    streamingArea.id = 'streaming-text-area';
+    streamingArea.innerHTML = '<span style="color: #9ca3af;">Click "Generate Commentary" to start...</span>';
+    
+    // Create integrated action buttons
+    const integratedButtons = document.createElement('div');
+    integratedButtons.style.cssText = 'text-align: center; margin-top: 20px;';
+    
+    const generateBtn = createActionButton('generate-integrated', '🚀 Generate Commentary', 'primary', () => {
+      console.log('🚀 Integrated dialogue: Generate Commentary clicked');
+      const statusEl = document.getElementById('dialogue-status') as HTMLParagraphElement;
+      const streamingEl = document.getElementById('streaming-text-area') as HTMLDivElement;
+      
+      if (statusEl && streamingEl) {
+        // Update status
+        statusEl.textContent = 'Generating your personalized commentary...';
+        statusEl.style.color = '#3b82f6';
+        
+        // Simulate streaming text
+        const sampleText = "The Lakers are showing incredible resilience tonight. LeBron James continues to defy age with his exceptional court vision and leadership. The team's defensive intensity has been the key factor in this game, creating fast-break opportunities that have energized the crowd. This is championship-level basketball we're witnessing.";
+        
+        // Split text into words for proper streaming
+        const words = sampleText.split(' ');
+        let currentWordIndex = 0;
+        streamingEl.innerHTML = '';
+        
+        const streamInterval = setInterval(() => {
+          if (currentWordIndex < words.length) {
+            const word = words[currentWordIndex];
+            
+            // Create word container
+            const wordSpan = document.createElement('span');
+            wordSpan.style.cssText = `
+              display: inline-block;
+              margin-right: 4px;
+              animation: charNatural 0.02s ease-out;
+            `;
+            
+            // Add word text
+            wordSpan.textContent = word;
+            
+            streamingEl.appendChild(wordSpan);
+            currentWordIndex++;
+          } else {
+            clearInterval(streamInterval);
+            statusEl.textContent = 'Commentary complete! What would you like to do next?';
+            statusEl.style.color = '#059669';
+            
+            // Update buttons for completion state
+            generateBtn.textContent = '🔄 New Commentary';
+            generateBtn.style.background = 'linear-gradient(135deg, #6c757d 0%, #5a6268 100%)';
+            
+            // Add completion actions
+            const saveBtn = createActionButton('save-integrated', '💾 Save Commentary', 'primary', () => {
+              console.log('💾 Integrated dialogue: Save Commentary clicked');
+            });
+            
+            const shareBtn = createActionButton('share-integrated', '📤 Share', 'secondary', () => {
+              console.log('📤 Integrated dialogue: Share clicked');
+            });
+            
+            // Replace buttons
+            integratedButtons.innerHTML = '';
+            integratedButtons.appendChild(generateBtn);
+            integratedButtons.appendChild(saveBtn);
+            integratedButtons.appendChild(shareBtn);
+          }
+        }, 45); // ~22 characters per second for natural feel
+      }
+    });
+    
+    const settingsBtn = createActionButton('settings-integrated', '⚙️ Settings', 'secondary', () => {
+      console.log('⚙️ Integrated dialogue: Settings clicked');
+    });
+    
+    const closeBtn = createActionButton('close-integrated', '✕ Close', 'secondary', () => {
+      console.log('✕ Integrated dialogue: Close clicked');
+      dialogueContainer.style.animation = 'slideOutRight 0.3s ease-in forwards';
+      setTimeout(() => {
+        dialogueContainer.remove();
+      }, 300);
+    });
+    
+    integratedButtons.appendChild(generateBtn);
+    integratedButtons.appendChild(settingsBtn);
+    integratedButtons.appendChild(closeBtn);
+    
+    // Add status indicator
+    const statusIndicator = document.createElement('div');
+    statusIndicator.style.cssText = 'text-align: center; margin-top: 16px; font-size: 12px; color: #6b7280;';
+    statusIndicator.innerHTML = '<span>Ready to start</span>';
+    
+    // Assemble dialogue container
+    dialogueContainer.appendChild(dialogueHeader);
+    dialogueContainer.appendChild(streamingArea);
+    dialogueContainer.appendChild(integratedButtons);
+    dialogueContainer.appendChild(statusIndicator);
+    
+    // Add to demo area
+    integratedDemo.appendChild(dialogueContainer);
   }
   
   header.appendChild(title);
