@@ -1,7 +1,8 @@
 import { ExtensionMessage, ContentScriptState, EnhancedESPNPageInfo, CommentaryEntry, CommentaryStyle } from './types';
+import { getElevenLabsService, disposeElevenLabsService } from './services/elevenlabs';
+import { API_KEYS } from './config/keys';
 import { generateSportsCommentary, reinitializeService } from './services/openai';
 import { saveEnvironmentConfig, loadEnvironmentConfig } from './utils/config';
-import { API_KEYS } from './config/keys';
 
 // Content script state
 const state: ContentScriptState = {
@@ -1550,6 +1551,10 @@ function loadUserPreferences() {
 function testDialoguePopup(): void {
   console.log('🎯 [REAL] Rendering actual IntegratedDialogue system with audio controls...');
   
+  // Initialize ElevenLabs service
+  const elevenLabsService = getElevenLabsService(API_KEYS.ELEVENLABS_API_KEY, API_KEYS.ELEVENLABS_PARKER_MUNNS_VOICE_ID);
+  console.log('🎵 [ELEVENLABS] Service initialized:', elevenLabsService.isReady());
+  
   // Check if dialogue already exists and restore state
   const existingDialogue = document.querySelector('.integrated-dialogue-popup') as HTMLElement;
   if (existingDialogue) {
@@ -1841,23 +1846,99 @@ function testDialoguePopup(): void {
     });
   });
   
-  // Add click functionality
-  playButton.addEventListener('click', () => {
+  // Add click functionality with real ElevenLabs integration
+  playButton.addEventListener('click', async () => {
     console.log('🎵 Play Audio clicked for initial commentary');
-    playButton.innerHTML = '⏸️';
-    playButton.style.borderColor = '#f59e0b';
-    playButton.style.color = '#f59e0b';
     
-    // Simulate audio playback
-    setTimeout(() => {
+    if (playButton.innerHTML === '▶️') {
+      // Start playing
+      playButton.innerHTML = '⏸️';
+      playButton.style.borderColor = '#f59e0b';
+      playButton.style.color = '#f59e0b';
+      
+      try {
+        // Get the commentary text
+        const commentaryText = streamingContent.textContent || 'Oh, I see you\'re looking at this game! Let me break down what\'s happening here.';
+        
+        console.log('🎵 [ELEVENLABS] Generating audio for:', commentaryText.substring(0, 100) + '...');
+        
+        // Generate audio using ElevenLabs
+        const audioResult = await elevenLabsService.generateAudio(commentaryText, {
+          voiceId: API_KEYS.ELEVENLABS_PARKER_MUNNS_VOICE_ID,
+          voiceSettings: {
+            stability: 0.5,
+            similarity_boost: 0.75
+          }
+        });
+        
+        if (audioResult.success) {
+          const duration = audioResult.duration || 0;
+          console.log('🎵 [ELEVENLABS] Audio generated successfully, duration:', duration);
+          
+          // Play the audio
+          const playbackSuccess = await elevenLabsService.playAudio((currentTime) => {
+            // Update button state based on playback
+            if (currentTime >= duration) {
+              playButton.innerHTML = '▶️';
+              playButton.style.borderColor = '#d1d5db';
+              playButton.style.color = '#374151';
+            }
+          });
+          
+          if (!playbackSuccess) {
+            throw new Error('Audio playback failed');
+          }
+        } else {
+          throw new Error(audioResult.error || 'Audio generation failed');
+        }
+      } catch (error) {
+        console.error('❌ [ELEVENLABS] Audio error:', error);
+        
+        // Reset button state on error
+        playButton.innerHTML = '▶️';
+        playButton.style.borderColor = '#d1d5db';
+        playButton.style.color = '#374151';
+        
+        // Show error message to user
+        const errorDiv = document.createElement('div');
+        errorDiv.style.cssText = `
+          position: absolute;
+          top: 60px;
+          right: 20px;
+          background: #fef2f2;
+          border: 1px solid #fecaca;
+          color: #dc2626;
+          padding: 8px 12px;
+          border-radius: 8px;
+          font-size: 12px;
+          z-index: 1000;
+        `;
+        errorDiv.textContent = 'Audio generation failed';
+        initialCommentary.appendChild(errorDiv);
+        
+        // Remove error message after 3 seconds
+        setTimeout(() => {
+          if (errorDiv.parentNode) {
+            errorDiv.parentNode.removeChild(errorDiv);
+          }
+        }, 3000);
+      }
+    } else {
+      // Pause audio
+      elevenLabsService.pauseAudio();
       playButton.innerHTML = '▶️';
       playButton.style.borderColor = '#d1d5db';
       playButton.style.color = '#374151';
-    }, 5000);
+    }
   });
   
   stopButton.addEventListener('click', () => {
     console.log('⏹️ Stop Audio clicked for initial commentary');
+    
+    // Stop audio playback
+    elevenLabsService.stopAudio();
+    
+    // Reset button state
     playButton.innerHTML = '▶️';
     playButton.style.borderColor = '#d1d5db';
     playButton.style.color = '#374151';
@@ -2103,23 +2184,96 @@ function testDialoguePopup(): void {
       });
     });
     
-    // Add click functionality
-    playButton.addEventListener('click', () => {
+    // Add click functionality with real ElevenLabs integration
+    playButton.addEventListener('click', async () => {
       console.log('🎵 Play Audio clicked for AI response');
-      playButton.innerHTML = '⏸️';
-      playButton.style.borderColor = '#f59e0b';
-      playButton.style.color = '#f59e0b';
       
-      // Simulate audio playback
-      setTimeout(() => {
+      if (playButton.innerHTML === '▶️') {
+        // Start playing
+        playButton.innerHTML = '⏸️';
+        playButton.style.borderColor = '#f59e0b';
+        playButton.style.color = '#f59e0b';
+        
+        try {
+          console.log('🎵 [ELEVENLABS] Generating audio for AI response:', response.substring(0, 100) + '...');
+          
+          // Generate audio using ElevenLabs
+          const audioResult = await elevenLabsService.generateAudio(response, {
+            voiceId: API_KEYS.ELEVENLABS_PARKER_MUNNS_VOICE_ID,
+            voiceSettings: {
+              stability: 0.5,
+              similarity_boost: 0.75
+            }
+          });
+          
+          if (audioResult.success) {
+            const duration = audioResult.duration || 0;
+            console.log('🎵 [ELEVENLABS] AI response audio generated successfully, duration:', duration);
+            
+            // Play the audio
+            const playbackSuccess = await elevenLabsService.playAudio((currentTime) => {
+              // Update button state based on playback
+              if (currentTime >= duration) {
+                playButton.innerHTML = '▶️';
+                playButton.style.borderColor = '#d1d5db';
+                playButton.style.color = '#374151';
+              }
+            });
+            
+            if (!playbackSuccess) {
+              throw new Error('Audio playback failed');
+            }
+          } else {
+            throw new Error(audioResult.error || 'Audio generation failed');
+          }
+        } catch (error) {
+          console.error('❌ [ELEVENLABS] AI response audio error:', error);
+          
+          // Reset button state on error
+          playButton.innerHTML = '▶️';
+          playButton.style.borderColor = '#d1d5db';
+          playButton.style.color = '#374151';
+          
+          // Show error message to user
+          const errorDiv = document.createElement('div');
+          errorDiv.style.cssText = `
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            z-index: 1000;
+          `;
+          errorDiv.textContent = 'Audio generation failed';
+          aiMessage.appendChild(errorDiv);
+          
+          // Remove error message after 3 seconds
+          setTimeout(() => {
+            if (errorDiv.parentNode) {
+              errorDiv.parentNode.removeChild(errorDiv);
+            }
+          }, 3000);
+        }
+      } else {
+        // Pause audio
+        elevenLabsService.pauseAudio();
         playButton.innerHTML = '▶️';
         playButton.style.borderColor = '#d1d5db';
         playButton.style.color = '#374151';
-      }, 3000);
+      }
     });
     
     stopButton.addEventListener('click', () => {
       console.log('⏹️ Stop Audio clicked for AI response');
+      
+      // Stop audio playback
+      elevenLabsService.stopAudio();
+      
+      // Reset button state
       playButton.innerHTML = '▶️';
       playButton.style.borderColor = '#d1d5db';
       playButton.style.color = '#374151';
@@ -2191,6 +2345,10 @@ The Mavericks put up a strong fight, but the 76ers' home court advantage and clu
     setTimeout(() => {
       dialoguePopup.style.display = 'none';
       console.log('🔄 Dialogue hidden, state preserved for next time');
+      
+      // Clean up ElevenLabs service when dialogue is closed
+      disposeElevenLabsService();
+      console.log('🧹 [ELEVENLABS] Service disposed');
     }, 300);
   });
   

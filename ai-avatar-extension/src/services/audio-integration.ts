@@ -13,6 +13,7 @@
 import { getElevenLabsService, disposeElevenLabsService } from './elevenlabs';
 import { defaultAudioSynchronizer } from '../utils/audio-sync';
 import { useDialogueStore } from '../stores/dialogueStore';
+import { API_KEYS } from '../config/keys';
 import type { 
   AudioGenerationRequest, 
   AudioGenerationResult,
@@ -40,9 +41,9 @@ export class AudioIntegrationService {
    */
   private async initialize(): Promise<void> {
     try {
-      // Get ElevenLabs service instance with API key and voice ID
-      const apiKey = 'sk_8396a26794af42afa3cec3ae47521c72d432447c96c3049e'; // From config
-      const voiceId = 'jtHwJJIeJSiCcvv6MzGd'; // From config
+      // Get ElevenLabs service instance with API key and voice ID from config
+      const apiKey = API_KEYS.ELEVENLABS_API_KEY;
+      const voiceId = API_KEYS.ELEVENLABS_PARKER_MUNNS_VOICE_ID;
       this.elevenLabsService = getElevenLabsService(apiKey, voiceId);
       
       if (!this.elevenLabsService?.isReady()) {
