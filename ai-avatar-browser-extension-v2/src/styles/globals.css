@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-gray-200;
+  }
+  body {
+    @apply bg-white text-gray-900;
+  }
+}
+
+@layer components {
+  .feature-icon {
+    @apply w-6 h-6 text-gray-500 hover:text-parker-blue transition-colors duration-200 cursor-pointer;
+  }
+  
+  .feature-icon.active {
+    @apply text-parker-blue;
+  }
+  
+  .difficulty-button {
+    @apply px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200;
+  }
+  
+  .difficulty-button.selected {
+    @apply bg-parker-blue text-white;
+  }
+  
+  .difficulty-button.unselected {
+    @apply bg-gray-200 text-gray-700 hover:bg-gray-300;
+  }
+  
+  .microphone-button {
+    @apply w-20 h-20 bg-black rounded-full flex items-center justify-center hover:bg-gray-800 transition-colors duration-200 cursor-pointer;
+  }
+  
+  .microphone-button.recording {
+    @apply animate-pulse-slow;
+  }
+}
