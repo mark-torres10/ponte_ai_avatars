@@ -24,12 +24,13 @@ const DebateMode: React.FC<DebateModeProps> = ({ difficulty, onDifficultyChange 
     // Simulate voice recording
     setTimeout(() => {
       setIsRecording(false);
-      setQuestion("Is Giannis still the most dominant player in the league?");
-      handleDebate();
+      const newQuestion = "Is Giannis still the most dominant player in the league?";
+      setQuestion(newQuestion);
+      handleDebate(newQuestion);
     }, 2000);
   };
 
-  const handleDebate = () => {
+  const handleDebate = (questionText: string) => {
     const responses = {
       easy: {
         giannis: "I respect Giannis, but pure dominance means consistent championships. Where's the consistency?",
@@ -43,7 +44,7 @@ const DebateMode: React.FC<DebateModeProps> = ({ difficulty, onDifficultyChange 
       }
     };
 
-    const questionLower = question.toLowerCase();
+    const questionLower = questionText.toLowerCase();
     let response = '';
     
     if (questionLower.includes('giannis')) {
@@ -141,10 +142,18 @@ const DebateMode: React.FC<DebateModeProps> = ({ difficulty, onDifficultyChange 
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-              onKeyDown={(e) => e.key === 'Enter' && handleDebate()}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  // Prevent submission if disabled, recording, or invalid input
+                  if (isRecording || !question.trim()) {
+                    return;
+                  }
+                  handleDebate(question);
+                }
+              }}
             />
             <button 
-              onClick={handleDebate} 
+              onClick={() => handleDebate(question)} 
               disabled={!question.trim()} 
               className="h-6 px-2 bg-blue-600 text-white text-xs rounded disabled:opacity-50"
             >
@@ -162,7 +171,7 @@ const DebateMode: React.FC<DebateModeProps> = ({ difficulty, onDifficultyChange 
           }`}>
             Parker
           </div>
-          <p className="italic">"{response}"</p>
+          <p className="italic">&ldquo;{response}&rdquo;</p>
         </div>
       )}
     </div>
