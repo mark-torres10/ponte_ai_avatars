@@ -58,12 +58,6 @@ const DebateMode: React.FC<DebateModeProps> = ({ difficulty, onDifficultyChange 
     setResponse(response);
   };
 
-  const handleSpacebarPress = (e: React.KeyboardEvent) => {
-    if (e.code === 'Space' && !e.shiftKey && !e.ctrlKey && !e.altKey) {
-      e.preventDefault();
-      handleVoiceInput();
-    }
-  };
 
   return (
     <div className="space-y-3">
@@ -76,7 +70,7 @@ const DebateMode: React.FC<DebateModeProps> = ({ difficulty, onDifficultyChange 
       {/* Voice Input (Primary) */}
       <div className="flex flex-col items-center gap-2 p-3 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg">
         <div className="text-xs text-center text-blue-700 mb-1">
-          🎙️ {isRecording ? 'Recording... (Spacebar to stop)' : 'Tap or press Spacebar to ask Parker'}
+          🎙️ {isRecording ? 'Recording... (Space/Enter to stop)' : 'Tap or press Space/Enter to ask Parker'}
         </div>
         <button
           className={`h-12 w-12 rounded-full transition-all duration-300 ${
@@ -85,7 +79,6 @@ const DebateMode: React.FC<DebateModeProps> = ({ difficulty, onDifficultyChange 
               : 'bg-blue-600 hover:scale-105'
           }`}
           onClick={handleVoiceInput}
-          onKeyDown={handleSpacebarPress}
         >
           {isRecording ? (
             <MicOff className="w-5 h-5 text-white mx-auto" />
@@ -95,7 +88,7 @@ const DebateMode: React.FC<DebateModeProps> = ({ difficulty, onDifficultyChange 
         </button>
         {isRecording && (
           <div className="text-xs text-red-600 animate-pulse">
-            🔴 Tap or press Spacebar to stop
+            🔴 Tap or press Space/Enter to stop
           </div>
         )}
       </div>

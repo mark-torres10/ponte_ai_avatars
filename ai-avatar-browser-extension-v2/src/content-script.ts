@@ -3,6 +3,10 @@
 
 console.log('Parker Sports Extension V2 content script loaded');
 
+// Global cleanup variables to prevent memory leaks
+let cleanupInterval: NodeJS.Timeout | null = null;
+let outsideClickHandler: ((e: Event) => void) | null = null;
+
 // Check if we're on an ESPN page
 const isESPNPage = window.location.hostname.includes('espn.com');
 
@@ -18,6 +22,21 @@ if (isESPNPage) {
 }
 
 function initParkerAvatar() {
+  // Cleanup previous instances to prevent memory leaks
+  if (cleanupInterval) {
+    clearInterval(cleanupInterval);
+    cleanupInterval = null;
+  }
+  
+  if (outsideClickHandler) {
+    document.removeEventListener('click', outsideClickHandler);
+    outsideClickHandler = null;
+  }
+  
+  // Remove existing styles to prevent duplication
+  const existingStyles = document.querySelectorAll('style[data-parker-extension]');
+  existingStyles.forEach(style => style.remove());
+  
   // Remove existing avatar if it exists
   const existingAvatar = document.getElementById('parker-avatar-container');
   const existingPortal = document.getElementById('parker-portal-container');
@@ -69,7 +88,7 @@ function initParkerAvatar() {
               <span class="parker-mode-icon">💬</span>
               <span class="parker-mode-text">Debate</span>
             </button>
-            <button class="parker-mode-btn" data-mode="hottake">
+            <button class="parker-mode-btn" data-mode="hot-take">
               <span class="parker-mode-icon">🔥</span>
               <span class="parker-mode-text">Hot Take</span>
             </button>
@@ -77,15 +96,15 @@ function initParkerAvatar() {
               <span class="parker-mode-icon">🎯</span>
               <span class="parker-mode-text">Predictions</span>
             </button>
-            <button class="parker-mode-btn" data-mode="nba">
+            <button class="parker-mode-btn" data-mode="nba-recap">
               <span class="parker-mode-icon">🏀</span>
               <span class="parker-mode-text">NBA Recap</span>
             </button>
-            <button class="parker-mode-btn" data-mode="fan">
+            <button class="parker-mode-btn" data-mode="fan-reactions">
               <span class="parker-mode-icon">💭</span>
               <span class="parker-mode-text">Fan Reactions</span>
             </button>
-            <button class="parker-mode-btn" data-mode="companion">
+            <button class="parker-mode-btn" data-mode="game-companion">
               <span class="parker-mode-icon">📻</span>
               <span class="parker-mode-text">Game Companion</span>
             </button>
@@ -113,6 +132,7 @@ function initParkerAvatar() {
 
   // Add styles
   const style = document.createElement('style');
+  style.setAttribute('data-parker-extension', 'true');
   style.textContent = `
     .parker-avatar {
       position: fixed !important;
@@ -361,7 +381,7 @@ function initParkerAvatar() {
   }, 100);
   
   // Continuous monitoring to ensure elements stay on top
-  setInterval(() => {
+  cleanupInterval = setInterval(() => {
     const avatar = document.getElementById('parker-avatar');
     const popup = document.getElementById('parker-popup');
     const portal = document.getElementById('parker-portal-container');
@@ -423,13 +443,14 @@ function initParkerAvatar() {
   });
 
   // Close popup when clicking outside
-  document.addEventListener('click', (e) => {
+  outsideClickHandler = (e: Event) => {
     if (!avatarContainer.contains(e.target as Node)) {
       if (popup) {
         popup.style.display = 'none';
       }
     }
-  });
+  };
+  document.addEventListener('click', outsideClickHandler);
 
   console.log('Parker Sports avatar injected successfully');
 }
