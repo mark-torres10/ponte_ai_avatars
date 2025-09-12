@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { FeatureMode, DifficultyLevel } from '../types';
+
+// Chrome extension types
+declare const chrome: any;
 import Header from './Header';
 import DebateMode from './modes/DebateMode';
 import HotTakeMode from './modes/HotTakeMode';
@@ -11,6 +14,21 @@ import GameCompanionMode from './modes/GameCompanionMode';
 const App: React.FC = () => {
   const [currentMode, setCurrentMode] = useState<FeatureMode>('debate');
   const [difficulty, setDifficulty] = useState<DifficultyLevel>('easy');
+
+  // Function to handle mode changes and notify content script
+  const handleModeChange = (newMode: FeatureMode) => {
+    setCurrentMode(newMode);
+    
+    // Send message to content script to update avatar label
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs: any[]) => {
+      if (tabs[0]?.id) {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          type: 'MODE_CHANGED',
+          mode: newMode
+        });
+      }
+    });
+  };
 
   const renderModeContent = () => {
     switch (currentMode) {
@@ -35,7 +53,7 @@ const App: React.FC = () => {
     <div className="w-full h-full bg-white">
       <Header 
         currentMode={currentMode} 
-        onModeChange={setCurrentMode}
+        onModeChange={handleModeChange}
       />
       <div className="p-3">
         {renderModeContent()}

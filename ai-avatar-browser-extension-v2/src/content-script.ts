@@ -7,6 +7,19 @@ console.log('Parker Sports Extension V2 content script loaded');
 let cleanupInterval: NodeJS.Timeout | null = null;
 let outsideClickHandler: ((e: Event) => void) | null = null;
 
+// Helper function to convert mode IDs to display names
+function getModeDisplayName(mode: string): string {
+  const modeMap: { [key: string]: string } = {
+    'debate': 'Debate Mode',
+    'hot-take': 'Hot Take Mode',
+    'predictions': 'Predictions Mode',
+    'nba-recap': 'NBA Recap Mode',
+    'fan-reactions': 'Fan Reactions Mode',
+    'game-companion': 'Game Companion Mode'
+  };
+  return modeMap[mode] || 'Unknown Mode';
+}
+
 // Check if we're on an ESPN page
 const isESPNPage = window.location.hostname.includes('espn.com');
 
@@ -76,6 +89,9 @@ function initParkerAvatar() {
     <div id="parker-avatar" class="parker-avatar">
       <img src="${chrome.runtime.getURL('parker-avatar-80x80.png')}" alt="Parker Sports" />
     </div>
+    <div id="parker-mode-label" class="parker-mode-label">
+      Debate Mode Active
+    </div>
   `;
 
   // Add styles
@@ -114,6 +130,37 @@ function initParkerAvatar() {
       object-fit: cover !important;
       margin: 0 !important;
       padding: 0 !important;
+    }
+    
+    .parker-mode-label {
+      position: fixed !important;
+      top: 85px !important;
+      right: 20px !important;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.95), rgba(29, 78, 216, 0.95)) !important;
+      color: white !important;
+      padding: 6px 12px !important;
+      border-radius: 8px !important;
+      font-size: 11px !important;
+      font-weight: 600 !important;
+      text-align: center !important;
+      white-space: nowrap !important;
+      z-index: 2147483647 !important;
+      pointer-events: none !important;
+      margin: 0 !important;
+      box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4), 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+      backdrop-filter: blur(8px) !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+      animation: parker-label-glow 2s ease-in-out infinite alternate !important;
+    }
+    
+    @keyframes parker-label-glow {
+      0% {
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4), 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+      }
+      100% {
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6), 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+      }
     }
   `;
 
@@ -181,6 +228,17 @@ function initParkerAvatar() {
     e.stopPropagation();
     // Avatar click functionality can be added here later
     console.log('Parker avatar clicked - no popup functionality');
+  });
+
+  // Listen for mode changes from the popup
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === 'MODE_CHANGED') {
+      const modeLabel = document.getElementById('parker-mode-label');
+      if (modeLabel) {
+        const modeDisplayName = getModeDisplayName(message.mode);
+        modeLabel.textContent = `${modeDisplayName} Active`;
+      }
+    }
   });
 
   console.log('Parker Sports avatar injected successfully');
