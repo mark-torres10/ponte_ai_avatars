@@ -49,7 +49,7 @@ const PredictionsMode: React.FC = () => {
         {/* Voice Input (Primary) */}
         <div className="flex flex-col items-center gap-2 p-3 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg">
           <div className="text-xs text-center text-green-700 mb-1">
-            🎯 {isRecording ? 'Recording... (Spacebar to stop)' : 'Tap or press Spacebar for predictions'}
+            🎯 {isRecording ? 'Recording... (Space/Enter to stop)' : 'Tap or press Space/Enter for predictions'}
           </div>
           <button
             className={`h-12 w-12 rounded-full transition-all duration-300 ${
@@ -67,7 +67,7 @@ const PredictionsMode: React.FC = () => {
           </button>
           {isRecording && (
             <div className="text-xs text-red-600 animate-pulse">
-              🔴 Tap or press Spacebar to stop
+              🔴 Tap or press Space/Enter to stop
             </div>
           )}
         </div>

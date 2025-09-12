@@ -58,7 +58,7 @@ const NBARecapMode: React.FC = () => {
         {/* Voice-First NBA Recap */}
         <div className="flex flex-col items-center gap-2 p-2 bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg">
           <div className="text-xs text-center text-orange-700">
-            🏀 Tap or press Spacebar for recap
+            🏀 Tap or press Space/Enter for recap
           </div>
           <button 
             onClick={handleNbaRecap} 
@@ -78,10 +78,10 @@ const NBARecapMode: React.FC = () => {
             </span>
           </div>
           <div className="text-xs italic leading-relaxed">
-            "{nbaRecap}"
+            &ldquo;{nbaRecap}&rdquo;
           </div>
           <div className="mt-2 pt-2 border-t border-orange-200">
-            <p className="text-xs text-gray-500">🏀 Parker's Last Night Rundown</p>
+            <p className="text-xs text-gray-500">🏀 Parker&apos;s Last Night Rundown</p>
           </div>
         </div>
       )}
