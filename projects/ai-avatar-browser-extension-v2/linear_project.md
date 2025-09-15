@@ -4,7 +4,7 @@
 AI Avatar Browser Extension V2 - Interactive Sports Commentary
 
 ## Problem Statement
-Sports fans need more engaging and interactive UI experiences when consuming sports content. The current AI Avatar Browser Extension provides basic contextual information, but users need a comprehensive UI framework that allows them to interact with Parker, the AI sports commentator, in multiple ways - from debates and predictions to real-time game commentary. This project focuses on building the UI foundation with detailed visual states and mock content that will support future API integrations.
+Sports fans need more engaging and interactive UI experiences when consuming sports content. The current AI Avatar Browser Extension provides basic contextual information, but users need a comprehensive UI framework that allows them to interact with Parker, the AI sports commentator, in multiple ways - from debates and predictions to real-time game commentary. This project focuses on building the UI foundation with detailed visual states and real-time voice interactions powered by OpenAI's Realtime API.
 
 ## Objectives
 1. **Enhanced UI Interactivity**: Implement 6 distinct UI modes with detailed visual states
@@ -12,13 +12,14 @@ Sports fans need more engaging and interactive UI experiences when consuming spo
 3. **Interactive Elements**: Create engaging UI components with proper state management
 4. **User Experience**: Build intuitive navigation and smooth transitions between modes
 5. **Technical Performance**: Ensure smooth UI operation without browser impact
+6. **Real-time Voice Integration**: Implement OpenAI Realtime API for live voice interactions
 
 ## Success Criteria
 - **UI Completeness**: All 6 modes implemented with exact visual match to provided screenshots
 - **Interactive Elements**: All buttons, toggles, and input fields function correctly with proper visual states
 - **Visual Consistency**: Clean, modern design using shadcn-ui components throughout
-- **Mock Content**: All modes display appropriate mock content demonstrating intended functionality
-- **Performance**: Extension load time <200ms, smooth animations and transitions
+- **Real-time Voice**: Debate Mode and Hot Take Mode powered by OpenAI Realtime API
+- **Performance**: Extension load time <200ms, voice response time <1s
 - **Accessibility**: Full keyboard navigation and screen reader compatibility
 
 ## Scope
@@ -32,8 +33,8 @@ Sports fans need more engaging and interactive UI experiences when consuming spo
 - **Fan Take Reactions**: "Coming Soon" interface with mock instructional content
 - **Game Companion Mode**: "Coming Soon" interface with mock live commentary description
 - **Chrome Extension**: Manifest V3 with content script + popup UI (no background script needed)
-- **FastAPI Backend**: Audio processing, AI responses, and TTS synthesis for Debate and Hot Take modes
-- **API Integrations**: OpenAI (ASR, LLM) and ElevenLabs (TTS) for core functionality
+- **FastAPI Backend**: Lightweight token service for OpenAI Realtime API authentication
+- **API Integration**: OpenAI Realtime API for real-time voice interactions (ASR + LLM + TTS)
 - **Railway Deployment**: Backend service deployment and API endpoint management
 
 ### Out of Scope
@@ -83,28 +84,30 @@ Sports fans need more engaging and interactive UI experiences when consuming spo
 - Tailwind CSS configuration
 - FastAPI and Python 3.10+ setup
 - OpenAI API access and credentials
-- ElevenLabs API access and credentials
 - Railway deployment platform
 - Mock data creation and management
 
 ## Technical Architecture
 ```
 Extension (client)
-├── WebAudio (mic) → send audio chunks (or base64 wav/opus) to backend
-├── Receives streamed text + TTS audio for Parker's reply
+├── WebRTC connection to OpenAI Realtime API
+├── Audio I/O: getUserMedia, WebRTC streaming
+├── Token fetch: POST /v1/realtime/token → receives ephemeral client_secret
 └── Manages ephemeral thread state; "Save transcript" writes to local IndexedDB
 
 FastAPI (backend)
-├── /v1/debates/* APIs
-├── OpenAI: ASR (Whisper), LLM (for banter + summary), optional Realtime for low-latency
-├── ElevenLabs: TTS synth to MP3/OPUS
-└── Stateless (no DB needed for MVP); logs minimal metadata only
+├── POST /v1/realtime/token → validates origin/auth
+├── Calls OpenAI /v1/realtime/sessions with server key
+└── Returns client_secret to browser (no audio processing)
+
+OpenAI Realtime API
+└── Handles ASR + LLM + TTS + turn-taking via WebRTC
 ```
 
 ## Implementation Phases
 1. **Phase 1 (Week 1)**: ✅ Basic UI framework and feature navigation - **COMPLETED**
-2. **Phase 2 (Week 2)**: FastAPI backend setup and Railway deployment
-3. **Phase 3 (Week 3)**: Debate Mode and Hot Take Mode with AI integration
+2. **Phase 2 (Week 2)**: FastAPI token service and Railway deployment
+3. **Phase 3 (Week 3)**: Debate Mode and Hot Take Mode with Realtime API integration
 4. **Phase 4 (Week 4)**: Predictive Mode and NBA Recap Mode UI implementation
 5. **Phase 5 (Week 5)**: Fan Take Reactions and Game Companion Mode UI implementation
 6. **Phase 6 (Week 6)**: Integration testing, optimization, and deployment
@@ -116,7 +119,7 @@ FastAPI (backend)
 ## Project Status
 - **Current Phase**: Phase 1 Complete - Basic UI Framework Implemented
 - **Completed**: Ticket-001 Basic UI Framework (✅ COMPLETED)
-- **Next Steps**: Begin Phase 2 - FastAPI backend setup and Railway deployment
+- **Next Steps**: Begin Phase 2 - FastAPI token service and Railway deployment
 - **Blockers**: None identified
 
 ## Notes
@@ -125,6 +128,6 @@ FastAPI (backend)
 - Prioritize user experience and performance
 - Use shadcn-ui for consistent component design
 - Implement comprehensive mock data for all UI states
-- Backend integration required for Debate Mode and Hot Take Mode functionality
+- OpenAI Realtime API integration for Debate Mode and Hot Take Mode functionality
 - Implement comprehensive testing for all interactive features
-- FastAPI backend will power AI responses and TTS synthesis
+- FastAPI backend provides secure token management for Realtime API access

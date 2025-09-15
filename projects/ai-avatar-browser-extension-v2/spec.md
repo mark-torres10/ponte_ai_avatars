@@ -52,8 +52,8 @@ Sports fans want more engaging and interactive experiences when consuming sports
 - **Fan Take Reactions UI**: "Coming Soon" interface with mock instructional content
 - **Game Companion Mode UI**: "Coming Soon" interface with mock live commentary description
 - **Chrome Extension**: Manifest V3 with content script + popup UI (no background script needed)
-- **FastAPI Backend**: Audio processing, AI responses, and TTS synthesis for Debate and Hot Take modes
-- **API Integrations**: OpenAI (ASR, LLM) and ElevenLabs (TTS) for core functionality
+- **FastAPI Backend**: Lightweight token service for OpenAI Realtime API authentication
+- **API Integration**: OpenAI Realtime API for real-time voice interactions (ASR + LLM + TTS)
 - **Railway Deployment**: Backend service deployment and API endpoint management
 
 ### Out of Scope (Future Enhancements)
@@ -70,13 +70,13 @@ Sports fans want more engaging and interactive experiences when consuming sports
 ### Technical Requirements
 - **Extension Architecture**: Content script + popup UI (no background script needed)
 - **UI Framework**: React, TypeScript, shadcn-ui, Tailwind CSS
-- **Backend Framework**: FastAPI with Python 3.10+
-- **API Integrations**: OpenAI (Whisper ASR, GPT-4 LLM), ElevenLabs (TTS)
+- **Backend Framework**: FastAPI with Python 3.10+ (token service only)
+- **API Integration**: OpenAI Realtime API for real-time voice interactions
 - **Deployment**: Railway platform for backend service
-- **Audio Processing**: WebAudio input handling, base64 audio formats
-- **Performance**: <200ms extension load time, <2s backend response time
+- **Audio Processing**: WebRTC direct connection to OpenAI Realtime API
+- **Performance**: <200ms extension load time, <1s voice response time
 - **Security**: API key management, CORS configuration, minimal permissions
-- **Compatibility**: Chrome 90+, modern JavaScript features
+- **Compatibility**: Chrome 90+, modern JavaScript features, WebRTC support
 - **UI Components**: Reusable shadcn-ui components with custom styling
 
 ## 4. User Experience Considerations
@@ -111,29 +111,32 @@ Sports fans want more engaging and interactive experiences when consuming sports
 ### Technical Architecture
 ```
 Extension (client)
-├── WebAudio (mic) → send audio chunks (or base64 wav/opus) to backend
-├── Receives streamed text + TTS audio for Parker's reply
+├── WebRTC connection to OpenAI Realtime API
+├── Audio I/O: getUserMedia, WebRTC streaming
+├── Token fetch: POST /v1/realtime/token → receives ephemeral client_secret
 └── Manages ephemeral thread state; "Save transcript" writes to local IndexedDB
 
 FastAPI (backend)
-├── /v1/debates/* APIs
-├── OpenAI: ASR (Whisper), LLM (for banter + summary), optional Realtime for low-latency
-├── ElevenLabs: TTS synth to MP3/OPUS
-└── Stateless (no DB needed for MVP); logs minimal metadata only
+├── POST /v1/realtime/token → validates origin/auth
+├── Calls OpenAI /v1/realtime/sessions with server key
+└── Returns client_secret to browser (no audio processing)
+
+OpenAI Realtime API
+└── Handles ASR + LLM + TTS + turn-taking via WebRTC
 ```
 
 ### Implementation Phases
 1. **Phase 1 (Week 1)**: Basic UI framework and feature navigation
-2. **Phase 2 (Week 2)**: FastAPI backend setup and Railway deployment
-3. **Phase 3 (Week 3)**: Debate Mode and Hot Take Mode with AI integration
+2. **Phase 2 (Week 2)**: FastAPI token service and Railway deployment
+3. **Phase 3 (Week 3)**: Debate Mode and Hot Take Mode with Realtime API integration
 4. **Phase 4 (Week 4)**: Predictive Mode and NBA Recap Mode UI implementation
 5. **Phase 5 (Week 5)**: Fan Take Reactions and Game Companion Mode UI implementation
 6. **Phase 6 (Week 6)**: Integration testing, optimization, and deployment
 
 ### Risk Assessment
 - **Low Risk**: UI framework, basic extension structure, mock data
-- **Medium Risk**: Complex UI interactions, state management, API integrations
-- **High Risk**: Performance optimization, accessibility compliance, backend deployment
+- **Medium Risk**: Complex UI interactions, state management, WebRTC integration
+- **High Risk**: Performance optimization, accessibility compliance, Realtime API integration
 
 ### Dependencies
 - Chrome extension development environment
@@ -142,13 +145,43 @@ FastAPI (backend)
 - Tailwind CSS configuration
 - FastAPI and Python 3.10+ setup
 - OpenAI API access and credentials
-- ElevenLabs API access and credentials
 - Railway deployment platform
 - Mock data creation and management
 
-## 6. Feature Specifications
+## 6. OpenAI Realtime API Integration
 
-### 6.1 Basic UI Framework
+### 6.1 Realtime API Overview
+The OpenAI Realtime API provides a unified solution for real-time voice interactions, combining ASR (Automatic Speech Recognition), LLM (Large Language Model), and TTS (Text-to-Speech) in a single WebRTC-based service. This eliminates the need for separate API calls and reduces latency significantly.
+
+### 6.2 Key Features
+- **Speech-to-Speech Model**: Direct audio processing without intermediate text conversion
+- **WebRTC Integration**: Low-latency, real-time audio streaming
+- **Turn-taking**: Built-in conversation flow management
+- **Barge-in Support**: Users can interrupt Parker's responses
+- **Multiple Voices**: Built-in voice options (e.g., "verse", "cedar", "marin")
+- **Ephemeral Tokens**: Secure, short-lived authentication tokens
+
+### 6.3 Technical Implementation
+- **Token Service**: FastAPI backend mints ephemeral `client_secret` tokens
+- **WebRTC Connection**: Direct browser-to-OpenAI connection
+- **Audio Formats**: PCM16, G.711 μ-law, G.711 A-law support
+- **Session Management**: Stateful conversations with configurable parameters
+- **Performance**: Sub-second response times for voice interactions
+
+### 6.4 API Endpoints
+- **Backend**: `POST /v1/realtime/token` - Generate ephemeral tokens
+- **OpenAI**: `POST /v1/realtime/sessions` - Create Realtime API sessions
+- **WebRTC**: Direct peer-to-peer connection for audio streaming
+
+### 6.5 Security & Privacy
+- **No Audio Storage**: Audio is processed in real-time, not stored
+- **Ephemeral Tokens**: Short-lived authentication (10-minute default)
+- **Origin Validation**: CORS protection for browser extension requests
+- **Rate Limiting**: Prevents token abuse and API overuse
+
+## 7. Feature Specifications
+
+### 7.1 Basic UI Framework
 - **Avatar Icon**: Clickable icon in browser toolbar (initial state)
 - **Main Interface**: Popup/modal that appears when avatar is clicked
 - **Feature Grid**: 2x3 grid layout of feature icons with hover effects
@@ -157,7 +190,7 @@ FastAPI (backend)
 - **Navigation**: Easy switching between modes with back button
 - **Responsive Design**: Works on different screen sizes
 
-### 6.2 Debate Mode UI
+### 7.2 Debate Mode UI
 - **Trigger**: Lightning icon in header, highlighted when active
 - **Hover Effect**: "Quick Voice (Spacebar)" tooltip appears when hovering over lightning icon
 - **Main Content**: "Debate Mode" title with question mark help icon
@@ -172,7 +205,7 @@ FastAPI (backend)
 - **Response Display**: Gray "Parker" response box at bottom with mock content
 - **Mock Content**: Pre-written debate responses (e.g., "I respect Giannis, but pure dominance means consistent championships. Where's the consistency?")
 
-### 6.3 Hot Take Mode UI
+### 7.3 Hot Take Mode UI
 - **Trigger**: Fire icon in header, highlighted when active
 - **Hover Effect**: "Hot Take" tooltip appears when hovering over fire icon
 - **Main Content**: "Hot Take" title with question mark help icon
@@ -182,7 +215,7 @@ FastAPI (backend)
 - **Content Display**: Mock hot take text in bold, italicized font
 - **Mock Content**: Pre-written controversial sports opinions (e.g., "I don't wanna hear another WORD about the Lakers until they WIN something! Three years of 'championship aspirations' and NOTHING to show for it!")
 
-### 6.4 Predictive Mode UI
+### 7.4 Predictive Mode UI
 - **Trigger**: Crystal ball icon with hover effect showing "Predictions Mode"
 - **Input Interface**: Text field for game prediction questions
 - **Response Display**: Text area showing bold predictions with dramatic flair
@@ -191,7 +224,7 @@ FastAPI (backend)
 - **Audio Trigger**: Button to trigger audio with confidence display
 - **Mock Content**: Pre-written predictions with varying confidence levels
 
-### 6.5 NBA Recap Mode UI
+### 7.5 NBA Recap Mode UI
 - **Trigger**: Question mark icon in header, highlighted when active
 - **Hover Effect**: "NBA Recap" tooltip appears when hovering over question mark icon
 - **Main Content**: "NBA Recap" title with question mark help icon
@@ -202,7 +235,7 @@ FastAPI (backend)
 - **Visual Design**: Clean, tabbed interface with distinct orange-themed card
 - **Mock Content**: Pre-written recap content for demonstration (e.g., Warriors/Lakers game summary)
 
-### 6.6 Fan Take Reactions UI
+### 7.6 Fan Take Reactions UI
 - **Trigger**: Comment bubble icon (filled) in header's 2x3 grid, highlighted when active
 - **Main Content**: "Fan Take Reactions" title with question mark help icon
 - **"COMING SOON" Banner**: Light purple-pink rectangular box with rounded corners, containing white, bold, uppercase "COMING SOON" text
@@ -213,7 +246,7 @@ FastAPI (backend)
 - **Example Quote**: Purple, italicized text: "This is RIDICULOUS! ABSURD!"
 - **Visual Design**: Clean, modern layout with consistent light purple-pink theme
 
-### 6.7 Game Companion Mode UI
+### 7.7 Game Companion Mode UI
 - **Trigger**: Wi-Fi/radiating waves icon in header, highlighted when active
 - **Hover Effect**: "Game Companion Mode" tooltip appears when hovering over Wi-Fi/radiating waves icon
 - **Main Content**: "Game Companion" title with question mark help icon
@@ -225,7 +258,7 @@ FastAPI (backend)
 - **Mock Content**: Static text for description and "Coming Soon" status
 - **State Management**: Simulated live game states
 
-## 7. Success Criteria Summary
+## 8. Success Criteria Summary
 
 A successful V2 UI will demonstrate:
 1. **Enhanced Interactivity**: Users can navigate through 6 different UI modes seamlessly
