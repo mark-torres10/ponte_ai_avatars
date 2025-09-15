@@ -659,8 +659,120 @@ OpenAI Realtime API
 └── Handles ASR + LLM + TTS + turn-taking via WebRTC
 ```
 
+## Subtask Breakdown
+
+### **PON-96-1: Project Structure & Environment Setup** (1 day)
+- Create FastAPI project structure
+- Set up Python environment with uv
+- Install and configure dependencies
+- Set up development environment
+- Create basic project documentation
+
+### **PON-96-2: Basic FastAPI Application & Health Check** (1 day)
+- Implement basic FastAPI app
+- Add health check endpoint
+- Configure CORS middleware
+- Set up basic error handling
+- Create initial API documentation
+
+### **PON-96-3: OpenAI API Integration & Token Generation** (2 days)
+- Implement OpenAI Realtime API client
+- Create token generation endpoint
+- Add request/response models
+- Implement error handling
+- Add basic logging
+
+### **PON-96-4: Security & Validation Implementation** (1 day)
+- Add origin validation middleware
+- Implement rate limiting
+- Add API key management
+- Create security configuration
+- Add security tests
+
+### **PON-96-5: Advanced Configuration & Model Management** (1 day)
+- Implement model and voice configuration
+- Add difficulty-based instructions
+- Create environment configuration
+- Add advanced logging
+- Implement monitoring
+
+### **PON-96-6: Testing Suite Implementation** (1 day)
+- Create comprehensive unit tests
+- Implement integration tests
+- Add performance tests
+- Create security tests
+- Validate all requirements
+
+### **PON-96-7: Deployment Configuration & Railway Setup** (1 day)
+- Create Docker configuration
+- Set up Railway deployment
+- Configure production environment
+- Implement monitoring
+- Test deployment
+
+### **PON-96-8: Documentation & Final Integration** (1 day)
+- Create comprehensive documentation
+- Add deployment guides
+- Perform end-to-end testing
+- Validate integration requirements
+- Final cleanup and optimization
+
+## Implementation Phases
+
+### **Phase 1: Foundation & Basic Setup** (PON-96-1, PON-96-2)
+- **Duration**: 2 days
+- **Deliverables**: Working FastAPI app with health check
+- **Success Criteria**: App starts, health endpoint works, CORS configured
+
+### **Phase 2: Core Token Service** (PON-96-3, PON-96-4)
+- **Duration**: 3 days
+- **Deliverables**: Token generation with security
+- **Success Criteria**: OpenAI integration works, security implemented
+
+### **Phase 3: Advanced Features & Testing** (PON-96-5, PON-96-6)
+- **Duration**: 2 days
+- **Deliverables**: Full configuration and comprehensive testing
+- **Success Criteria**: All features work, tests pass, performance validated
+
+### **Phase 4: Deployment & Documentation** (PON-96-7, PON-96-8)
+- **Duration**: 2 days
+- **Deliverables**: Production deployment and complete documentation
+- **Success Criteria**: Deployed to Railway, documentation complete
+
+## Project Structure
+```
+browser_extension_backend/
+├── app/
+│   ├── __init__.py
+│   ├── main.py                 # FastAPI application
+│   ├── models/                 # Pydantic models
+│   │   ├── __init__.py
+│   │   ├── token.py           # Token request/response models
+│   │   └── health.py          # Health check models
+│   ├── services/              # Business logic
+│   │   ├── __init__.py
+│   │   ├── openai_client.py   # OpenAI API client
+│   │   └── token_service.py   # Token generation logic
+│   ├── middleware/            # Custom middleware
+│   │   ├── __init__.py
+│   │   ├── security.py        # Origin validation
+│   │   └── rate_limit.py      # Rate limiting
+│   └── config/                # Configuration
+│       ├── __init__.py
+│       └── settings.py        # Environment settings
+├── tests/                     # Test suite
+│   ├── __init__.py
+│   ├── test_token.py          # Token endpoint tests
+│   ├── test_health.py         # Health check tests
+│   └── test_security.py       # Security tests
+├── requirements.txt           # Dependencies
+├── Dockerfile                 # Container configuration
+├── railway.json              # Railway deployment config
+└── README.md                 # Documentation
+```
+
 ## Effort Estimate
-2-3 days
+8 days (broken into 8 subtasks)
 
 ## Priority
 High
