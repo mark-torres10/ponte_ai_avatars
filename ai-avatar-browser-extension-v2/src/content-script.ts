@@ -6,6 +6,7 @@ console.log('Parker Sports Extension V2 content script loaded');
 // Global cleanup variables to prevent memory leaks
 let cleanupInterval: NodeJS.Timeout | null = null;
 let outsideClickHandler: ((e: Event) => void) | null = null;
+let messageListenerRegistered = false;
 
 // Helper function to convert mode IDs to display names
 function getModeDisplayName(mode: string): string {
@@ -20,11 +21,28 @@ function getModeDisplayName(mode: string): string {
   return modeMap[mode] || 'Unknown Mode';
 }
 
+// Message handler for mode changes
+function onModeMessage(message: any, sender: chrome.runtime.MessageSender, sendResponse: (response?: any) => void) {
+  if (message?.type === 'MODE_CHANGED') {
+    const modeLabel = document.getElementById('parker-mode-label');
+    if (modeLabel) {
+      const modeDisplayName = getModeDisplayName(message.mode);
+      modeLabel.textContent = `${modeDisplayName} Active`;
+    }
+  }
+}
+
 // Check if we're on an ESPN page
 const isESPNPage = window.location.hostname.includes('espn.com');
 
 if (isESPNPage) {
   console.log('ESPN page detected, Parker Sports Extension V2 is active');
+  
+  // Register message listener only once
+  if (!messageListenerRegistered) {
+    chrome.runtime.onMessage.addListener(onModeMessage);
+    messageListenerRegistered = true;
+  }
   
   // Wait for page to load
   if (document.readyState === 'loading') {
@@ -230,16 +248,7 @@ function initParkerAvatar() {
     console.log('Parker avatar clicked - no popup functionality');
   });
 
-  // Listen for mode changes from the popup
-  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.type === 'MODE_CHANGED') {
-      const modeLabel = document.getElementById('parker-mode-label');
-      if (modeLabel) {
-        const modeDisplayName = getModeDisplayName(message.mode);
-        modeLabel.textContent = `${modeDisplayName} Active`;
-      }
-    }
-  });
+  // Message listener is now registered at module scope to prevent duplicates
 
   console.log('Parker Sports avatar injected successfully');
 }

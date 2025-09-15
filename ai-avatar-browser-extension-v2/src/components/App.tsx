@@ -1,8 +1,5 @@
 import React, { useState } from 'react';
 import { FeatureMode, DifficultyLevel } from '../types';
-
-// Chrome extension types
-declare const chrome: any;
 import Header from './Header';
 import DebateMode from './modes/DebateMode';
 import HotTakeMode from './modes/HotTakeMode';

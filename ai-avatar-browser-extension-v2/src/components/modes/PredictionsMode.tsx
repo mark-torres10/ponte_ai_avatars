@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Target, HelpCircle, Mic, MicOff, Keyboard, Send } from 'lucide-react';
 
 const PredictionsMode: React.FC = () => {
@@ -37,6 +37,29 @@ const PredictionsMode: React.FC = () => {
     setConfidence(randomPrediction.confidence);
   };
 
+  // Keyboard event handler
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault(); // Prevent space from scrolling the page
+      handleVoiceInput();
+    }
+  };
+
+  // Add global keyboard listener when recording
+  useEffect(() => {
+    if (isRecording) {
+      const handleGlobalKeyDown = (e: KeyboardEvent) => {
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault();
+          handleVoiceInput();
+        }
+      };
+      
+      window.addEventListener('keydown', handleGlobalKeyDown);
+      return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+    }
+  }, [isRecording]);
+
   return (
     <div className="space-y-3">
       {/* Header */}
@@ -47,7 +70,14 @@ const PredictionsMode: React.FC = () => {
       
       <div className="space-y-2">
         {/* Voice Input (Primary) */}
-        <div className="flex flex-col items-center gap-2 p-3 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg">
+        <div 
+          className="flex flex-col items-center gap-2 p-3 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg"
+          tabIndex={0}
+          onKeyDown={handleKeyDown}
+          role="button"
+          aria-pressed={isRecording}
+          aria-label="Voice input for predictions"
+        >
           <div className="text-xs text-center text-green-700 mb-1">
             🎯 {isRecording ? 'Recording... (Space/Enter to stop)' : 'Tap or press Space/Enter for predictions'}
           </div>
@@ -58,6 +88,7 @@ const PredictionsMode: React.FC = () => {
                 : 'bg-green-600 hover:scale-105'
             }`}
             onClick={handleVoiceInput}
+            aria-label={isRecording ? 'Stop recording' : 'Start recording'}
           >
             {isRecording ? (
               <MicOff className="w-5 h-5 text-white mx-auto" />
