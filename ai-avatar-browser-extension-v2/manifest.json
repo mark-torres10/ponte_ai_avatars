@@ -1,0 +1,46 @@
+{
+  "manifest_version": 3,
+  "name": "Parker Sports - AI Avatar Commentary",
+  "version": "2.0.0",
+  "description": "Enhanced AI avatar that provides interactive sports commentary with multiple engagement modes",
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://www.espn.com/*"
+  ],
+  "background": {
+    "service_worker": "background-script.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.espn.com/*"],
+      "js": ["content-script.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Parker Sports - AI Commentary",
+    "default_icon": {
+      "16": "icon-16.png",
+      "48": "icon-48.png",
+      "128": "icon-128.png"
+    }
+  },
+  "icons": {
+    "16": "icon-16.png",
+    "48": "icon-48.png",
+    "128": "icon-128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["avatar-icon.png", "parker-avatar-80x80.png", "parker-avatar-120x120.png", "parker-avatar-160x160.png"],
+      "matches": ["https://www.espn.com/*"]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; style-src 'self' 'unsafe-inline';"
+  }
+}
