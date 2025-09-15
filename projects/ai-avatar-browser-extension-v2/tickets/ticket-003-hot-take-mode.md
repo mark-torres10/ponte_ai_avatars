@@ -51,6 +51,7 @@ As a sports fan, I want Parker to deliver outrageous daily hot takes so that I c
 
 ## Dependencies
 - Ticket 001 (Basic UI Framework)
+- Ticket 008 (FastAPI Backend Setup) - Required for AI-generated hot takes
 - shadcn-ui component library setup
 - Tailwind CSS configuration
 - Mock data creation for hot take content

@@ -25,20 +25,19 @@ Sports fans need more engaging and interactive UI experiences when consuming spo
 
 ### In Scope
 - **Core UI Framework**: Click avatar to reveal 6 feature icons in 2x3 grid with hover effects
-- **Debate Mode**: Interactive Q&A interface with difficulty toggle (go easy vs go savage) and mock responses
-- **Hot Take Mode**: UI for displaying daily outrageous opinions with "SPICY" labels and mock content
+- **Debate Mode**: Interactive Q&A interface with difficulty toggle (go easy vs go savage) and AI-powered responses
+- **Hot Take Mode**: UI for displaying daily outrageous opinions with "SPICY" labels and AI-generated content
 - **Predictive Mode**: Interface with confidence meter and mock prediction responses
 - **NBA Recap Mode**: Tabbed interface for daily/team-specific recaps with mock content
 - **Fan Take Reactions**: "Coming Soon" interface with mock instructional content
 - **Game Companion Mode**: "Coming Soon" interface with mock live commentary description
 - **Chrome Extension**: Manifest V3 with content script + popup UI (no background script needed)
-- **Mock Data**: Static JSON files for all UI states and content display
+- **FastAPI Backend**: Audio processing, AI responses, and TTS synthesis for Debate and Hot Take modes
+- **API Integrations**: OpenAI (ASR, LLM) and ElevenLabs (TTS) for core functionality
+- **Railway Deployment**: Backend service deployment and API endpoint management
 
 ### Out of Scope
-- API integrations (Exa MCP, Wikipedia, OpenAI, ElevenLabs)
-- Backend API development
-- Real-time data fetching
-- Audio generation and playback
+- Exa MCP and Wikipedia integrations
 - Mobile browser support
 - User authentication and personalization
 - Social sharing features
@@ -49,12 +48,13 @@ Sports fans need more engaging and interactive UI experiences when consuming spo
 - Offline functionality
 
 ## Timeline
-- **Duration**: 5 weeks
+- **Duration**: 6 weeks
 - **Start Date**: [To be determined]
 - **End Date**: [To be determined]
 
 ## Team Composition
 - **Frontend Developer**: UI/UX implementation, React components, mock data creation
+- **Backend Developer**: FastAPI development, API integrations, Railway deployment
 - **Extension Developer**: Chrome extension architecture, popup UI
 - **QA Engineer**: Testing and validation
 
@@ -65,8 +65,10 @@ Sports fans need more engaging and interactive UI experiences when consuming spo
   - *Mitigation*: Optimize component rendering and implement efficient state management
 - **Chrome Extension Limitations**: Popup size and interaction constraints
   - *Mitigation*: Follow Chrome extension best practices and test across different screen sizes
-- **Mock Data Management**: Large amounts of static content might impact load times
-  - *Mitigation*: Implement lazy loading and optimize mock data structure
+- **API Integration Complexity**: OpenAI and ElevenLabs integrations might introduce latency
+  - *Mitigation*: Implement proper error handling, caching, and fallback mechanisms
+- **Backend Deployment**: Railway deployment and API endpoint management
+  - *Mitigation*: Follow deployment best practices and implement comprehensive monitoring
 
 ### Product Risks
 - **Feature Complexity**: 6 different modes might overwhelm users
@@ -79,28 +81,33 @@ Sports fans need more engaging and interactive UI experiences when consuming spo
 - React and TypeScript setup
 - shadcn-ui component library
 - Tailwind CSS configuration
+- FastAPI and Python 3.10+ setup
+- OpenAI API access and credentials
+- ElevenLabs API access and credentials
+- Railway deployment platform
 - Mock data creation and management
 
 ## Technical Architecture
 ```
-Extension (Chrome)
-├── Content Script (ESPN detection, UI injection)
-├── Popup UI (main feature interface)
-├── Components (mode-specific interfaces)
-└── Mock Data (static JSON files for all content)
+Extension (client)
+├── WebAudio (mic) → send audio chunks (or base64 wav/opus) to backend
+├── Receives streamed text + TTS audio for Parker's reply
+└── Manages ephemeral thread state; "Save transcript" writes to local IndexedDB
 
-No Backend Required
-├── Static mock data for all UI states
-├── Local state management for user interactions
-└── Chrome extension storage for user preferences
+FastAPI (backend)
+├── /v1/debates/* APIs
+├── OpenAI: ASR (Whisper), LLM (for banter + summary), optional Realtime for low-latency
+├── ElevenLabs: TTS synth to MP3/OPUS
+└── Stateless (no DB needed for MVP); logs minimal metadata only
 ```
 
 ## Implementation Phases
 1. **Phase 1 (Week 1)**: ✅ Basic UI framework and feature navigation - **COMPLETED**
-2. **Phase 2 (Week 2)**: Debate Mode and Hot Take Mode UI implementation - **IN PROGRESS**
-3. **Phase 3 (Week 3)**: Predictive Mode and NBA Recap Mode UI implementation
-4. **Phase 4 (Week 4)**: Fan Take Reactions and Game Companion Mode UI implementation
-5. **Phase 5 (Week 5)**: UI testing, optimization, and deployment
+2. **Phase 2 (Week 2)**: FastAPI backend setup and Railway deployment
+3. **Phase 3 (Week 3)**: Debate Mode and Hot Take Mode with AI integration
+4. **Phase 4 (Week 4)**: Predictive Mode and NBA Recap Mode UI implementation
+5. **Phase 5 (Week 5)**: Fan Take Reactions and Game Companion Mode UI implementation
+6. **Phase 6 (Week 6)**: Integration testing, optimization, and deployment
 
 ## Success Metrics
 - **Primary**: UI completeness, visual consistency, user engagement, performance
@@ -109,7 +116,7 @@ No Backend Required
 ## Project Status
 - **Current Phase**: Phase 1 Complete - Basic UI Framework Implemented
 - **Completed**: Ticket-001 Basic UI Framework (✅ COMPLETED)
-- **Next Steps**: Begin Phase 2 - Debate Mode and Hot Take Mode UI implementation
+- **Next Steps**: Begin Phase 2 - FastAPI backend setup and Railway deployment
 - **Blockers**: None identified
 
 ## Notes
@@ -118,5 +125,6 @@ No Backend Required
 - Prioritize user experience and performance
 - Use shadcn-ui for consistent component design
 - Implement comprehensive mock data for all UI states
-- All features are UI-only with no backend dependencies
+- Backend integration required for Debate Mode and Hot Take Mode functionality
 - Implement comprehensive testing for all interactive features
+- FastAPI backend will power AI responses and TTS synthesis

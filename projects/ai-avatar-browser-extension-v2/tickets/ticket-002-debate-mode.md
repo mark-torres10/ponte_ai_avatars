@@ -15,8 +15,9 @@ Create an interactive debate mode where users can ask Parker questions and recei
   - [ ] Large circular black button with white microphone icon
 - [ ] Difficulty toggle buttons below interaction box:
   - [ ] "Go Easy" button (light gray background when selected)
-  - [ ] "Go Savage" button (light gray background when selected)
+  - [ ] "Go Savage" button (red background when selected)
   - [ ] Only one button highlighted at a time
+  - [ ] Sticky per page until reset
 - [ ] Keyboard icon with "Or type your question" text below toggles
 - [ ] Gray "Parker" response box at bottom with mock content
 - [ ] Visual feedback when spacebar is pressed (pulsating ring around microphone)
@@ -54,6 +55,7 @@ As a sports fan, I want to ask Parker debate questions and get passionate respon
 
 ## Dependencies
 - Ticket 001 (Basic UI Framework)
+- Ticket 008 (FastAPI Backend Setup) - Required for AI responses and TTS
 - shadcn-ui component library setup
 - Tailwind CSS configuration
 - Mock data creation for responses

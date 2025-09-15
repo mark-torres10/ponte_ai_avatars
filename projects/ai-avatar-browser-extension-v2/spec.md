@@ -43,22 +43,21 @@ Sports fans want more engaging and interactive experiences when consuming sports
 
 ## 3. Scope Boundaries and Technical Requirements
 
-### In Scope (MVP - UI Only)
+### In Scope (MVP)
 - **Core UI Framework**: Click avatar to reveal 6 feature icons in 2x3 grid with hover effects
-- **Debate Mode UI**: Interactive interface with difficulty toggle (go easy vs go savage) and mock responses
-- **Hot Take Mode UI**: Interface for displaying daily outrageous opinions with "SPICY" labels and mock content
+- **Debate Mode**: Interactive interface with difficulty toggle (go easy vs go savage) and AI-powered responses
+- **Hot Take Mode**: Interface for displaying daily outrageous opinions with "SPICY" labels and AI-generated content
 - **Predictive Mode UI**: Interface with confidence meter and mock prediction responses
 - **NBA Recap Mode UI**: Tabbed interface for daily/team-specific recaps with mock content
 - **Fan Take Reactions UI**: "Coming Soon" interface with mock instructional content
 - **Game Companion Mode UI**: "Coming Soon" interface with mock live commentary description
 - **Chrome Extension**: Manifest V3 with content script + popup UI (no background script needed)
-- **Static Mock Data**: Placeholder content for all UI states and interactions
+- **FastAPI Backend**: Audio processing, AI responses, and TTS synthesis for Debate and Hot Take modes
+- **API Integrations**: OpenAI (ASR, LLM) and ElevenLabs (TTS) for core functionality
+- **Railway Deployment**: Backend service deployment and API endpoint management
 
 ### Out of Scope (Future Enhancements)
-- API integrations (Exa MCP, Wikipedia, OpenAI, ElevenLabs)
-- Backend API development
-- Real-time data fetching
-- Audio generation and playback
+- Exa MCP and Wikipedia integrations
 - Mobile browser support
 - User authentication and personalization
 - Social sharing features
@@ -71,9 +70,12 @@ Sports fans want more engaging and interactive experiences when consuming sports
 ### Technical Requirements
 - **Extension Architecture**: Content script + popup UI (no background script needed)
 - **UI Framework**: React, TypeScript, shadcn-ui, Tailwind CSS
-- **Mock Data**: Static JSON files for all UI states and content
-- **Performance**: <200ms extension load time, smooth animations
-- **Security**: Minimal permissions, no external API calls
+- **Backend Framework**: FastAPI with Python 3.10+
+- **API Integrations**: OpenAI (Whisper ASR, GPT-4 LLM), ElevenLabs (TTS)
+- **Deployment**: Railway platform for backend service
+- **Audio Processing**: WebAudio input handling, base64 audio formats
+- **Performance**: <200ms extension load time, <2s backend response time
+- **Security**: API key management, CORS configuration, minimal permissions
 - **Compatibility**: Chrome 90+, modern JavaScript features
 - **UI Components**: Reusable shadcn-ui components with custom styling
 
@@ -108,35 +110,40 @@ Sports fans want more engaging and interactive experiences when consuming sports
 
 ### Technical Architecture
 ```
-Extension (Chrome)
-├── Content Script (ESPN detection, UI injection)
-├── Popup UI (main feature interface)
-├── Components (mode-specific interfaces)
-└── Mock Data (static JSON files for all content)
+Extension (client)
+├── WebAudio (mic) → send audio chunks (or base64 wav/opus) to backend
+├── Receives streamed text + TTS audio for Parker's reply
+└── Manages ephemeral thread state; "Save transcript" writes to local IndexedDB
 
-No Backend Required
-├── Static mock data for all UI states
-├── Local state management for user interactions
-└── Chrome extension storage for user preferences
+FastAPI (backend)
+├── /v1/debates/* APIs
+├── OpenAI: ASR (Whisper), LLM (for banter + summary), optional Realtime for low-latency
+├── ElevenLabs: TTS synth to MP3/OPUS
+└── Stateless (no DB needed for MVP); logs minimal metadata only
 ```
 
 ### Implementation Phases
 1. **Phase 1 (Week 1)**: Basic UI framework and feature navigation
-2. **Phase 2 (Week 2)**: Debate Mode and Hot Take Mode UI implementation
-3. **Phase 3 (Week 3)**: Predictive Mode and NBA Recap Mode UI implementation
-4. **Phase 4 (Week 4)**: Fan Take Reactions and Game Companion Mode UI implementation
-5. **Phase 5 (Week 5)**: UI testing, optimization, and deployment
+2. **Phase 2 (Week 2)**: FastAPI backend setup and Railway deployment
+3. **Phase 3 (Week 3)**: Debate Mode and Hot Take Mode with AI integration
+4. **Phase 4 (Week 4)**: Predictive Mode and NBA Recap Mode UI implementation
+5. **Phase 5 (Week 5)**: Fan Take Reactions and Game Companion Mode UI implementation
+6. **Phase 6 (Week 6)**: Integration testing, optimization, and deployment
 
 ### Risk Assessment
 - **Low Risk**: UI framework, basic extension structure, mock data
-- **Medium Risk**: Complex UI interactions, state management
-- **High Risk**: Performance optimization, accessibility compliance
+- **Medium Risk**: Complex UI interactions, state management, API integrations
+- **High Risk**: Performance optimization, accessibility compliance, backend deployment
 
 ### Dependencies
 - Chrome extension development environment
 - React and TypeScript setup
 - shadcn-ui component library
 - Tailwind CSS configuration
+- FastAPI and Python 3.10+ setup
+- OpenAI API access and credentials
+- ElevenLabs API access and credentials
+- Railway deployment platform
 - Mock data creation and management
 
 ## 6. Feature Specifications
