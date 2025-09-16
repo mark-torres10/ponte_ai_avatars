@@ -84,9 +84,26 @@ class SecurityMiddleware(BaseHTTPMiddleware):
                              origin=request.headers.get("origin"),
                              referer=request.headers.get("referer"),
                              path=request.url.path)
-                raise HTTPException(
-                    status_code=403, 
-                    detail="Origin not allowed"
+                
+                # Return a proper JSON response instead of raising HTTPException
+                from fastapi.responses import JSONResponse
+                from datetime import datetime
+                
+                return JSONResponse(
+                    status_code=403,
+                    content={
+                        "error": {
+                            "code": 403,
+                            "message": "Origin not allowed",
+                            "details": {
+                                "origin": request.headers.get("origin"),
+                                "referer": request.headers.get("referer")
+                            }
+                        },
+                        "request_id": request_id,
+                        "timestamp": datetime.utcnow().isoformat() + "Z"
+                    },
+                    headers={"X-Request-ID": request_id}
                 )
         
         # Log request

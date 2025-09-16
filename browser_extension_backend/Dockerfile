@@ -24,5 +24,5 @@ EXPOSE $PORT
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:$PORT/healthz || exit 1
 
-# Run application with Hypercorn (recommended for production)
-CMD ["hypercorn", "app.main:app", "--bind", "0.0.0.0:$PORT"]
+# Run application with Uvicorn
+CMD sh -c 'uvicorn app.main:app --host 0.0.0.0 --port $PORT'

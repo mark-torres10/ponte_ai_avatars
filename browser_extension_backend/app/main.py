@@ -36,8 +36,7 @@ structlog.configure(
     context_class=dict,
     logger_factory=structlog.stdlib.LoggerFactory(),
     wrapper_class=structlog.stdlib.BoundLogger,
-    cache_logger_on_first_use=True,
-    log_level=settings.log_level.upper()
+    cache_logger_on_first_use=True
 )
 
 logger = structlog.get_logger(__name__)
@@ -55,6 +54,26 @@ app = FastAPI(
 limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Global exception handler for HTTPException
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    """Handle HTTPException globally"""
+    request_id = getattr(request.state, 'request_id', 'unknown')
+    
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error": {
+                "code": exc.status_code,
+                "message": exc.detail,
+                "details": {}
+            },
+            "request_id": request_id,
+            "timestamp": datetime.utcnow().isoformat() + "Z"
+        },
+        headers={"X-Request-ID": request_id}
+    )
 
 # Add security middleware (must be before CORS)
 app.add_middleware(SecurityMiddleware, allowed_origins=settings.allowed_origins)
