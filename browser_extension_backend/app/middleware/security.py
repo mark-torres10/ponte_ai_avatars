@@ -43,6 +43,7 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         """Enhanced origin validation"""
         origin = request.headers.get("origin")
         referer = request.headers.get("referer")
+        user_agent = request.headers.get("user-agent", "")
         
         # Check origin header
         if origin:
@@ -56,12 +57,13 @@ class SecurityMiddleware(BaseHTTPMiddleware):
                 if pattern.match(referer):
                     return True
         
-        # Allow requests without origin/referer (e.g., direct API calls, Postman)
-        # This is a tradeoff between security and usability
-        if not origin and not referer:
-            logger.warning("Request without origin or referer headers", 
-                         path=request.url.path, 
-                         method=request.method)
+        # Allow Chrome extension requests (they often don't send Origin headers)
+        if "chrome-extension://" in user_agent or not origin:
+            logger.info("Allowing Chrome extension or no-origin request", 
+                       origin=origin,
+                       referer=referer,
+                       user_agent=user_agent,
+                       path=request.url.path)
             return True
         
         return False
