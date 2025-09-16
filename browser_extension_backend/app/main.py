@@ -85,8 +85,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Add security middleware (after CORS for request tracking only)
-app.add_middleware(SecurityMiddleware, allowed_origins=settings.allowed_origins)
+# Temporarily disable security middleware to test CORS
+# app.add_middleware(SecurityMiddleware, allowed_origins=settings.allowed_origins)
 
 # Services are now managed by the dependency injection container
 

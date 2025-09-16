@@ -8,7 +8,8 @@
     "storage"
   ],
   "host_permissions": [
-    "https://www.espn.com/*"
+    "https://www.espn.com/*",
+    "https://ponte-ai-backend-production.up.railway.app/*"
   ],
   "background": {
     "service_worker": "background-script.js"
