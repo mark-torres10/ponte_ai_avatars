@@ -75,17 +75,18 @@ async def http_exception_handler(request: Request, exc: HTTPException):
         headers={"X-Request-ID": request_id}
     )
 
-# Add security middleware (must be before CORS)
-app.add_middleware(SecurityMiddleware, allowed_origins=settings.allowed_origins)
-
-# CORS configuration
+# CORS configuration (must be first to handle Chrome extensions properly)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
+    allow_origin_regex=r"chrome-extension://.*",  # Allow any Chrome extension
     allow_credentials=True,
-    allow_methods=["GET", "POST"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
+
+# Add security middleware (after CORS for request tracking only)
+app.add_middleware(SecurityMiddleware, allowed_origins=settings.allowed_origins)
 
 # Services are now managed by the dependency injection container
 

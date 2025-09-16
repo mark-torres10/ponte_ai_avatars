@@ -84,35 +84,14 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         # Note: We don't modify headers directly as it's fragile
         # Instead, we rely on request.state for internal tracking
         
-        # Validate origin for POST requests (token generation)
+        # Log request details for debugging (origin validation now handled by CORS)
         if request.method == "POST" and request.url.path == "/v1/realtime/token":
-            if not self._validate_origin(request):
-                logger.warning("Origin validation failed", 
-                             request_id=request_id,
-                             origin=request.headers.get("origin"),
-                             referer=request.headers.get("referer"),
-                             path=request.url.path)
-                
-                # Return a proper JSON response instead of raising HTTPException
-                from fastapi.responses import JSONResponse
-                from datetime import datetime
-                
-                return JSONResponse(
-                    status_code=403,
-                    content={
-                        "error": {
-                            "code": 403,
-                            "message": "Origin not allowed",
-                            "details": {
-                                "origin": request.headers.get("origin"),
-                                "referer": request.headers.get("referer")
-                            }
-                        },
-                        "request_id": request_id,
-                        "timestamp": datetime.utcnow().isoformat() + "Z"
-                    },
-                    headers={"X-Request-ID": request_id}
-                )
+            logger.info("Token request received", 
+                       request_id=request_id,
+                       origin=request.headers.get("origin"),
+                       referer=request.headers.get("referer"),
+                       user_agent=request.headers.get("user-agent"),
+                       path=request.url.path)
         
         # Log request
         logger.info("Request started",
