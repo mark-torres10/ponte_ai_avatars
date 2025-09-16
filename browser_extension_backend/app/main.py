@@ -78,9 +78,8 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 # CORS configuration (must be first to handle Chrome extensions properly)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://www.espn.com"],  # Only web origins
-    allow_origin_regex=r"chrome-extension://.*",  # Allow any Chrome extension
-    allow_credentials=True,
+    allow_origins=["*"],  # Allow ALL origins temporarily for testing
+    allow_credentials=False,  # Must be False when using wildcard
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
