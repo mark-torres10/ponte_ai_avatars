@@ -556,17 +556,85 @@ async def test_token_generation_performance():
     assert duration < 0.2, f"Token generation took {duration}s, expected <0.2s"
 ```
 
-## Deployment Configuration
+## Railway Deployment Configuration
 
-### Railway Deployment
-```yaml
-# railway.json
+### Railway Setup Methods
+
+Railway supports multiple deployment methods for FastAPI applications:
+
+#### **Method 1: One-Click Deploy from Template (Recommended for MVP)**
+1. **Template Selection**: Use Railway's FastAPI template
+2. **Deployment**: Click "Deploy" on [Railway FastAPI Template](https://railway.com/deploy/fastapi-1)
+3. **Ejection**: Eject from template to create your own GitHub repository
+4. **Customization**: Modify the ejected code for our specific requirements
+
+#### **Method 2: Deploy from GitHub Repository**
+1. **Repository Setup**: Push code to GitHub repository
+2. **Railway Project**: Create new project at [railway.com/new](https://railway.com/new)
+3. **GitHub Integration**: Click "Deploy from GitHub repo"
+4. **Repository Selection**: Select your FastAPI repository
+5. **Deploy**: Click "Deploy Now"
+
+#### **Method 3: CLI Deployment**
+```bash
+# Install Railway CLI
+bash <(curl -fsSL cli.new)
+
+# Authenticate with Railway
+railway login
+
+# Initialize project
+railway init
+
+# Deploy application
+railway up
+
+# Generate public domain
+railway domain
+```
+
+#### **Method 4: Dockerfile Deployment**
+```dockerfile
+# Use Python 3.11 slim image
+FROM python:3.11-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements and install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY . .
+
+# Expose port (Railway sets PORT environment variable)
+EXPOSE $PORT
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:$PORT/healthz || exit 1
+
+# Run application with Hypercorn (recommended for production)
+CMD ["hypercorn", "main:app", "--bind", "0.0.0.0:$PORT"]
+```
+
+### Railway Configuration Files
+
+#### **railway.json** (Config as Code)
+```json
 {
   "build": {
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "uvicorn main:app --host 0.0.0.0 --port $PORT",
+    "startCommand": "hypercorn main:app --bind 0.0.0.0:$PORT",
     "healthcheckPath": "/healthz",
     "healthcheckTimeout": 100,
     "restartPolicyType": "ON_FAILURE",
@@ -574,6 +642,147 @@ async def test_token_generation_performance():
   }
 }
 ```
+
+#### **railway.toml** (Alternative Config Format)
+```toml
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "hypercorn main:app --bind 0.0.0.0:$PORT"
+healthcheckPath = "/healthz"
+healthcheckTimeout = 100
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+```
+
+### Environment Variables Configuration
+
+#### **Required Environment Variables**
+```bash
+# OpenAI Configuration
+OPENAI_API_KEY=sk-...
+REALTIME_MODEL=gpt-realtime
+REALTIME_VOICE=verse
+TOKEN_TTL_SECONDS=600
+
+# Security Configuration
+ALLOWED_ORIGINS=["https://www.espn.com","chrome-extension://abc123"]
+CORS_ORIGINS=["https://www.espn.com","chrome-extension://abc123"]
+
+# Rate Limiting
+RATE_LIMIT_PER_MINUTE=10
+RATE_LIMIT_BURST=5
+
+# Logging
+LOG_LEVEL=INFO
+LOG_FORMAT=json
+```
+
+#### **Setting Environment Variables in Railway**
+
+**Via Railway Dashboard:**
+1. Navigate to your service in Railway dashboard
+2. Go to **Settings** → **Variables** tab
+3. Click **+ New Variable**
+4. Add each environment variable with its value
+5. Mark sensitive variables (like API keys) as **Secret**
+
+**Via Railway CLI:**
+```bash
+# Set environment variables (requires Railway CLI)
+railway variables set OPENAI_API_KEY=sk-...
+railway variables set REALTIME_MODEL=gpt-realtime
+railway variables set ALLOWED_ORIGINS='["https://www.espn.com","chrome-extension://abc123"]'
+
+# Set secret variables
+railway variables set OPENAI_API_KEY=sk-... --secret
+```
+
+### Production Deployment Checklist
+
+#### **Pre-Deployment**
+- [ ] All environment variables configured
+- [ ] Health check endpoint working (`/healthz`)
+- [ ] CORS properly configured for production domains
+- [ ] Rate limiting configured appropriately
+- [ ] Logging configured for production
+- [ ] Error handling implemented
+- [ ] Security headers configured
+
+#### **Deployment Steps**
+1. **Code Preparation**:
+   ```bash
+   # Ensure all dependencies are in requirements.txt
+   pip freeze > requirements.txt
+   
+   # Test locally with production settings
+   python -m uvicorn main:app --host 0.0.0.0 --port 8000
+   ```
+
+2. **Railway Deployment**:
+   ```bash
+   # Deploy via CLI
+   railway up
+   
+   # Or push to GitHub and deploy via dashboard
+   git push origin main
+   ```
+
+3. **Domain Configuration**:
+   ```bash
+   # Generate public domain
+   railway domain
+   
+   # Or configure custom domain
+   railway domain add your-custom-domain.com
+   ```
+
+4. **Health Check Validation**:
+   ```bash
+   # Test health endpoint
+   curl https://your-app.railway.app/healthz
+   
+   # Expected response:
+   # {"status": "healthy", "timestamp": "...", "version": "1.0.0", "openai_status": "connected"}
+   ```
+
+#### **Post-Deployment Verification**
+- [ ] Application starts successfully
+- [ ] Health check endpoint responds correctly
+- [ ] API documentation accessible at `/docs`
+- [ ] Token generation endpoint works
+- [ ] Origin validation blocks unauthorized requests
+- [ ] Rate limiting functions correctly
+- [ ] Logs are being generated properly
+- [ ] Performance meets requirements (<200ms response time)
+
+### Railway-Specific Considerations
+
+#### **Port Configuration**
+- Railway automatically sets the `PORT` environment variable
+- Application must bind to `0.0.0.0:$PORT`
+- Default port is usually 3000, but always use `$PORT` environment variable
+
+#### **Health Checks**
+- Railway uses health checks for deployment validation
+- Health check endpoint should respond within 100 seconds
+- Failed health checks trigger automatic restarts
+
+#### **Scaling**
+- Railway automatically scales based on traffic
+- Vertical scaling: Increase CPU/memory as needed
+- Horizontal scaling: Multiple instances for high availability
+
+#### **Monitoring**
+- Railway provides built-in monitoring and logging
+- Access logs via Railway dashboard
+- Set up alerts for critical errors
+
+#### **Cost Optimization**
+- Railway offers free tier with usage limits
+- Monitor usage to avoid unexpected charges
+- Consider Railway Metal for production workloads
 
 ### Docker Configuration
 ```dockerfile
