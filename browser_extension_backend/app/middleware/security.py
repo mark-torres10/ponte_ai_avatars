@@ -58,9 +58,15 @@ class SecurityMiddleware(BaseHTTPMiddleware):
                     return True
         
         # Allow Chrome extension requests (they often don't send Origin headers)
-        if "chrome-extension://" in user_agent or not origin:
-            logger.info("Allowing Chrome extension or no-origin request", 
+        if origin and origin.startswith("chrome-extension://"):
+            logger.info("Allowing Chrome extension request", 
                        origin=origin,
+                       path=request.url.path)
+            return True
+        
+        # Allow requests without origin (Chrome extensions, Postman, etc.)
+        if not origin:
+            logger.info("Allowing no-origin request", 
                        referer=referer,
                        user_agent=user_agent,
                        path=request.url.path)
