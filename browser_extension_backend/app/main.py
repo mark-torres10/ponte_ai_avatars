@@ -91,7 +91,7 @@ app.add_middleware(
 
 
 @app.post("/v1/realtime/token", response_model=TokenResponse)
-@limiter.limit("10/minute")
+# @limiter.limit("10/minute")  # Temporarily disabled for testing
 async def create_realtime_token(
     request: Request,
     token_request: TokenRequest
