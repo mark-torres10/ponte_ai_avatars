@@ -1,7 +1,73 @@
 // API Service for Parker Sports Extension
 // Handles communication with the FastAPI backend
 
-const API_BASE_URL = 'https://ponte-ai-backend-production.up.railway.app';
+// Default fallback URL (unused; configuration comes from chrome.storage.local)
+// const DEFAULT_API_BASE_URL = 'https://api.example.com';
+
+// Get API base URL from Chrome storage
+const getApiBaseUrl = (): Promise<string> => {
+  console.log('🔍 DEBUG: getApiBaseUrl called');
+  console.log('🔍 DEBUG: chrome.storage available?', typeof chrome.storage);
+  console.log('🔍 DEBUG: chrome.storage.local available?', typeof chrome.storage?.local);
+  
+  return new Promise((resolve, reject) => {
+    console.log('🔍 DEBUG: About to call chrome.storage.local.get');
+    
+    chrome.storage.local.get(['apiBaseUrl'], (result) => {
+      console.log('🔍 DEBUG: chrome.storage.local.get callback executed');
+      console.log('🔍 DEBUG: chrome.runtime.lastError:', chrome.runtime.lastError);
+      console.log('🔍 DEBUG: result:', result);
+      console.log('🔍 DEBUG: result.apiBaseUrl:', result.apiBaseUrl);
+      console.log('🔍 DEBUG: typeof result.apiBaseUrl:', typeof result.apiBaseUrl);
+      
+      if (chrome.runtime.lastError) {
+        console.log('❌ DEBUG: chrome.runtime.lastError detected:', chrome.runtime.lastError.message);
+        reject(new Error(chrome.runtime.lastError.message));
+        return;
+      }
+      
+      if (result.apiBaseUrl) {
+        console.log('✅ DEBUG: API base URL found:', result.apiBaseUrl);
+        resolve(result.apiBaseUrl);
+      } else {
+        console.log('❌ DEBUG: No API base URL found in result');
+        console.log('🔍 DEBUG: Full result object:', JSON.stringify(result));
+        reject(new Error('API base URL not configured. Please set it in extension settings.'));
+      }
+    });
+  });
+};
+
+// Get bypass token from environment or storage
+const getBypassToken = (): Promise<string> => {
+  console.log('🔍 DEBUG: getBypassToken called');
+  
+  return new Promise((resolve, reject) => {
+    console.log('🔍 DEBUG: About to call chrome.storage.local.get for bypass token');
+    
+    chrome.storage.local.get(['vercelBypassToken'], (result) => {
+      console.log('🔍 DEBUG: chrome.storage.local.get callback executed for bypass token');
+      console.log('🔍 DEBUG: chrome.runtime.lastError:', chrome.runtime.lastError);
+      console.log('🔍 DEBUG: result:', result);
+      console.log('🔍 DEBUG: result.vercelBypassToken:', result.vercelBypassToken);
+      console.log('🔍 DEBUG: typeof result.vercelBypassToken:', typeof result.vercelBypassToken);
+      
+      if (chrome.runtime.lastError) {
+        console.log('❌ DEBUG: chrome.runtime.lastError detected:', chrome.runtime.lastError.message);
+        reject(new Error(chrome.runtime.lastError.message));
+        return;
+      }
+      if (result.vercelBypassToken) {
+        console.log('✅ DEBUG: Bypass token found:', result.vercelBypassToken);
+        resolve(result.vercelBypassToken);
+      } else {
+        console.log('❌ DEBUG: No bypass token found in result');
+        console.log('🔍 DEBUG: Full result object:', JSON.stringify(result));
+        reject(new Error('Vercel bypass token not configured. Please set it in extension settings.'));
+      }
+    });
+  });
+};
 
 export interface TokenRequest {
   model: 'gpt-realtime';
@@ -77,71 +143,128 @@ export interface ApiError {
 }
 
 class ApiService {
-  private baseUrl: string;
+  constructor() {
+    // No hardcoded base URL - will be fetched dynamically
+  }
 
-  constructor(baseUrl: string = API_BASE_URL) {
-    this.baseUrl = baseUrl;
+  // Set the API base URL securely
+  async setApiBaseUrl(url: string): Promise<void> {
+    await chrome.storage.local.set({ apiBaseUrl: url });
+  }
+
+  // Set the Vercel bypass token securely
+  async setBypassToken(token: string): Promise<void> {
+    await chrome.storage.local.set({ vercelBypassToken: token });
+  }
+
+  // Check if API base URL is configured
+  async isApiBaseUrlConfigured(): Promise<boolean> {
+    try {
+      await getApiBaseUrl();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  // Check if bypass token is configured
+  async isBypassTokenConfigured(): Promise<boolean> {
+    try {
+      await getBypassToken();
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   private async makeRequest<T>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const url = `${this.baseUrl}${endpoint}`;
+    console.log('🔍 DEBUG: makeRequest called with endpoint:', endpoint);
+    console.log('🔍 DEBUG: makeRequest options:', options);
     
-    const defaultHeaders = {
-      'Content-Type': 'application/json',
-    };
+    let baseUrl: string;
+    let url: string;
+    let config: RequestInit;
+    
+    try {
+      console.log('🔍 DEBUG: About to call getApiBaseUrl()');
+      // Get API base URL and bypass token securely
+      baseUrl = await getApiBaseUrl();
+      console.log('🔍 DEBUG: getApiBaseUrl() returned:', baseUrl);
+      
+      url = `${baseUrl}${endpoint}`;
+      console.log('🔍 DEBUG: Final URL constructed:', url);
 
-    const config: RequestInit = {
-      ...options,
-      headers: {
-        ...defaultHeaders,
-        ...options.headers,
-      },
-    };
+      // Only set Content-Type for requests with body to avoid unnecessary preflight
+      const defaultHeaders: Record<string, string> = {};
+      if (options.body) {
+        defaultHeaders['Content-Type'] = 'application/json';
+      }
+
+      console.log('🔍 DEBUG: Default headers:', defaultHeaders);
+
+      config = {
+        ...options,
+        headers: {
+          ...defaultHeaders,
+          ...options.headers,
+        },
+      };
+      
+      console.log('🔍 DEBUG: Final config:', config);
+    } catch (error) {
+      console.log('❌ DEBUG: Error in makeRequest setup:', error);
+      throw error;
+    }
 
     // Debug logging
-    console.log('API Request Details:', {
+    console.log('🔍 DEBUG: API Request Details:', {
       url,
       method: config.method || 'GET',
       headers: config.headers,
       body: config.body ? JSON.parse(config.body as string) : null
     });
+    
+    console.log('🔍 DEBUG: About to send message to background script');
+    console.log('🔍 DEBUG: Message payload:', {
+      action: 'apiCall',
+      method: config.method || 'GET',
+      url: url,
+      headers: config.headers,
+      body: config.body ? JSON.parse(config.body as string) : undefined
+    });
 
     try {
-      const response = await fetch(url, config);
-      
-      console.log('API Response Details:', {
-        status: response.status,
-        statusText: response.statusText,
-        headers: Object.fromEntries(response.headers.entries()),
-        url: response.url
+      // Use message passing to background script instead of direct fetch
+      const response = await new Promise<any>((resolve, reject) => {
+        console.log('🔍 DEBUG: Sending chrome.runtime.sendMessage');
+        chrome.runtime.sendMessage({
+          action: 'apiCall',
+          method: config.method || 'GET',
+          url: url,
+          headers: config.headers,
+          body: config.body ? JSON.parse(config.body as string) : undefined
+        }, (response) => {
+          console.log('🔍 DEBUG: Background script response received:', response);
+          console.log('🔍 DEBUG: chrome.runtime.lastError:', chrome.runtime.lastError);
+          
+          if (chrome.runtime.lastError) {
+            console.log('❌ DEBUG: chrome.runtime.lastError detected:', chrome.runtime.lastError.message);
+            reject(new Error(chrome.runtime.lastError.message));
+          } else if (response && response.success) {
+            console.log('✅ DEBUG: Background script returned success:', response.data);
+            resolve(response.data);
+          } else {
+            console.log('❌ DEBUG: Background script returned error:', response?.error);
+            reject(new Error(response?.error || 'Unknown error from background script'));
+          }
+        });
       });
       
-      if (!response.ok) {
-        let errorData: ApiError;
-        try {
-          errorData = await response.json();
-        } catch (parseError) {
-          errorData = {
-            error: {
-              code: response.status,
-              message: response.statusText,
-              details: {}
-            },
-            request_id: 'unknown',
-            timestamp: new Date().toISOString()
-          };
-        }
-        
-        console.error('API Error Details:', errorData);
-        throw new Error(`API Error ${response.status}: ${errorData.error.message}`);
-      }
-
-      const result = await response.json();
-      console.log('API Success Response:', result);
-      return result;
+      console.log('API Success Response:', response);
+      return response;
     } catch (error) {
       console.error('API Request failed:', error);
       throw error;
@@ -160,10 +283,20 @@ class ApiService {
 
   // Generate token for voice interaction
   async generateToken(request: TokenRequest): Promise<TokenResponse> {
-    return this.makeRequest('/v1/realtime/token', {
-      method: 'POST',
-      body: JSON.stringify(request),
-    });
+    console.log('🔍 DEBUG: generateToken called with request:', request);
+    console.log('🔍 DEBUG: About to call makeRequest with /v1/realtime/token');
+    
+    try {
+      const result = await this.makeRequest<TokenResponse>('/v1/realtime/token', {
+        method: 'POST',
+        body: JSON.stringify(request),
+      });
+      console.log('🔍 DEBUG: generateToken makeRequest completed successfully:', result);
+      return result;
+    } catch (error) {
+      console.log('❌ DEBUG: generateToken makeRequest failed:', error);
+      throw error;
+    }
   }
 
   // Test voice quality
