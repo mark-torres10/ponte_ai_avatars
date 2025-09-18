@@ -2,13 +2,16 @@
 // Handles WebRTC connections and real-time voice interactions
 
 import { apiService } from './api';
-import { TokenResponse, VoiceSession, VoiceEventHandlers, SportsContext, VoiceType, DifficultyLevel } from '../types';
+import { VoiceSession, VoiceEventHandlers, SportsContext, VoiceType, DifficultyLevel } from '../types';
 
 // VoiceSession and VoiceEventHandlers are imported from types/index.ts
 
 class VoiceService {
   private session: VoiceSession | null = null;
-  private websocket: WebSocket | null = null;
+  private websocket: WebSocket | null = null; // Deprecated in favor of WebRTC
+  private peerConnection: RTCPeerConnection | null = null;
+  private micStream: MediaStream | null = null;
+  private remoteAudioEl: HTMLAudioElement | null = null;
   private eventHandlers: VoiceEventHandlers = {};
   private isInitialized = false;
 
@@ -17,15 +20,25 @@ class VoiceService {
   }
 
   private async initialize() {
-    if (this.isInitialized) return;
+    if (this.isInitialized) {
+      console.log('🔍 DEBUG: Voice service already initialized');
+      return;
+    }
     
     try {
+      console.log('🔍 DEBUG: Starting voice service initialization');
+      console.log('🔍 DEBUG: About to call apiService.getHealth()');
+      
       // Test API connection
-      await apiService.getHealth();
+      const healthResponse = await apiService.getHealth();
+      console.log('🔍 DEBUG: Health check response:', healthResponse);
+      
       this.isInitialized = true;
-      console.log('Voice service initialized successfully');
+      console.log('✅ DEBUG: Voice service initialized successfully');
     } catch (error) {
-      console.error('Failed to initialize voice service:', error);
+      console.error('❌ DEBUG: Failed to initialize voice service:', error);
+      console.error('❌ DEBUG: Error type:', typeof error);
+      console.error('❌ DEBUG: Error message:', error instanceof Error ? error.message : String(error));
       throw error;
     }
   }
@@ -43,8 +56,13 @@ class VoiceService {
     sportsContext?: SportsContext
   ): Promise<VoiceSession> {
     try {
+      console.log('🔍 DEBUG: startSession called with params:', { voice, difficulty, instructions, sportsContext });
+      
+      console.log('🔍 DEBUG: About to initialize voice service');
       await this.initialize();
+      console.log('🔍 DEBUG: Voice service initialization completed');
 
+      console.log('🔍 DEBUG: About to generate token from backend');
       // Generate token from backend
       const tokenResponse = await apiService.generateToken({
         model: 'gpt-realtime',
@@ -85,50 +103,159 @@ class VoiceService {
     }
   }
 
-  // Connect to WebRTC
+  // Connect to WebRTC using SDP negotiation with Authorization header
   private async connectWebRTC(): Promise<void> {
     if (!this.session) {
       throw new Error('No active session');
     }
 
-    return new Promise((resolve, reject) => {
+    try {
+      console.log('🔍 DEBUG: Requesting microphone access...');
       try {
-        if (!this.session) {
-          reject(new Error('No active session'));
-          return;
+        this.micStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+          } as MediaTrackConstraints,
+        });
+        console.log('✅ DEBUG: Microphone access granted');
+      } catch (err) {
+        const e = err as DOMException;
+        console.log('❌ DEBUG: getUserMedia failed', {
+          name: e?.name,
+          message: e?.message,
+        });
+        if (e && e.name === 'NotAllowedError') {
+          console.log('❌ DEBUG: Permission dismissed or denied. Ask user to click Allow or use omnibox mic icon to enable.');
         }
-        this.websocket = new WebSocket(this.session.webRtcUrl);
+        throw err;
+      }
 
-        this.websocket.onopen = () => {
-          console.log('WebRTC connection established');
+      console.log('🔍 DEBUG: Creating RTCPeerConnection');
+      this.peerConnection = new RTCPeerConnection({
+        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+      });
+
+      // Play remote audio
+      if (!this.remoteAudioEl) {
+        this.remoteAudioEl = document.createElement('audio');
+        this.remoteAudioEl.autoplay = true;
+        this.remoteAudioEl.style.display = 'none';
+        document.body.appendChild(this.remoteAudioEl);
+      }
+
+      this.peerConnection.ontrack = (event: RTCTrackEvent) => {
+        console.log('🔍 DEBUG: ontrack fired. Streams:', event.streams?.length);
+        const [remoteStream] = event.streams;
+        if (this.remoteAudioEl) {
+          this.remoteAudioEl.srcObject = remoteStream;
+        }
           if (this.session) {
             this.session.isConnected = true;
           }
           this.eventHandlers.onConnectionChange?.(true);
+      };
+
+      this.peerConnection.oniceconnectionstatechange = () => {
+        console.log('🔍 DEBUG: ICE state:', this.peerConnection?.iceConnectionState);
+      };
+
+      // Add local mic tracks
+      this.micStream.getTracks().forEach((track) => {
+        this.peerConnection!.addTrack(track, this.micStream!);
+      });
+      console.log('✅ DEBUG: Added local audio tracks to RTCPeerConnection');
+
+      // Create SDP offer
+      const offer = await this.peerConnection.createOffer({ offerToReceiveAudio: true });
+      console.log('🔍 DEBUG: Created SDP offer. SDP length:', offer.sdp?.length);
+      await this.peerConnection.setLocalDescription(offer);
+      console.log('✅ DEBUG: setLocalDescription completed');
+
+      // Wait for ICE gathering to complete for a full SDP (non-trickle)
+      await new Promise<void>((resolve) => {
+        if (!this.peerConnection) { resolve(); return; }
+        if (this.peerConnection.iceGatheringState === 'complete') {
+          console.log('✅ DEBUG: ICE gathering already complete');
           resolve();
-        };
+        } else {
+          console.log('🔍 DEBUG: Waiting for ICE gathering to complete...');
+          const checkState = () => {
+            if (!this.peerConnection) { resolve(); return; }
+            console.log('🔍 DEBUG: ICE gathering state:', this.peerConnection.iceGatheringState);
+            if (this.peerConnection.iceGatheringState === 'complete') {
+              this.peerConnection.removeEventListener('icegatheringstatechange', checkState);
+              console.log('✅ DEBUG: ICE gathering complete');
+              resolve();
+            }
+          };
+          this.peerConnection.addEventListener('icegatheringstatechange', checkState);
+        }
+      });
 
-        this.websocket.onmessage = (event) => {
-          this.handleWebSocketMessage(event);
-        };
-
-        this.websocket.onclose = () => {
-          console.log('WebRTC connection closed');
-          if (this.session) {
-            this.session.isConnected = false;
-          }
-          this.eventHandlers.onConnectionChange?.(false);
-        };
-
-        this.websocket.onerror = (error) => {
-          console.error('WebRTC connection error:', error);
-          this.eventHandlers.onError?.(new Error('WebRTC connection failed'));
-          reject(error);
-        };
-      } catch (error) {
-        reject(error);
+      // Send SDP to OpenAI Realtime endpoint with Authorization: Bearer <client_secret>
+      const originalWebRtcUrl = this.session.webRtcUrl;
+      let webRtcUrl = originalWebRtcUrl;
+      try {
+        const parsed = new URL(originalWebRtcUrl);
+        console.log('🔍 DEBUG: Original web_rtc_url parts:', {
+          protocol: parsed.protocol,
+          host: parsed.host,
+          pathname: parsed.pathname,
+          search: parsed.search,
+        });
+        // Normalize scheme: wss -> https, ws -> http
+        if (parsed.protocol === 'wss:') parsed.protocol = 'https:';
+        if (parsed.protocol === 'ws:') parsed.protocol = 'http:';
+        // Ensure model param present (fallback to session voice/model config)
+        if (!parsed.searchParams.has('model')) {
+          // Attempt to add model from session voice/model (model not stored; using gpt-realtime by contract)
+          parsed.searchParams.set('model', 'gpt-realtime');
+        }
+        webRtcUrl = parsed.toString();
+        console.log('🔍 DEBUG: Normalized SDP POST URL:', webRtcUrl);
+      } catch (e) {
+        console.log('❌ DEBUG: Failed to parse/normalize web_rtc_url. Using original.', e);
       }
-    });
+      const clientSecret = this.session.clientSecret;
+      console.log('🔍 DEBUG: About to POST SDP to OpenAI Realtime endpoint');
+      console.log('🔍 DEBUG: POST URL scheme check:', { startsWithHttps: webRtcUrl.startsWith('https://') });
+      console.log('🔍 DEBUG: Headers presence flags before POST:', {
+        authorization: !!clientSecret,
+        contentTypeSdp: true,
+        acceptSdp: true,
+      });
+
+      const sdpResponse = await fetch(webRtcUrl, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${clientSecret}`,
+          'Content-Type': 'application/sdp',
+          Accept: 'application/sdp',
+        },
+        body: offer.sdp || '',
+      });
+
+      console.log('🔍 DEBUG: SDP POST response status:', sdpResponse.status);
+      console.log('🔍 DEBUG: SDP POST response headers:', Object.fromEntries(sdpResponse.headers.entries()));
+      if (!sdpResponse.ok) {
+        const text = await sdpResponse.text();
+        console.log('❌ DEBUG: SDP POST failed. Body:', text);
+        throw new Error(`SDP POST failed: ${sdpResponse.status}`);
+      }
+
+      const answerSdp = await sdpResponse.text();
+      console.log('✅ DEBUG: Received SDP answer. Length:', answerSdp.length);
+
+      await this.peerConnection.setRemoteDescription({ type: 'answer', sdp: answerSdp });
+      console.log('✅ DEBUG: setRemoteDescription completed');
+    } catch (error) {
+      console.error('❌ DEBUG: WebRTC negotiation failed:', error);
+      // Bubble up detailed error
+      this.eventHandlers.onError?.(error as Error);
+      throw error;
+    }
   }
 
   // Handle WebSocket messages
@@ -205,20 +332,12 @@ class VoiceService {
   }
 
   // Send audio data
-  sendAudio(audioData: ArrayBuffer) {
-    if (!this.websocket || !this.session?.isConnected) {
+  sendAudio(_audioData: ArrayBuffer) {
+    // With WebRTC, audio is sent via MediaStream track; this method is no-op
+    if (!this.session?.isConnected) {
       throw new Error('No active WebRTC connection');
     }
-
-    // Convert audio data to base64
-    const base64Audio = btoa(String.fromCharCode(...new Uint8Array(audioData)));
-    
-    const message = {
-      type: 'conversation.item.input_audio_buffer.append',
-      audio: base64Audio,
-    };
-
-    this.websocket.send(JSON.stringify(message));
+    console.log('🔍 DEBUG: sendAudio called - no-op in WebRTC mode');
   }
 
   // Start recording
@@ -255,8 +374,19 @@ class VoiceService {
   // End the current session
   endSession() {
     if (this.websocket) {
-      this.websocket.close();
+      try { this.websocket.close(); } catch {}
       this.websocket = null;
+    }
+    if (this.peerConnection) {
+      try { this.peerConnection.close(); } catch {}
+      this.peerConnection = null;
+    }
+    if (this.micStream) {
+      this.micStream.getTracks().forEach((t) => t.stop());
+      this.micStream = null;
+    }
+    if (this.remoteAudioEl) {
+      try { this.remoteAudioEl.srcObject = null; } catch {}
     }
 
     if (this.session) {
