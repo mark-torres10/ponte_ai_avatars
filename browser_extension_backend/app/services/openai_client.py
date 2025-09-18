@@ -23,20 +23,23 @@ class OpenAIClient:
     def __init__(self, api_key: str, base_url: str = "https://api.openai.com/v1"):
         self.api_key = api_key
         self.base_url = base_url
-        
-        # Configure HTTP client with connection pooling
-        self.client = httpx.AsyncClient(
-            base_url=base_url,
+        self._client = None
+    
+    def _get_client(self) -> httpx.AsyncClient:
+        """Create a fresh httpx client for each request (serverless-safe)"""
+        # Always create a new client for serverless environments
+        return httpx.AsyncClient(
+            base_url=self.base_url,
             headers={
-                "Authorization": f"Bearer {api_key}",
+                "Authorization": f"Bearer {self.api_key}",
                 "OpenAI-Beta": "realtime=v1",
                 "User-Agent": "Parker-Token-Service/1.0.0"
             },
             timeout=httpx.Timeout(30.0),  # 30 second timeout
             limits=httpx.Limits(
-                max_keepalive_connections=20,
-                max_connections=100,
-                keepalive_expiry=30.0
+                max_keepalive_connections=1,  # Minimal for serverless
+                max_connections=1,  # Minimal for serverless
+                keepalive_expiry=5.0  # Minimal for serverless
             ),
             http2=False  # Disable HTTP/2 to avoid h2 dependency
         )
@@ -45,7 +48,8 @@ class OpenAIClient:
         return self
     
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        await self.client.aclose()
+        if self._client and not self._client.is_closed:
+            await self._client.aclose()
     
     @retry(
         stop=stop_after_attempt(3),
@@ -61,10 +65,14 @@ class OpenAIClient:
                        model=session_data.get("model"),
                        voice=session_data.get("voice"))
             
-            response = await self.client.post(
-                "/realtime/sessions",
-                json=session_data
-            )
+            client = self._get_client()
+            try:
+                response = await client.post(
+                    "/realtime/sessions",
+                    json=session_data
+                )
+            finally:
+                await client.aclose()
             
             # Handle different status codes
             if response.status_code == 200:
@@ -119,16 +127,21 @@ class OpenAIClient:
     async def test_connectivity(self) -> bool:
         """Test OpenAI API connectivity"""
         try:
-            response = await self.client.get("/models", timeout=10.0)
-            return response.status_code == 200
+            client = self._get_client()
+            try:
+                response = await client.get("/models", timeout=10.0)
+                return response.status_code == 200
+            finally:
+                await client.aclose()
         except Exception as e:
             logger.warning("OpenAI connectivity test failed", error=str(e))
             return False
     
     async def close(self):
         """Close the HTTP client"""
-        await self.client.aclose()
-        logger.info("OpenAI client closed")
+        if self._client and not self._client.is_closed:
+            await self._client.aclose()
+            logger.info("OpenAI client closed")
 
 
 # Global client instance (will be initialized in main.py)

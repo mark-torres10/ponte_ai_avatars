@@ -99,9 +99,18 @@ async def create_realtime_token(
     """Generate ephemeral OpenAI Realtime API token"""
     request_id = getattr(request.state, 'request_id', 'unknown')
     
+    logger.info("Token generation request received", request_id=request_id, token_request=token_request.dict())
+    
     try:
+        # Ensure container is initialized (for Vercel serverless)
+        if not container._initialized:
+            logger.info("Initializing container on first request", request_id=request_id)
+            await container.initialize()
+        
         # Generate token using service from container
+        logger.info("About to call container.token_service.generate_token", request_id=request_id)
         token_response = await container.token_service.generate_token(token_request, request_id)
+        logger.info("Token generation successful", request_id=request_id, token_response=token_response.dict())
         
         return token_response
         
@@ -120,13 +129,13 @@ async def create_realtime_token(
             }
         )
     except Exception as e:
-        logger.error("Token generation failed", request_id=request_id, error=str(e))
+        logger.error("Token generation failed", request_id=request_id, error=str(e), exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={
                 "error": {
                     "code": ErrorCode.INTERNAL_ERROR.value,
-                    "message": "Internal server error",
+                    "message": f"Internal server error: {str(e)}",
                     "details": {}
                 },
                 "request_id": request_id,
@@ -139,6 +148,11 @@ async def create_realtime_token(
 async def health_check():
     """Health check endpoint"""
     try:
+        # Ensure container is initialized (for Vercel serverless)
+        if not container._initialized:
+            logger.info("Initializing container for health check")
+            await container.initialize()
+        
         # Test OpenAI API connectivity
         openai_connected = await container.token_service.test_openai_connectivity()
         openai_status = "connected" if openai_connected else "disconnected"
@@ -156,6 +170,25 @@ async def health_check():
         version=settings.app_version,
         openai_status=openai_status
     )
+
+@app.get("/debug")
+async def debug_info():
+    """Debug endpoint to check environment variables"""
+    return {
+        "openai_api_key_set": bool(settings.openai_api_key),
+        "openai_api_key_length": len(settings.openai_api_key) if settings.openai_api_key else 0,
+        "openai_api_key_prefix": settings.openai_api_key[:10] + "..." if settings.openai_api_key else "None",
+        "environment_variables": {
+            "OPENAI_API_KEY": "SET" if os.getenv("OPENAI_API_KEY") else "NOT_SET",
+            "REALTIME_MODEL": os.getenv("REALTIME_MODEL", "NOT_SET"),
+            "REALTIME_VOICE": os.getenv("REALTIME_VOICE", "NOT_SET"),
+        },
+        "settings": {
+            "openai_api_key_set": bool(settings.openai_api_key),
+            "realtime_model": settings.realtime_model,
+            "realtime_voice": settings.realtime_voice,
+        }
+    }
 
 
 @app.get("/")
