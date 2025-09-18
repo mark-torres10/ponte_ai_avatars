@@ -11,6 +11,8 @@ class VoiceService {
   private websocket: WebSocket | null = null; // Deprecated in favor of WebRTC
   private peerConnection: RTCPeerConnection | null = null;
   private micStream: MediaStream | null = null;
+  private audioSender: RTCRtpSender | null = null;
+  private eventsChannel: RTCDataChannel | null = null;
   private remoteAudioEl: HTMLAudioElement | null = null;
   private eventHandlers: VoiceEventHandlers = {};
   private isInitialized = false;
@@ -161,9 +163,48 @@ class VoiceService {
         console.log('🔍 DEBUG: ICE state:', this.peerConnection?.iceConnectionState);
       };
 
+      // Create Realtime data channel for events
+      this.eventsChannel = this.peerConnection.createDataChannel('oai-events');
+      this.eventsChannel.onopen = () => {
+        console.log('🔍 DEBUG: oai-events data channel open');
+        // Send session.update to configure server VAD and transcription
+        const sessionUpdate = {
+          type: 'session.update',
+          session: {
+            turn_detection: {
+              type: 'server_vad',
+              silence_duration_ms: 400,
+              prefix_padding_ms: 150,
+            },
+            input_audio_transcription: { model: 'gpt-4o-mini-transcribe' }
+          }
+        };
+        try {
+          this.eventsChannel?.send(JSON.stringify(sessionUpdate));
+          console.log('🔍 DEBUG: session.update sent');
+        } catch (e) {
+          console.log('❌ DEBUG: Failed to send session.update', e);
+        }
+      };
+      this.eventsChannel.onmessage = (ev) => {
+        const text = typeof ev.data === 'string' ? ev.data : '';
+        const preview = text.slice(0, 200);
+        console.log('🔍 DEBUG: oai-events message:', preview);
+        // Optionally parse
+        try {
+          const obj = JSON.parse(text);
+          if (obj?.type === 'response.completed') {
+            console.log('🔍 DEBUG: response.completed received');
+          }
+        } catch {}
+      };
+
       // Add local mic tracks
       this.micStream.getTracks().forEach((track) => {
-        this.peerConnection!.addTrack(track, this.micStream!);
+        const sender = this.peerConnection!.addTrack(track, this.micStream!);
+        if (track.kind === 'audio') {
+          this.audioSender = sender;
+        }
       });
       console.log('✅ DEBUG: Added local audio tracks to RTCPeerConnection');
 
@@ -346,10 +387,25 @@ class VoiceService {
       throw new Error('No active session');
     }
 
+    // Enable local audio track without renegotiation
+    const audioTrack = this.micStream?.getAudioTracks()[0];
+    if (audioTrack) {
+      audioTrack.enabled = true;
+      console.log('🔍 DEBUG: startRecording -> audioTrack.enabled =', audioTrack.enabled);
+    }
     if (this.session) {
       this.session.isRecording = true;
     }
     this.eventHandlers.onRecordingChange?.(true);
+
+    // If model is speaking, send response.cancel to barge-in
+    try {
+      const cancel = { type: 'response.cancel' };
+      this.eventsChannel?.send(JSON.stringify(cancel));
+      console.log('🔍 DEBUG: Sent response.cancel (barge-in)');
+    } catch (e) {
+      console.log('❌ DEBUG: Failed to send response.cancel', e);
+    }
   }
 
   // Stop recording
@@ -358,16 +414,24 @@ class VoiceService {
       throw new Error('No active session');
     }
 
+    // Disable local audio track without renegotiation
+    const audioTrack = this.micStream?.getAudioTracks()[0];
+    if (audioTrack) {
+      audioTrack.enabled = false;
+      console.log('🔍 DEBUG: stopRecording -> audioTrack.enabled =', audioTrack.enabled);
+    }
     if (this.session) {
       this.session.isRecording = false;
     }
     this.eventHandlers.onRecordingChange?.(false);
 
-    // Send commit message to process the audio
-    if (this.websocket) {
-      this.websocket.send(JSON.stringify({
-        type: 'conversation.item.input_audio_buffer.commit',
-      }));
+    // Trigger model response explicitly
+    try {
+      const create = { type: 'response.create', response: { modalities: ['audio'] } };
+      this.eventsChannel?.send(JSON.stringify(create));
+      console.log('🔍 DEBUG: Sent response.create after user turn');
+    } catch (e) {
+      console.log('❌ DEBUG: Failed to send response.create', e);
     }
   }
 
@@ -385,6 +449,7 @@ class VoiceService {
       this.micStream.getTracks().forEach((t) => t.stop());
       this.micStream = null;
     }
+    this.audioSender = null;
     if (this.remoteAudioEl) {
       try { this.remoteAudioEl.srcObject = null; } catch {}
     }
@@ -407,6 +472,46 @@ class VoiceService {
   // Check if service is ready
   isReady(): boolean {
     return this.isInitialized;
+  }
+
+  // Mic helpers
+  async requestMic(): Promise<void> {
+    if (this.micStream && this.micStream.getAudioTracks().length > 0) return;
+    this.micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  }
+
+  enableMic(): void {
+    const track = this.micStream?.getAudioTracks()[0];
+    if (track) {
+      track.enabled = true;
+      console.log('🔍 DEBUG: enableMic -> track.enabled', track.enabled);
+      if (this.session) this.session.isRecording = true;
+      this.eventHandlers.onRecordingChange?.(true);
+    }
+  }
+
+  disableMic(): void {
+    const track = this.micStream?.getAudioTracks()[0];
+    if (track) {
+      track.enabled = false;
+      console.log('🔍 DEBUG: disableMic -> track.enabled', track.enabled);
+      if (this.session) this.session.isRecording = false;
+      this.eventHandlers.onRecordingChange?.(false);
+    }
+  }
+
+  toggleMic(): void {
+    const track = this.micStream?.getAudioTracks()[0];
+    if (!track) return;
+    track.enabled = !track.enabled;
+    console.log('🔍 DEBUG: toggleMic -> track.enabled', track.enabled);
+    if (this.session) this.session.isRecording = track.enabled;
+    this.eventHandlers.onRecordingChange?.(track.enabled);
+  }
+
+  isMicEnabled(): boolean {
+    const track = this.micStream?.getAudioTracks()[0];
+    return !!track?.enabled;
   }
 }
 

@@ -67,19 +67,51 @@ const DebateMode: React.FC<DebateModeProps> = ({ difficulty, onDifficultyChange 
   // Initialize voice service
   useEffect(() => {
     voiceService.setEventHandlers(voiceEventHandlers);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (isConnected && !isRecording && !isProcessing) {
+          try { voiceService.startRecording(); } catch {}
+        }
+      } else if (e.code === 'Escape') {
+        try { voiceService.endSession(); } catch {}
+      }
+    };
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (isConnected && isRecording) {
+          try { voiceService.stopRecording(); } catch {}
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
     
     // Cleanup on unmount
     return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
       voiceService.endSession();
     };
   }, [voiceType, difficulty]);
 
-  // Handle voice input
+  // Handle voice input (Start session if needed; otherwise toggle mic)
   const handleVoiceInput = async () => {
     console.log('handleVoiceInput called', { isRecording, isProcessing, isConnected });
     
-    if (isRecording) {
-      stopRecording();
+    // If connected, just toggle mic
+    if (isConnected) {
+      try {
+        if (isRecording) {
+          voiceService.stopRecording();
+        } else {
+          voiceService.startRecording();
+        }
+      } catch (e) {
+        console.error('Toggle mic failed:', e);
+        setError('Failed to toggle microphone');
+      }
       return;
     }
 
@@ -96,9 +128,8 @@ const DebateMode: React.FC<DebateModeProps> = ({ difficulty, onDifficultyChange 
         sportsContext
       );
 
-      console.log('Voice session started, beginning recording...');
-      // Start recording
-      await startRecording();
+      console.log('Voice session started, enabling mic...');
+      voiceService.startRecording();
     } catch (error) {
       console.error('Voice input error:', error);
       setError(error instanceof Error ? error.message : 'Failed to start voice session');
@@ -106,51 +137,7 @@ const DebateMode: React.FC<DebateModeProps> = ({ difficulty, onDifficultyChange 
     }
   };
 
-  // Start recording
-  const startRecording = async () => {
-    try {
-      console.log('Requesting microphone access...');
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      console.log('Microphone access granted');
-      
-      mediaRecorderRef.current = new MediaRecorder(stream);
-      audioChunksRef.current = [];
-
-      mediaRecorderRef.current.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-
-      mediaRecorderRef.current.onstop = async () => {
-        console.log('Recording stopped, processing audio...');
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
-        const audioArrayBuffer = await audioBlob.arrayBuffer();
-        
-        // Send audio to voice service
-        voiceService.sendAudio(audioArrayBuffer);
-        voiceService.stopRecording();
-        
-        // Stop all tracks
-        stream.getTracks().forEach(track => track.stop());
-      };
-
-      mediaRecorderRef.current.start();
-      voiceService.startRecording();
-      console.log('Recording started');
-    } catch (error) {
-      console.error('Microphone access error:', error);
-      setError('Failed to access microphone');
-      setIsProcessing(false);
-    }
-  };
-
-  // Stop recording
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-      mediaRecorderRef.current.stop();
-    }
-  };
+  // Remove MediaRecorder-based local capture; WebRTC uses direct track enable/disable
 
   // Handle text input
   const handleTextDebate = async (questionText: string) => {
@@ -347,12 +334,25 @@ const DebateMode: React.FC<DebateModeProps> = ({ difficulty, onDifficultyChange 
           </button>
           <p className="text-xs text-gray-600 mt-1">
             {isProcessing 
-              ? 'Processing...' 
+              ? 'Processing...'
+              : !isConnected
+              ? 'Press Space to connect and start talking'
               : isRecording 
-              ? 'Recording... Click to stop' 
-              : 'Click to start recording'
+              ? 'Listening... release Space to stop'
+              : 'Press Space to talk, double-tap to end'
             }
           </p>
+          <div className="mt-2">
+            <button
+              onClick={() => {
+                try { voiceService.endSession(); } catch {}
+              }}
+              disabled={!isConnected}
+              className="px-2 py-1 text-xs bg-gray-200 hover:bg-gray-300 rounded disabled:opacity-50"
+            >
+              End Debate
+            </button>
+          </div>
         </div>
       )}
 
