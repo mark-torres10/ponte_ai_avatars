@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Parker Sports - AI Avatar Commentary",
+  "name": "Ponte AI: Personalized AI Avatars",
   "version": "2.0.0",
   "description": "Enhanced AI avatar that provides interactive sports commentary with multiple engagement modes",
   "permissions": [
@@ -24,7 +24,7 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Parker Sports - AI Commentary",
+    "default_title": "Ponte AI: Personalized AI Avatars",
     "default_icon": {
       "16": "icon-16.png",
       "48": "icon-48.png",
