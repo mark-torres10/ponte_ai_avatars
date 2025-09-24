@@ -8,7 +8,7 @@
     "storage"
   ],
   "host_permissions": [
-    "https://www.espn.com/*",
+    "<all_urls>",
     "https://browser-extension-backend-1x3ubrylp-marktorres10s-projects.vercel.app/*",
     "https://api.openai.com/*"
   ],
@@ -17,7 +17,7 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://www.espn.com/*"],
+      "matches": ["<all_urls>"],
       "js": ["content-script.js"],
       "run_at": "document_end"
     }
@@ -39,7 +39,7 @@
   "web_accessible_resources": [
     {
       "resources": ["avatar-icon.png", "parker-avatar-80x80.png", "parker-avatar-120x120.png", "parker-avatar-160x160.png"],
-      "matches": ["https://www.espn.com/*"]
+      "matches": ["<all_urls>"]
     }
   ],
   "content_security_policy": {
