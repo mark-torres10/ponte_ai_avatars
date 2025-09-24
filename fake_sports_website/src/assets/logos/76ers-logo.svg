@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <linearGradient id="sixersGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#006bb6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ed174c;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="45" fill="url(#sixersGradient)" stroke="#ffffff" stroke-width="3"/>
+  
+  <!-- "76" text -->
+  <text x="50" y="35" font-family="Arial, sans-serif" font-size="24" font-weight="bold" text-anchor="middle" fill="#ffffff">76</text>
+  
+  <!-- Basketball -->
+  <circle cx="50" cy="65" r="12" fill="none" stroke="#ffffff" stroke-width="2"/>
+  <path d="M38 65 L62 65" stroke="#ffffff" stroke-width="2"/>
+  <path d="M50 53 L50 77" stroke="#ffffff" stroke-width="2"/>
+  <path d="M44 59 L56 71" stroke="#ffffff" stroke-width="1"/>
+  <path d="M56 59 L44 71" stroke="#ffffff" stroke-width="1"/>
+  
+  <!-- Stars -->
+  <polygon points="25,25 27,31 33,31 28,35 30,41 25,37 20,41 22,35 17,31 23,31" fill="#ffffff"/>
+  <polygon points="75,25 77,31 83,31 78,35 80,41 75,37 70,41 72,35 67,31 73,31" fill="#ffffff"/>
+</svg>

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200" width="300" height="200">
+  <defs>
+    <linearGradient id="newsGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#28a745;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e7e34;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="300" height="200" fill="url(#newsGradient2)"/>
+  
+  <!-- Basketball -->
+  <circle cx="150" cy="100" r="40" fill="none" stroke="#ffffff" stroke-width="3"/>
+  <path d="M110 100 L190 100" stroke="#ffffff" stroke-width="3"/>
+  <path d="M150 60 L150 140" stroke="#ffffff" stroke-width="3"/>
+  <path d="M130 80 L170 120" stroke="#ffffff" stroke-width="2"/>
+  <path d="M170 80 L130 120" stroke="#ffffff" stroke-width="2"/>
+  
+  <!-- Text overlay -->
+  <text x="150" y="180" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#ffffff">76ers Playoff Push</text>
+</svg>

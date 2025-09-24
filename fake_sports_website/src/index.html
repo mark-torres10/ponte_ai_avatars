@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Sports Inc. NBA Box Score - Dallas Mavericks vs Philadelphia 76ers">
+  <meta name="keywords" content="NBA, basketball, box score, Dallas Mavericks, Philadelphia 76ers, Sports Inc.">
+  <title>Dallas Mavericks @ Philadelphia 76ers - Box Score | Sports Inc.</title>
+  
+  <!-- CSS Files -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  
+  <!-- JavaScript Files -->
+  <script src="js/main.js" defer></script>
+  <script src="js/navigation.js" defer></script>
+  <script src="js/interactions.js" defer></script>
+  <script src="js/accessibility.js" defer></script>
+</head>
+<body>
+  <!-- Skip Links for Accessibility -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+  <a href="#navigation" class="skip-link">Skip to navigation</a>
+  
+  <!-- Header Section -->
+  <header class="header" role="banner">
+    <!-- Top Scoreboard -->
+    <div class="header__top">
+      <div class="header__scoreboard">
+        <div class="scoreboard-dropdown">
+          <select aria-label="Select sport">
+            <option value="nfl">NFL</option>
+            <option value="nba" selected>NBA</option>
+            <option value="mlb">MLB</option>
+            <option value="nhl">NHL</option>
+            <option value="college">College</option>
+          </select>
+        </div>
+        <div class="date-selector">
+          <input type="date" value="2024-03-15" aria-label="Select date">
+        </div>
+        <div class="live-scores">
+          <span class="live-indicator">LIVE</span>
+          <div class="quick-scores">
+            <div class="quick-score">
+              <span class="team">LAL</span>
+              <span class="score">112</span>
+            </div>
+            <div class="quick-score">
+              <span class="team">GSW</span>
+              <span class="score">108</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Global Navigation -->
+    <nav class="header__nav" role="navigation" aria-label="Main navigation">
+      <div class="header__logo">
+        <a href="/" aria-label="Sports Inc. Home">
+          <img src="assets/logos/sports-inc-logo.svg" alt="Sports Inc." width="120" height="40">
+        </a>
+      </div>
+      
+      <ul class="header__menu" id="navigation">
+        <li><a href="/nfl" aria-current="false">NFL</a></li>
+        <li><a href="/nba" aria-current="page">NBA</a></li>
+        <li><a href="/mlb" aria-current="false">MLB</a></li>
+        <li><a href="/nhl" aria-current="false">NHL</a></li>
+        <li><a href="/college" aria-current="false">College</a></li>
+        <li><a href="/soccer" aria-current="false">Soccer</a></li>
+      </ul>
+      
+      <div class="header__actions">
+        <button class="search-btn" aria-label="Search" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+        </button>
+        <button class="user-btn" aria-label="Sign in" type="button">Sign In</button>
+        <button class="menu-toggle" aria-label="Toggle menu" type="button" aria-expanded="false">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main id="main-content" role="main">
+    <!-- Game Title Section -->
+    <section class="game-title" aria-labelledby="game-heading">
+      <h1 id="game-heading">Dallas Mavericks @ Philadelphia 76ers</h1>
+      <div class="game-meta">
+        <span class="game-date">March 15, 2024</span>
+        <span class="game-time">8:00 PM ET</span>
+        <span class="game-venue">Wells Fargo Center</span>
+      </div>
+    </section>
+
+    <!-- Scoreboard Section -->
+    <section class="scoreboard" aria-labelledby="score-heading">
+      <h2 id="score-heading" class="sr-only">Game Score</h2>
+      
+      <div class="scoreboard__team scoreboard__team--away">
+        <img src="assets/logos/mavericks-logo.svg" alt="Dallas Mavericks" class="team-logo" width="28" height="20">
+        <div class="team-info">
+          <span class="team-name">Dallas Mavericks</span>
+          <span class="team-record">42-28</span>
+        </div>
+        <div class="team-score" aria-label="Dallas Mavericks score">116</div>
+      </div>
+      
+      <div class="scoreboard__vs">
+        <span class="game-status" aria-label="Game status">Final</span>
+        <span class="game-time" aria-label="Game time">8:00 PM ET</span>
+      </div>
+      
+      <div class="scoreboard__team scoreboard__team--home">
+        <div class="team-score" aria-label="Philadelphia 76ers score">118</div>
+        <div class="team-info">
+          <span class="team-name">Philadelphia 76ers</span>
+          <span class="team-record">45-25</span>
+        </div>
+        <img src="assets/logos/76ers-logo.svg" alt="Philadelphia 76ers" class="team-logo" width="28" height="20">
+      </div>
+    </section>
+
+    <!-- Quarter Breakdown -->
+    <section class="quarter-breakdown" aria-labelledby="quarters-heading">
+      <h3 id="quarters-heading" class="sr-only">Quarter by Quarter Scores</h3>
+      <table class="quarters-table" role="table" aria-label="Quarter by quarter scores">
+        <thead>
+          <tr>
+            <th scope="col">Team</th>
+            <th scope="col">1st</th>
+            <th scope="col">2nd</th>
+            <th scope="col">3rd</th>
+            <th scope="col">4th</th>
+            <th scope="col">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Dallas</th>
+            <td>32</td>
+            <td>28</td>
+            <td>27</td>
+            <td>29</td>
+            <td><strong>116</strong></td>
+          </tr>
+          <tr>
+            <th scope="row">Philadelphia</th>
+            <td>28</td>
+            <td>32</td>
+            <td>29</td>
+            <td>29</td>
+            <td><strong>118</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Secondary Navigation -->
+    <nav class="secondary-nav" role="navigation" aria-label="Game navigation">
+      <ul class="nav-tabs" role="tablist">
+        <li class="nav-tab" role="presentation">
+          <a href="#gamecast" role="tab" aria-selected="false" aria-controls="gamecast-panel">Gamecast</a>
+        </li>
+        <li class="nav-tab" role="presentation">
+          <a href="#recap" role="tab" aria-selected="false" aria-controls="recap-panel">Recap</a>
+        </li>
+        <li class="nav-tab nav-tab--active" role="presentation">
+          <a href="#boxscore" role="tab" aria-selected="true" aria-controls="boxscore-panel">Box Score</a>
+        </li>
+        <li class="nav-tab" role="presentation">
+          <a href="#playbyplay" role="tab" aria-selected="false" aria-controls="playbyplay-panel">Play-by-Play</a>
+        </li>
+        <li class="nav-tab" role="presentation">
+          <a href="#teamstats" role="tab" aria-selected="false" aria-controls="teamstats-panel">Team Stats</a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Main Content Area -->
+    <div class="content-wrapper">
+      <!-- Box Score Content -->
+      <section class="boxscore-content" id="boxscore-panel" role="tabpanel" aria-labelledby="boxscore-tab">
+        <h2 class="sr-only">Box Score</h2>
+        
+        <!-- Dallas Mavericks Box Score -->
+        <div class="team-boxscore">
+          <div class="team-header">
+            <img src="assets/logos/mavericks-logo.svg" alt="Dallas Mavericks" class="team-logo-large" width="40" height="30">
+            <h3>Dallas Mavericks</h3>
+          </div>
+          
+          <div class="boxscore-table">
+            <table class="stats-table" role="table" aria-label="Dallas Mavericks player statistics">
+              <thead>
+                <tr>
+                  <th scope="col">Player</th>
+                  <th scope="col">MIN</th>
+                  <th scope="col">FGM</th>
+                  <th scope="col">FGA</th>
+                  <th scope="col">FG%</th>
+                  <th scope="col">3PM</th>
+                  <th scope="col">3PA</th>
+                  <th scope="col">3P%</th>
+                  <th scope="col">FTM</th>
+                  <th scope="col">FTA</th>
+                  <th scope="col">FT%</th>
+                  <th scope="col">OREB</th>
+                  <th scope="col">DREB</th>
+                  <th scope="col">REB</th>
+                  <th scope="col">AST</th>
+                  <th scope="col">STL</th>
+                  <th scope="col">BLK</th>
+                  <th scope="col">TO</th>
+                  <th scope="col">PF</th>
+                  <th scope="col">PTS</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="player-row">
+                  <td class="player-cell">
+                    <a href="/nba/player/_/id/4066649/luka-doncic" class="player-link">
+                      <span class="player-name">Luka Dončić</span>
+                      <span class="player-position">PG</span>
+                    </a>
+                  </td>
+                  <td>38</td>
+                  <td>12</td>
+                  <td>25</td>
+                  <td>48.0</td>
+                  <td>4</td>
+                  <td>10</td>
+                  <td>40.0</td>
+                  <td>4</td>
+                  <td>5</td>
+                  <td>80.0</td>
+                  <td>1</td>
+                  <td>7</td>
+                  <td>8</td>
+                  <td>9</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>4</td>
+                  <td>3</td>
+                  <td class="points-cell"><strong>32</strong></td>
+                </tr>
+                <tr class="player-row">
+                  <td class="player-cell">
+                    <a href="/nba/player/_/id/4066648/kyrie-irving" class="player-link">
+                      <span class="player-name">Kyrie Irving</span>
+                      <span class="player-position">SG</span>
+                    </a>
+                  </td>
+                  <td>35</td>
+                  <td>8</td>
+                  <td>18</td>
+                  <td>44.4</td>
+                  <td>3</td>
+                  <td>8</td>
+                  <td>37.5</td>
+                  <td>2</td>
+                  <td>2</td>
+                  <td>100.0</td>
+                  <td>0</td>
+                  <td>3</td>
+                  <td>3</td>
+                  <td>6</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td>2</td>
+                  <td class="points-cell"><strong>21</strong></td>
+                </tr>
+                <tr class="player-row">
+                  <td class="player-cell">
+                    <a href="/nba/player/_/id/4066647/dereck-lively" class="player-link">
+                      <span class="player-name">Dereck Lively II</span>
+                      <span class="player-position">C</span>
+                    </a>
+                  </td>
+                  <td>28</td>
+                  <td>6</td>
+                  <td>8</td>
+                  <td>75.0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>-</td>
+                  <td>2</td>
+                  <td>2</td>
+                  <td>100.0</td>
+                  <td>4</td>
+                  <td>8</td>
+                  <td>12</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td>1</td>
+                  <td>4</td>
+                  <td class="points-cell"><strong>14</strong></td>
+                </tr>
+                <tr class="player-row">
+                  <td class="player-cell">
+                    <a href="/nba/player/_/id/4066646/pj-washington" class="player-link">
+                      <span class="player-name">P.J. Washington</span>
+                      <span class="player-position">PF</span>
+                    </a>
+                  </td>
+                  <td>32</td>
+                  <td>5</td>
+                  <td>12</td>
+                  <td>41.7</td>
+                  <td>2</td>
+                  <td>6</td>
+                  <td>33.3</td>
+                  <td>1</td>
+                  <td>2</td>
+                  <td>50.0</td>
+                  <td>2</td>
+                  <td>4</td>
+                  <td>6</td>
+                  <td>2</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>3</td>
+                  <td class="points-cell"><strong>13</strong></td>
+                </tr>
+                <tr class="player-row">
+                  <td class="player-cell">
+                    <a href="/nba/player/_/id/4066645/dante-exum" class="player-link">
+                      <span class="player-name">Dante Exum</span>
+                      <span class="player-position">SF</span>
+                    </a>
+                  </td>
+                  <td>24</td>
+                  <td>4</td>
+                  <td>9</td>
+                  <td>44.4</td>
+                  <td>2</td>
+                  <td>5</td>
+                  <td>40.0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>-</td>
+                  <td>1</td>
+                  <td>2</td>
+                  <td>3</td>
+                  <td>3</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>2</td>
+                  <td class="points-cell"><strong>10</strong></td>
+                </tr>
+                <tr class="team-totals">
+                  <td class="player-cell">
+                    <span class="team-total-label">Team Totals</span>
+                  </td>
+                  <td>240</td>
+                  <td>35</td>
+                  <td>72</td>
+                  <td>48.6</td>
+                  <td>11</td>
+                  <td>29</td>
+                  <td>37.9</td>
+                  <td>9</td>
+                  <td>11</td>
+                  <td>81.8</td>
+                  <td>8</td>
+                  <td>24</td>
+                  <td>32</td>
+                  <td>21</td>
+                  <td>4</td>
+                  <td>3</td>
+                  <td>9</td>
+                  <td>14</td>
+                  <td class="points-cell"><strong>116</strong></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Philadelphia 76ers Box Score -->
+        <div class="team-boxscore">
+          <div class="team-header">
+            <img src="assets/logos/76ers-logo.svg" alt="Philadelphia 76ers" class="team-logo-large" width="40" height="30">
+            <h3>Philadelphia 76ers</h3>
+          </div>
+          
+          <div class="boxscore-table">
+            <table class="stats-table" role="table" aria-label="Philadelphia 76ers player statistics">
+              <thead>
+                <tr>
+                  <th scope="col">Player</th>
+                  <th scope="col">MIN</th>
+                  <th scope="col">FGM</th>
+                  <th scope="col">FGA</th>
+                  <th scope="col">FG%</th>
+                  <th scope="col">3PM</th>
+                  <th scope="col">3PA</th>
+                  <th scope="col">3P%</th>
+                  <th scope="col">FTM</th>
+                  <th scope="col">FTA</th>
+                  <th scope="col">FT%</th>
+                  <th scope="col">OREB</th>
+                  <th scope="col">DREB</th>
+                  <th scope="col">REB</th>
+                  <th scope="col">AST</th>
+                  <th scope="col">STL</th>
+                  <th scope="col">BLK</th>
+                  <th scope="col">TO</th>
+                  <th scope="col">PF</th>
+                  <th scope="col">PTS</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="player-row">
+                  <td class="player-cell">
+                    <a href="/nba/player/_/id/4066644/joel-embiid" class="player-link">
+                      <span class="player-name">Joel Embiid</span>
+                      <span class="player-position">C</span>
+                    </a>
+                  </td>
+                  <td>36</td>
+                  <td>11</td>
+                  <td>20</td>
+                  <td>55.0</td>
+                  <td>1</td>
+                  <td>3</td>
+                  <td>33.3</td>
+                  <td>6</td>
+                  <td>7</td>
+                  <td>85.7</td>
+                  <td>3</td>
+                  <td>10</td>
+                  <td>13</td>
+                  <td>5</td>
+                  <td>1</td>
+                  <td>2</td>
+                  <td>3</td>
+                  <td>3</td>
+                  <td class="points-cell"><strong>29</strong></td>
+                </tr>
+                <tr class="player-row">
+                  <td class="player-cell">
+                    <a href="/nba/player/_/id/4066643/tyrese-maxey" class="player-link">
+                      <span class="player-name">Tyrese Maxey</span>
+                      <span class="player-position">PG</span>
+                    </a>
+                  </td>
+                  <td>38</td>
+                  <td>9</td>
+                  <td>19</td>
+                  <td>47.4</td>
+                  <td>4</td>
+                  <td>9</td>
+                  <td>44.4</td>
+                  <td>3</td>
+                  <td>4</td>
+                  <td>75.0</td>
+                  <td>0</td>
+                  <td>3</td>
+                  <td>3</td>
+                  <td>8</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td>2</td>
+                  <td class="points-cell"><strong>25</strong></td>
+                </tr>
+                <tr class="player-row">
+                  <td class="player-cell">
+                    <a href="/nba/player/_/id/4066642/tobias-harris" class="player-link">
+                      <span class="player-name">Tobias Harris</span>
+                      <span class="player-position">PF</span>
+                    </a>
+                  </td>
+                  <td>34</td>
+                  <td>7</td>
+                  <td>14</td>
+                  <td>50.0</td>
+                  <td>2</td>
+                  <td>5</td>
+                  <td>40.0</td>
+                  <td>2</td>
+                  <td>2</td>
+                  <td>100.0</td>
+                  <td>1</td>
+                  <td>5</td>
+                  <td>6</td>
+                  <td>3</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>2</td>
+                  <td class="points-cell"><strong>18</strong></td>
+                </tr>
+                <tr class="player-row">
+                  <td class="player-cell">
+                    <a href="/nba/player/_/id/4066641/kelly-oubre" class="player-link">
+                      <span class="player-name">Kelly Oubre Jr.</span>
+                      <span class="player-position">SF</span>
+                    </a>
+                  </td>
+                  <td>28</td>
+                  <td>6</td>
+                  <td>12</td>
+                  <td>50.0</td>
+                  <td>3</td>
+                  <td>6</td>
+                  <td>50.0</td>
+                  <td>1</td>
+                  <td>2</td>
+                  <td>50.0</td>
+                  <td>1</td>
+                  <td>3</td>
+                  <td>4</td>
+                  <td>2</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>3</td>
+                  <td class="points-cell"><strong>16</strong></td>
+                </tr>
+                <tr class="player-row">
+                  <td class="player-cell">
+                    <a href="/nba/player/_/id/4066640/kyle-lowry" class="player-link">
+                      <span class="player-name">Kyle Lowry</span>
+                      <span class="player-position">SG</span>
+                    </a>
+                  </td>
+                  <td>26</td>
+                  <td>4</td>
+                  <td>8</td>
+                  <td>50.0</td>
+                  <td>2</td>
+                  <td>4</td>
+                  <td>50.0</td>
+                  <td>2</td>
+                  <td>2</td>
+                  <td>100.0</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td>2</td>
+                  <td>4</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>2</td>
+                  <td class="points-cell"><strong>12</strong></td>
+                </tr>
+                <tr class="team-totals">
+                  <td class="player-cell">
+                    <span class="team-total-label">Team Totals</span>
+                  </td>
+                  <td>240</td>
+                  <td>37</td>
+                  <td>73</td>
+                  <td>50.7</td>
+                  <td>12</td>
+                  <td>27</td>
+                  <td>44.4</td>
+                  <td>14</td>
+                  <td>17</td>
+                  <td>82.4</td>
+                  <td>5</td>
+                  <td>23</td>
+                  <td>28</td>
+                  <td>22</td>
+                  <td>6</td>
+                  <td>3</td>
+                  <td>8</td>
+                  <td>12</td>
+                  <td class="points-cell"><strong>118</strong></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sidebar -->
+      <aside class="sidebar" role="complementary" aria-labelledby="sidebar-heading">
+        <h2 id="sidebar-heading" class="sr-only">Additional Information</h2>
+        
+        <!-- Game Information -->
+        <section class="game-info">
+          <h3>Game Information</h3>
+          <div class="info-item">
+            <span class="info-label">Arena:</span>
+            <span class="info-value">Wells Fargo Center</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Attendance:</span>
+            <span class="info-value">20,478</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Officials:</span>
+            <span class="info-value">Scott Foster, Tony Brown, Sean Wright</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Duration:</span>
+            <span class="info-value">2:15</span>
+          </div>
+        </section>
+
+        <!-- Regular Season Series -->
+        <section class="series-info">
+          <h3>Regular Season Series</h3>
+          <div class="series-record">
+            <div class="series-game">
+              <span class="game-date">Dec 8, 2023</span>
+              <span class="game-result">PHI 131, DAL 126</span>
+            </div>
+            <div class="series-game">
+              <span class="game-date">Mar 15, 2024</span>
+              <span class="game-result">PHI 118, DAL 116</span>
+            </div>
+            <div class="series-summary">
+              <span class="series-leader">Philadelphia leads series 2-0</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Standings -->
+        <section class="standings">
+          <h3>Eastern Conference</h3>
+          <div class="standings-table">
+            <table role="table" aria-label="Eastern Conference standings">
+              <thead>
+                <tr>
+                  <th scope="col">Team</th>
+                  <th scope="col">W</th>
+                  <th scope="col">L</th>
+                  <th scope="col">PCT</th>
+                  <th scope="col">GB</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="highlighted-team">
+                  <th scope="row">Philadelphia</th>
+                  <td>45</td>
+                  <td>25</td>
+                  <td>.643</td>
+                  <td>-</td>
+                </tr>
+                <tr>
+                  <th scope="row">Boston</th>
+                  <td>44</td>
+                  <td>26</td>
+                  <td>.629</td>
+                  <td>1.0</td>
+                </tr>
+                <tr>
+                  <th scope="row">Milwaukee</th>
+                  <td>43</td>
+                  <td>27</td>
+                  <td>.614</td>
+                  <td>2.0</td>
+                </tr>
+                <tr>
+                  <th scope="row">Cleveland</th>
+                  <td>42</td>
+                  <td>28</td>
+                  <td>.600</td>
+                  <td>3.0</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Related News -->
+        <section class="news">
+          <h3>Related News</h3>
+          <div class="news-item">
+            <img src="assets/images/news-1.jpg" alt="Mavericks win streak continues" width="60" height="40">
+            <div class="news-content">
+              <h4><a href="/nba/story/_/id/123456/mavericks-win-streak-continues">Mavericks Win Streak Continues</a></h4>
+              <p>Dallas extends their winning streak to 5 games with victory over...</p>
+            </div>
+          </div>
+          <div class="news-item">
+            <img src="assets/images/news-2.jpg" alt="76ers playoff push" width="60" height="40">
+            <div class="news-content">
+              <h4><a href="/nba/story/_/id/123457/76ers-playoff-push">76ers Make Playoff Push</a></h4>
+              <p>Philadelphia strengthens their position in the Eastern Conference...</p>
+            </div>
+          </div>
+          <div class="news-item">
+            <img src="assets/images/news-3.jpg" alt="NBA trade deadline" width="60" height="40">
+            <div class="news-content">
+              <h4><a href="/nba/story/_/id/123458/nba-trade-deadline">NBA Trade Deadline Recap</a></h4>
+              <p>Breaking down the biggest moves from this year's trade deadline...</p>
+            </div>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer" role="contentinfo">
+    <div class="footer__content">
+      <div class="footer__branding">
+        <img src="assets/logos/sports-inc-logo.svg" alt="Sports Inc." width="80" height="24">
+        <p>&copy; 2024 Sports Inc. All rights reserved.</p>
+      </div>
+      <div class="footer__links">
+        <a href="/privacy">Privacy Policy</a>
+        <a href="/terms">Terms of Service</a>
+        <a href="/contact">Contact Us</a>
+        <a href="/about">About Sports Inc.</a>
+        <a href="/careers">Careers</a>
+        <a href="/advertise">Advertise</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Screen Reader Only Content -->
+  <div class="sr-only">
+    <h2>Page Navigation</h2>
+    <ul>
+      <li><a href="#main-content">Skip to main content</a></li>
+      <li><a href="#navigation">Skip to navigation</a></li>
+      <li><a href="#boxscore-panel">Skip to box score</a></li>
+      <li><a href="#sidebar-heading">Skip to additional information</a></li>
+    </ul>
+  </div>
+</body>
+</html>
