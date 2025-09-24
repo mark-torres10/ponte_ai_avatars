@@ -1,0 +1,508 @@
+/* Sports Inc. NBA Boxscore Replica - Components CSS */
+
+/* Header Components */
+.header__scoreboard {
+  font-size: var(--font-size-sm);
+}
+
+.scoreboard-dropdown select {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.date-selector input {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.live-scores {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.live-indicator {
+  background-color: var(--color-espn-red);
+  color: white;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.quick-scores {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.quick-score {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+}
+
+.quick-score .team {
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+.quick-score .score {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+/* Header Actions */
+.search-btn {
+  background: none;
+  border: none;
+  padding: var(--spacing-sm);
+  cursor: pointer;
+  color: var(--color-text-primary);
+  border-radius: var(--radius-sm);
+  transition: background-color var(--transition-normal);
+}
+
+.search-btn:hover {
+  background-color: var(--color-bg-tertiary);
+}
+
+.search-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.user-btn {
+  background-color: var(--color-sports-inc-primary);
+  color: white;
+  border: none;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: background-color var(--transition-normal);
+}
+
+.user-btn:hover {
+  background-color: #0056b3;
+}
+
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  padding: var(--spacing-sm);
+  cursor: pointer;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.menu-toggle span {
+  width: 20px;
+  height: 2px;
+  background-color: var(--color-text-primary);
+  transition: all var(--transition-normal);
+}
+
+.menu-toggle[aria-expanded="true"] span:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+
+.menu-toggle[aria-expanded="true"] span:nth-child(2) {
+  opacity: 0;
+}
+
+.menu-toggle[aria-expanded="true"] span:nth-child(3) {
+  transform: rotate(-45deg) translate(7px, -6px);
+}
+
+/* Scoreboard Components */
+.scoreboard {
+  box-shadow: var(--shadow-sm);
+}
+
+.scoreboard__team {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.scoreboard__team--away {
+  justify-content: flex-start;
+}
+
+.scoreboard__team--home {
+  justify-content: flex-end;
+}
+
+.scoreboard__vs {
+  flex-shrink: 0;
+  min-width: 120px;
+}
+
+/* Quarter Breakdown Components */
+.quarters-table {
+  box-shadow: var(--shadow-sm);
+}
+
+.quarters-table th:first-child,
+.quarters-table td:first-child {
+  text-align: left;
+  font-weight: var(--font-weight-semibold);
+}
+
+.quarters-table td:last-child {
+  font-weight: var(--font-weight-bold);
+  background-color: rgba(0, 123, 255, 0.05);
+}
+
+/* Secondary Navigation Components */
+.secondary-nav {
+  box-shadow: var(--shadow-sm);
+}
+
+.nav-tab a {
+  position: relative;
+}
+
+.nav-tab a::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--color-espn-red);
+  transform: scaleX(0);
+  transition: transform var(--transition-normal);
+}
+
+.nav-tab--active a::after,
+.nav-tab a[aria-selected="true"]::after {
+  transform: scaleX(1);
+  background-color: var(--color-espn-red);
+}
+
+/* Box Score Components */
+.boxscore-table {
+  box-shadow: var(--shadow-sm);
+}
+
+.stats-table {
+  position: relative;
+}
+
+.stats-table th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: var(--color-bg-tertiary);
+  border-bottom: 2px solid var(--color-border);
+}
+
+.stats-table tbody tr:hover {
+  background-color: rgba(0, 123, 255, 0.05);
+}
+
+.stats-table .player-cell {
+  min-width: 150px;
+}
+
+.stats-table .points-cell {
+  background-color: rgba(0, 123, 255, 0.05);
+  font-weight: var(--font-weight-bold);
+}
+
+.team-totals {
+  background-color: var(--color-bg-tertiary);
+  border-top: 2px solid var(--color-border);
+}
+
+.team-totals td {
+  font-weight: var(--font-weight-semibold);
+}
+
+.team-totals .points-cell {
+  background-color: rgba(0, 123, 255, 0.1);
+  font-weight: var(--font-weight-bold);
+}
+
+/* Sidebar Components */
+.sidebar {
+  box-shadow: var(--shadow-sm);
+}
+
+.sidebar section {
+  margin-bottom: var(--spacing-lg);
+}
+
+.sidebar section:last-child {
+  margin-bottom: 0;
+}
+
+/* Game Information Components */
+.game-info .info-item {
+  padding: var(--spacing-xs) 0;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.game-info .info-item:last-child {
+  border-bottom: none;
+}
+
+/* Series Information Components */
+.series-game {
+  padding: var(--spacing-xs) 0;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.series-game:last-child {
+  border-bottom: none;
+}
+
+.series-summary {
+  padding: var(--spacing-sm) 0;
+  border-top: 1px solid var(--color-border);
+  margin-top: var(--spacing-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+/* Standings Components */
+.standings-table {
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.standings-table th {
+  background-color: var(--color-bg-tertiary);
+  font-weight: var(--font-weight-semibold);
+  border-bottom: 2px solid var(--color-border);
+}
+
+.standings-table tbody tr:hover {
+  background-color: rgba(0, 123, 255, 0.05);
+}
+
+.highlighted-team {
+  background-color: rgba(0, 123, 255, 0.1);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* News Components */
+.news-item {
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.news-item:last-child {
+  border-bottom: none;
+}
+
+.news-content h4 {
+  line-height: var(--line-height-tight);
+}
+
+.news-content p {
+  line-height: var(--line-height-normal);
+}
+
+/* Footer Components */
+.footer {
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.footer__branding {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.footer__links {
+  flex-wrap: wrap;
+}
+
+/* Interactive States */
+.player-row:hover {
+  background-color: rgba(0, 123, 255, 0.05);
+}
+
+.player-link:hover .player-name {
+  color: var(--color-sports-inc-primary);
+}
+
+.news-content h4 a:hover {
+  text-decoration: underline;
+}
+
+.footer__links a:hover {
+  text-decoration: underline;
+}
+
+/* Loading States */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-sports-inc-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error States */
+.error {
+  color: var(--color-error);
+  background-color: rgba(220, 53, 69, 0.1);
+  border: 1px solid var(--color-error);
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  margin: var(--spacing-sm) 0;
+}
+
+.error::before {
+  content: '⚠️ ';
+  margin-right: var(--spacing-xs);
+}
+
+/* Success States */
+.success {
+  color: var(--color-success);
+  background-color: rgba(40, 167, 69, 0.1);
+  border: 1px solid var(--color-success);
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  margin: var(--spacing-sm) 0;
+}
+
+.success::before {
+  content: '✅ ';
+  margin-right: var(--spacing-xs);
+}
+
+/* Warning States */
+.warning {
+  color: var(--color-warning);
+  background-color: rgba(255, 193, 7, 0.1);
+  border: 1px solid var(--color-warning);
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  margin: var(--spacing-sm) 0;
+}
+
+.warning::before {
+  content: '⚠️ ';
+  margin-right: var(--spacing-xs);
+}
+
+/* Empty States */
+.empty-state {
+  text-align: center;
+  padding: var(--spacing-xl);
+  color: var(--color-text-secondary);
+}
+
+.empty-state::before {
+  content: '📭';
+  display: block;
+  font-size: var(--font-size-4xl);
+  margin-bottom: var(--spacing-md);
+}
+
+/* Accessibility Enhancements */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: var(--color-sports-inc-primary);
+  color: white;
+  padding: 8px;
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  z-index: 1000;
+  transition: top var(--transition-normal);
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* Focus Indicators */
+*:focus {
+  outline: 2px solid var(--color-sports-inc-primary);
+  outline-offset: 2px;
+}
+
+button:focus,
+input:focus,
+select:focus,
+textarea:focus,
+a:focus {
+  outline: 2px solid var(--color-sports-inc-primary);
+  outline-offset: 2px;
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .stats-table tbody tr:hover,
+  .standings-table tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  .highlighted-team {
+    background-color: rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .loading::after {
+    animation: none;
+  }
+  
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

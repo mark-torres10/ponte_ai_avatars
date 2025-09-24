@@ -32,27 +32,23 @@ function onModeMessage(message: any, sender: chrome.runtime.MessageSender, sendR
   }
 }
 
-// Check if we're on an ESPN page
-const isESPNPage = window.location.hostname.includes('espn.com');
+// Initialize Extension V2 on all websites
+console.log('Ponte AI Avatar Browser Extension is active on:', window.location.hostname);
 
-if (isESPNPage) {
-  console.log('ESPN page detected, Parker Sports Extension V2 is active');
-  
-  // Register message listener only once
-  if (!messageListenerRegistered) {
-    chrome.runtime.onMessage.addListener(onModeMessage);
-    messageListenerRegistered = true;
-  }
-  
-  // Wait for page to load
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initParkerAvatar);
-  } else {
-    initParkerAvatar();
-  }
+// Register message listener only once
+if (!messageListenerRegistered) {
+  chrome.runtime.onMessage.addListener(onModeMessage);
+  messageListenerRegistered = true;
 }
 
-function initParkerAvatar() {
+// Wait for page to load
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initPonteAIAvatar);
+} else {
+  initPonteAIAvatar();
+}
+
+function initPonteAIAvatar() {
   // Cleanup previous instances to prevent memory leaks
   if (cleanupInterval) {
     clearInterval(cleanupInterval);
@@ -245,15 +241,15 @@ function initParkerAvatar() {
   avatar?.addEventListener('click', (e) => {
     e.stopPropagation();
     // Avatar click functionality can be added here later
-    console.log('Parker avatar clicked - no popup functionality');
+    console.log('Ponte AI Avatar Browser Extension avatar clicked - no popup functionality');
   });
 
   // Message listener is now registered at module scope to prevent duplicates
 
-  console.log('Parker Sports avatar injected successfully');
+  console.log('Ponte AI Avatar Browser Extension avatar injected successfully');
 }
 
-// Handle SPA navigation (ESPN uses client-side routing)
+// Handle SPA navigation (for websites that use client-side routing)
 let lastUrl = location.href;
 new MutationObserver(() => {
   const url = location.href;
@@ -264,7 +260,7 @@ new MutationObserver(() => {
       if (document.getElementById('parker-avatar-container')) {
         return; // Already exists
       }
-      initParkerAvatar();
+      initPonteAIAvatar();
     }, 1000);
   }
 }).observe(document, { subtree: true, childList: true });

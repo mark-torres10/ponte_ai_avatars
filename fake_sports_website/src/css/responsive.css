@@ -1,0 +1,599 @@
+/* Sports Inc. NBA Boxscore Replica - Responsive CSS */
+
+/* Mobile First Approach - Base styles are for mobile */
+
+/* Small Mobile Devices (320px - 479px) */
+@media (max-width: 479px) {
+  :root {
+    --spacing-xs: 2px;
+    --spacing-sm: 4px;
+    --spacing-md: 8px;
+    --spacing-lg: 12px;
+    --spacing-xl: 16px;
+    --spacing-2xl: 24px;
+  }
+  
+  .container {
+    padding: 0 var(--spacing-sm);
+  }
+  
+  /* Header Mobile */
+  .header__nav {
+    padding: 0 var(--spacing-sm);
+    flex-wrap: wrap;
+    height: auto;
+    min-height: var(--header-height);
+  }
+  
+  .header__logo img {
+    height: 32px;
+  }
+  
+  .header__menu {
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    gap: 0;
+    margin-top: var(--spacing-sm);
+  }
+  
+  .header__menu.active {
+    display: flex;
+  }
+  
+  .header__menu li {
+    border-bottom: 1px solid var(--color-border-light);
+  }
+  
+  .header__menu a {
+    padding: var(--spacing-sm) var(--spacing-md);
+    display: block;
+  }
+  
+  .header__actions {
+    gap: var(--spacing-sm);
+  }
+  
+  .menu-toggle {
+    display: flex;
+  }
+  
+  .user-btn {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: var(--font-size-sm);
+  }
+  
+  /* Scoreboard Mobile */
+  .scoreboard {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm);
+  }
+  
+  .scoreboard__team {
+    justify-content: center;
+    width: 100%;
+  }
+  
+  .scoreboard__team--home {
+    flex-direction: row;
+  }
+  
+  .scoreboard__vs {
+    order: -1;
+    min-width: auto;
+  }
+  
+  .team-score {
+    font-size: var(--font-size-3xl);
+  }
+  
+  .team-name {
+    font-size: var(--font-size-lg);
+  }
+  
+  /* Game Title Mobile */
+  .game-title h1 {
+    font-size: var(--font-size-2xl);
+    text-align: center;
+  }
+  
+  .game-meta {
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    text-align: center;
+  }
+  
+  /* Quarter Breakdown Mobile */
+  .quarters-table {
+    font-size: var(--font-size-sm);
+  }
+  
+  .quarters-table th,
+  .quarters-table td {
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+  
+  /* Navigation Mobile */
+  .nav-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .nav-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .nav-tab {
+    flex-shrink: 0;
+  }
+  
+  .nav-tab a {
+    padding: var(--spacing-sm) var(--spacing-md);
+    white-space: nowrap;
+  }
+  
+  /* Content Layout Mobile */
+  .content-wrapper {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+  
+  /* Box Score Mobile */
+  .boxscore-table {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .stats-table {
+    min-width: 600px;
+  }
+  
+  .stats-table th,
+  .stats-table td {
+    padding: var(--spacing-xs) var(--spacing-xs);
+    font-size: var(--font-size-xs);
+  }
+  
+  .stats-table .player-cell {
+    min-width: 100px;
+    padding-left: var(--spacing-sm);
+  }
+  
+  .player-name {
+    font-size: var(--font-size-xs);
+  }
+  
+  .player-position {
+    font-size: 10px;
+  }
+  
+  /* Sidebar Mobile */
+  .sidebar {
+    position: static;
+    margin-top: var(--spacing-md);
+  }
+  
+  .sidebar h3 {
+    font-size: var(--font-size-lg);
+  }
+  
+  /* Footer Mobile */
+  .footer__content {
+    flex-direction: column;
+    gap: var(--spacing-md);
+    text-align: center;
+  }
+  
+  .footer__links {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+}
+
+/* Mobile Devices (480px - 767px) */
+@media (min-width: 480px) and (max-width: 767px) {
+  .container {
+    padding: 0 var(--spacing-md);
+  }
+  
+  /* Header Mobile */
+  .header__nav {
+    padding: 0 var(--spacing-md);
+  }
+  
+  .header__menu {
+    display: none;
+  }
+  
+  .menu-toggle {
+    display: flex;
+  }
+  
+  /* Scoreboard Mobile */
+  .scoreboard {
+    padding: var(--spacing-md);
+  }
+  
+  .team-score {
+    font-size: var(--font-size-3xl);
+  }
+  
+  /* Content Layout Mobile */
+  .content-wrapper {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+  }
+  
+  /* Box Score Mobile */
+  .stats-table {
+    min-width: 700px;
+  }
+  
+  .stats-table th,
+  .stats-table td {
+    padding: var(--spacing-sm) var(--spacing-sm);
+    font-size: var(--font-size-sm);
+  }
+  
+  /* Sidebar Mobile */
+  .sidebar {
+    position: static;
+  }
+  
+  /* Footer Mobile */
+  .footer__content {
+    flex-direction: column;
+    gap: var(--spacing-md);
+    text-align: center;
+  }
+  
+  .footer__links {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+/* Tablet Devices (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .container {
+    padding: 0 var(--spacing-lg);
+  }
+  
+  /* Header Tablet */
+  .header__nav {
+    padding: 0 var(--spacing-lg);
+  }
+  
+  .header__menu {
+    display: flex;
+    gap: var(--spacing-md);
+  }
+  
+  .menu-toggle {
+    display: none;
+  }
+  
+  /* Scoreboard Tablet */
+  .scoreboard {
+    padding: var(--spacing-lg);
+  }
+  
+  .team-score {
+    font-size: var(--font-size-4xl);
+  }
+  
+  /* Content Layout Tablet */
+  .content-wrapper {
+    grid-template-columns: 1fr 280px;
+    gap: var(--spacing-lg);
+  }
+  
+  /* Box Score Tablet */
+  .stats-table {
+    min-width: 800px;
+  }
+  
+  .stats-table th,
+  .stats-table td {
+    padding: var(--spacing-sm) var(--spacing-sm);
+    font-size: var(--font-size-sm);
+  }
+  
+  /* Sidebar Tablet */
+  .sidebar {
+    position: sticky;
+    top: calc(var(--header-height) + var(--spacing-lg));
+  }
+  
+  /* Footer Tablet */
+  .footer__content {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  
+  .footer__links {
+    flex-wrap: wrap;
+  }
+}
+
+/* Desktop Devices (1024px+) */
+@media (min-width: 1024px) {
+  .container {
+    padding: 0 var(--spacing-lg);
+  }
+  
+  /* Header Desktop */
+  .header__nav {
+    padding: 0 var(--spacing-lg);
+  }
+  
+  .header__menu {
+    display: flex;
+    gap: var(--spacing-lg);
+  }
+  
+  .menu-toggle {
+    display: none;
+  }
+  
+  /* Scoreboard Desktop */
+  .scoreboard {
+    padding: var(--spacing-lg);
+  }
+  
+  .team-score {
+    font-size: var(--font-size-4xl);
+  }
+  
+  /* Content Layout Desktop */
+  .content-wrapper {
+    grid-template-columns: 1fr 300px;
+    gap: var(--spacing-lg);
+  }
+  
+  /* Box Score Desktop */
+  .stats-table {
+    min-width: 800px;
+  }
+  
+  .stats-table th,
+  .stats-table td {
+    padding: var(--spacing-sm) var(--spacing-sm);
+    font-size: var(--font-size-sm);
+  }
+  
+  /* Sidebar Desktop */
+  .sidebar {
+    position: sticky;
+    top: calc(var(--header-height) + var(--spacing-lg));
+  }
+  
+  /* Footer Desktop */
+  .footer__content {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  
+  .footer__links {
+    flex-wrap: wrap;
+  }
+}
+
+/* Large Desktop Devices (1200px+) */
+@media (min-width: 1200px) {
+  .container {
+    padding: 0 var(--spacing-xl);
+  }
+  
+  /* Header Large Desktop */
+  .header__nav {
+    padding: 0 var(--spacing-xl);
+  }
+  
+  /* Scoreboard Large Desktop */
+  .scoreboard {
+    padding: var(--spacing-xl);
+  }
+  
+  /* Content Layout Large Desktop */
+  .content-wrapper {
+    gap: var(--spacing-xl);
+  }
+  
+  /* Box Score Large Desktop */
+  .stats-table th,
+  .stats-table td {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-base);
+  }
+  
+  /* Sidebar Large Desktop */
+  .sidebar {
+    padding: var(--spacing-lg);
+  }
+  
+  /* Footer Large Desktop */
+  .footer__content {
+    padding: 0 var(--spacing-xl);
+  }
+}
+
+/* Extra Large Desktop Devices (1400px+) */
+@media (min-width: 1400px) {
+  .container {
+    padding: 0 var(--spacing-2xl);
+  }
+  
+  /* Header Extra Large Desktop */
+  .header__nav {
+    padding: 0 var(--spacing-2xl);
+  }
+  
+  /* Scoreboard Extra Large Desktop */
+  .scoreboard {
+    padding: var(--spacing-2xl);
+  }
+  
+  /* Content Layout Extra Large Desktop */
+  .content-wrapper {
+    gap: var(--spacing-2xl);
+  }
+  
+  /* Sidebar Extra Large Desktop */
+  .sidebar {
+    padding: var(--spacing-xl);
+  }
+  
+  /* Footer Extra Large Desktop */
+  .footer__content {
+    padding: 0 var(--spacing-2xl);
+  }
+}
+
+/* Landscape Orientation */
+@media (orientation: landscape) and (max-height: 500px) {
+  .header {
+    position: static;
+  }
+  
+  .sidebar {
+    position: static;
+  }
+  
+  .content-wrapper {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* High DPI Displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .team-logo,
+  .team-logo-large {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .header,
+  .secondary-nav,
+  .sidebar,
+  .footer {
+    display: none;
+  }
+  
+  .content-wrapper {
+    grid-template-columns: 1fr;
+  }
+  
+  .scoreboard {
+    break-inside: avoid;
+  }
+  
+  .boxscore-content {
+    break-inside: avoid;
+  }
+  
+  .stats-table {
+    break-inside: avoid;
+  }
+  
+  .stats-table th,
+  .stats-table td {
+    border: 1px solid #000;
+  }
+  
+  a[href]:after {
+    content: " (" attr(href) ")";
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-only {
+    display: block !important;
+  }
+}
+
+/* Accessibility - Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Accessibility - High Contrast */
+@media (prefers-contrast: high) {
+  :root {
+    --color-border: #000000;
+    --color-border-light: #000000;
+    --color-bg-tertiary: #ffffff;
+  }
+  
+  .stats-table tbody tr:hover,
+  .standings-table tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  .highlighted-team {
+    background-color: rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg-primary: #1a1a1a;
+    --color-bg-secondary: #2d2d2d;
+    --color-bg-tertiary: #3d3d3d;
+    --color-text-primary: #ffffff;
+    --color-text-secondary: #cccccc;
+    --color-text-muted: #999999;
+    --color-border: #555555;
+    --color-border-light: #444444;
+  }
+  
+  .scoreboard,
+  .boxscore-content,
+  .sidebar {
+    border-color: var(--color-border);
+  }
+  
+  .stats-table th {
+    background-color: var(--color-bg-tertiary);
+  }
+  
+  .team-totals {
+    background-color: var(--color-bg-tertiary);
+  }
+}
+
+/* Focus Management for Touch Devices */
+@media (hover: none) and (pointer: coarse) {
+  .player-row:hover,
+  .stats-table tbody tr:hover,
+  .standings-table tbody tr:hover {
+    background-color: transparent;
+  }
+  
+  .player-link:hover,
+  .news-content h4 a:hover,
+  .footer__links a:hover {
+    text-decoration: none;
+  }
+  
+  .player-link:active,
+  .news-content h4 a:active,
+  .footer__links a:active {
+    text-decoration: underline;
+  }
+}
