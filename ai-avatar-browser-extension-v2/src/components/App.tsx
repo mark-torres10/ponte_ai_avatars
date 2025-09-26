@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FeatureMode, DifficultyLevel } from '../types';
 import Header from './Header';
 import DebateMode from './modes/DebateMode';
@@ -7,10 +7,18 @@ import PredictionsMode from './modes/PredictionsMode';
 import NBARecapMode from './modes/NBARecapMode';
 import FanReactionsMode from './modes/FanReactionsMode';
 import GameCompanionMode from './modes/GameCompanionMode';
+import { yamlLoader } from '../utils/yamlLoader';
 
 const App: React.FC = () => {
   const [currentMode, setCurrentMode] = useState<FeatureMode>('debate');
   const [difficulty, setDifficulty] = useState<DifficultyLevel>('easy');
+
+  // Initialize voice configurations on app start
+  useEffect(() => {
+    yamlLoader.loadConfig().catch(error => {
+      console.warn('Failed to load voice configurations:', error);
+    });
+  }, []);
 
   // Function to handle mode changes and notify content script
   const handleModeChange = (newMode: FeatureMode) => {

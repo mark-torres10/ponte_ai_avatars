@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, HelpCircle, Keyboard, Send, Volume2, VolumeX, AlertCircle } from 'lucide-react';
-import { DifficultyLevel, VoiceType, SportsContext, DebateQuestion, DebateResponse } from '../../types';
+import React, { useState, useEffect } from 'react';
+import { Mic, MicOff, Keyboard, Send, Volume2, AlertCircle } from 'lucide-react';
+import { DifficultyLevel, VoiceType, SportsContext, DebateResponse } from '../../types';
 import { voiceService } from '../../services/voiceService';
 import { VoiceEventHandlers } from '../../types';
-import { apiService } from '../../services/api';
+import { getVoiceConfigSync, getVoiceNameSync } from '../../config/voiceConfig';
 
 interface DebateModeProps {
   difficulty: DifficultyLevel;
@@ -24,9 +24,7 @@ const DebateMode: React.FC<DebateModeProps> = ({ difficulty, onDifficultyChange 
   const [error, setError] = useState<string | null>(null);
   const [transcript, setTranscript] = useState<string>('');
 
-  // Refs
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
+  // Refs removed - using WebRTC directly
 
   // Voice event handlers
   const voiceEventHandlers: VoiceEventHandlers = {
@@ -218,36 +216,29 @@ const DebateMode: React.FC<DebateModeProps> = ({ difficulty, onDifficultyChange 
 
       {/* Voice Selection */}
       <div className="flex gap-1">
-        <button
-          onClick={() => setVoiceType('verse')}
-          className={`flex-1 px-2 py-1 text-xs rounded ${
-            voiceType === 'verse' 
-              ? 'bg-blue-100 text-blue-700 border border-blue-300' 
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
-        >
-          Verse
-        </button>
-        <button
-          onClick={() => setVoiceType('cedar')}
-          className={`flex-1 px-2 py-1 text-xs rounded ${
-            voiceType === 'cedar' 
-              ? 'bg-blue-100 text-blue-700 border border-blue-300' 
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
-        >
-          Cedar
-        </button>
-        <button
-          onClick={() => setVoiceType('marin')}
-          className={`flex-1 px-2 py-1 text-xs rounded ${
-            voiceType === 'marin' 
-              ? 'bg-blue-100 text-blue-700 border border-blue-300' 
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
-        >
-          Marin
-        </button>
+        {(['verse', 'cedar', 'marin'] as VoiceType[]).map((voice) => {
+          const config = getVoiceConfigSync(voice);
+          const isSelected = voiceType === voice;
+          return (
+            <button
+              key={voice}
+              onClick={() => setVoiceType(voice)}
+              className={`flex-1 px-2 py-1 text-xs rounded relative group ${
+                isSelected 
+                  ? 'bg-blue-100 text-blue-700 border border-blue-300' 
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+              title={config.personality}
+            >
+              {config.display_name}
+              {/* Hover tooltip */}
+              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                {config.description}
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+              </div>
+            </button>
+          );
+        })}
       </div>
 
       {/* Sports Context */}
@@ -407,7 +398,7 @@ const DebateMode: React.FC<DebateModeProps> = ({ difficulty, onDifficultyChange 
               difficulty === 'expert' ? 'bg-purple-100 text-purple-700' :
               'bg-blue-100 text-blue-700'
             }`}>
-              Parker ({voiceType})
+              {getVoiceNameSync(voiceType)}
             </div>
             {isSpeaking && <Volume2 className="w-3 h-3 text-green-600" />}
           </div>
