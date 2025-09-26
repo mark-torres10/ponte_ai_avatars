@@ -640,3 +640,4 @@ Legal links, branding, and site information.
 - **Keyboard Navigation**: All elements accessible
 - **Screen Reader**: Proper announcements
 - **Color Contrast**: 4.5:1 minimum ratio
+

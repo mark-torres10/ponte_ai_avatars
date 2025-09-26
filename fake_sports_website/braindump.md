@@ -139,3 +139,4 @@ Create an exact replica of ESPN's NBA boxscore page (https://www.espn.com/nba/bo
 - What about legal considerations for creating a replica?
 
 This brain dump captures all initial thoughts, questions, and considerations for creating an exact replica of the ESPN NBA boxscore page with Sports Inc. branding.
+

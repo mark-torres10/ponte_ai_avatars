@@ -32,3 +32,4 @@ This project creates a pixel-perfect replica of ESPN's NBA boxscore page, replac
 ## Development Status
 
 This project is in the planning and analysis phase. The ESPN page has been thoroughly analyzed and documented for accurate replication.
+

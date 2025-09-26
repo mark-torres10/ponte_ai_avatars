@@ -71,3 +71,4 @@ Create an exact visual and functional replica of ESPN's NBA boxscore page, repla
 - WCAG 2.1 AA accessibility compliance
 - < 3 second load time
 - Cross-browser compatibility
+
